@@ -100,6 +100,22 @@ class LLMClient:
         if self.cfg.get("no_think"):
             prompt = prompt + " /no_think"                     # tắt chế độ suy nghĩ của Qwen3
         digest = hashlib.sha256(Path(image).read_bytes()).hexdigest() if image is not None else ""
+        reply = self._once(prompt, params, image, digest)
+        fallback = self.cfg.get("fallback")
+        if reply.error == "api_error" and fallback and self.model != fallback:
+            # mô hình gốc không dùng được (vd Gemini-1.5 đã ngừng): chuyển hẳn sang mô hình thay thế khai báo trong
+            # models.yaml cho mọi lời gọi sau; W&B ghi lại qua counters["fallback_used"] và client.model
+            with self._lock:
+                if self.model != fallback:
+                    self.model = fallback
+                    self.counters["fallback_used"] += 1
+            reply = self._once(prompt, params, image, digest)
+        if reply.error:
+            self.counters[reply.error] += 1
+        return reply
+
+    def _once(self, prompt: str, params: dict, image, digest: str) -> LLMReply:
+        """Tra cache rồi gọi mô hình hiện tại tối đa `retries` lần. Không tự đếm lỗi (chat() đếm sau fallback)."""
         key = self._key(prompt, params, digest)
         with self._lock:
             row = self._db.execute("SELECT v FROM c WHERE k=?", (key,)).fetchone()
@@ -125,7 +141,6 @@ class LLMClient:
                 err = "timeout" if "timeout" in type(e).__name__.lower() else "api_error"
             if attempt < self.retries - 1:
                 self.sleep(2 ** attempt)
-        self.counters[err] += 1
         return LLMReply(None, err)
 
 
@@ -150,7 +165,8 @@ def check_models(names: list, cache_dir: Path) -> dict:
         elif cfg.get("fallback"):
             fb = dict(cfg, model=cfg["fallback"])
             r2 = LLMClient(n, fb, Path(cache_dir) / "_check", {"max_tokens": 5}).chat(f"Reply with OK. ({time.time()})")
-            out[n] = f"fallback {cfg['fallback']}" if r2.text else f"lỗi: {r.error}"
+            out[n] = (f"fallback {cfg['fallback']} (evia/baseline tự chuyển sang mô hình này)" if r2.text
+                      else f"lỗi: {r.error}")
         else:
             out[n] = f"lỗi: {r.error}"
     return out

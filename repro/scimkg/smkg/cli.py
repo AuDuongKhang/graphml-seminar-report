@@ -118,8 +118,10 @@ def _add_evia(sub):
         m["partial_lessons"] = partial
         calls = {f"calls/{n}/{k}": v for n, c in clients.items() for k, v in c.counters.items()}
         print(m)
+        resolved = {n: c.model for n, c in clients.items()}   # mô hình thực sự dùng (sau fallback nếu có)
         _log(a.run_name, {"models": a.models, "extractors": a.extractors or a.models, "K": a.K, "alpha": a.alpha,
-                          "lessons": len(lessons)}, {**m, **calls}, "S1" if a.run_name.startswith("S1") else "S3")
+                          "lessons": len(lessons), "resolved_models": resolved}, {**m, **calls},
+             "S1" if a.run_name.startswith("S1") else "S3")
 
     p.set_defaults(func=run)
 
@@ -203,31 +205,27 @@ def _add_baseline(sub):
     p.add_argument("--si_corpus", type=int, default=50, help="số đoạn không nhãn cho self_improving")
 
     def run(a):
-        import json
         import random
 
         from smkg.baselines import BASELINES
         from smkg.llm import make_clients
         from smkg.metrics import set_prf, universe_metrics
-        from smkg.prompts import SUBJECT_NAME
-        from smkg.runner import load_run
+        from smkg.runner import load_run, run_baseline
         lessons = _lessons(a.lessons)
         chosen = {l.name for l in lessons}
         client = make_clients([a.model], out_dir() / "cache")[a.model]
-        d = out_dir() / "baselines" / f"{a.name}-{a.model}"
-        d.mkdir(parents=True, exist_ok=True)
         others = [l for l in _lessons(0) if l.name not in chosen]
-        pred = {}
-        for l in lessons:
-            f = d / f"{l.name}.json"
-            if not f.exists():
-                kw = {}
-                if a.name == "self_improving":
-                    segs = [t for o in others if o.subject == l.subject for _, t in o.segments]
-                    kw["corpus_segments"] = random.Random(42).sample(segs, min(a.si_corpus, len(segs)))
-                f.write_text(json.dumps(BASELINES[a.name](l, client, SUBJECT_NAME[l.subject], **kw), ensure_ascii=False),
-                             encoding="utf-8")
-            pred[l.name] = {c for cs in json.loads(f.read_text(encoding="utf-8")).values() for c in cs}
+
+        def kwargs_for(l):
+            if a.name != "self_improving":
+                return {}
+            segs = [t for o in others if o.subject == l.subject for _, t in o.segments]
+            return {"corpus_segments": random.Random(42).sample(segs, min(a.si_corpus, len(segs)))}
+
+        pred, partial = run_baseline(lessons, BASELINES[a.name], client,
+                                     out_dir() / "baselines" / f"{a.name}-{a.model}", kwargs_for)
+        if partial:
+            print(f"{len(partial)} bài còn lời gọi lỗi -> chạy lại lệnh này để thử lại: {partial}")
         gold = {l.name: l.gt for l in lessons}
         if a.pool_run:
             run_logs = load_run(out_dir() / "runs" / a.pool_run)
@@ -235,9 +233,10 @@ def _add_baseline(sub):
         else:
             pool = {k: set() for k in gold}
         m = {**set_prf(pred, gold), **universe_metrics(pred, gold, pool), "n_lessons": len(gold),
-             **{f"calls/{k}": v for k, v in client.counters.items()}}
+             "partial_lessons": len(partial), **{f"calls/{k}": v for k, v in client.counters.items()}}
         print(m)
-        _log(f"S1b-{a.name}-{a.model}", {"baseline": a.name, "model": a.model, "pool_run": a.pool_run}, m, "S1")
+        _log(f"S1b-{a.name}-{a.model}", {"baseline": a.name, "model": a.model, "resolved_model": client.model,
+                                          "pool_run": a.pool_run}, m, "S1")
 
     p.set_defaults(func=run)
 

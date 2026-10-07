@@ -19,4 +19,5 @@
 | 15 | Mã gốc: vòng self-refine lỗi vẫn được tính (danh sách rỗng = phiếu chống mọi ứng viên) | Vòng có lời gọi lỗi/sai định dạng ghi `None`, loại khỏi cả tử và mẫu khi tính điểm; bài còn lời gọi lỗi tạm thời được chạy lại (`*.partial.json`) | Lỗi mạng không được làm giảm recall |
 | 16 | Qwen3 mặc định bật chế độ suy nghĩ | Thêm `/no_think` vào prompt cho Qwen3 | Tránh vượt max_tokens=1000 và cắt mất danh sách |
 | 17 | — | Chạy lần lượt từng mô hình trên mọi bài (Ollama giữ 1 mô hình trong VRAM, context 8k) | Bộ 3 mô hình mở không vừa VRAM cùng lúc |
-
+| 18 | — | Mô hình API không còn dùng được và có `fallback` trong `models.yaml` → client tự chuyển hẳn sang mô hình thay thế; tên mô hình thực tế ghi trong W&B config (`resolved_models` / `resolved_model`) | Gemini-1.5 có thể đã ngừng |
+| 19 | — | Baseline: bài có lời gọi lỗi tạm thời lưu dạng `*.partial.json` và được chạy lại ở lần sau | Lỗi mạng không làm giảm điểm baseline vĩnh viễn |

@@ -54,6 +54,29 @@ def run_evia(lessons: list, clients: dict, models: list, extractors: list, K: in
     return Path(run_dir)
 
 
+def run_baseline(lessons: list, fn, client, out_dir: Path, kwargs_for=None) -> tuple:
+    """Chạy một baseline trên từng bài. Bài có lời gọi lỗi tạm thời (rỗng/quá giờ/lỗi API) chỉ lưu dạng
+    *.partial.json và được chạy lại ở lần sau (lời gọi đã thành công lấy từ cache); bài đã xong thì bỏ qua.
+    -> (dự đoán {bài: set}, danh sách bài còn partial)."""
+    d = Path(out_dir)
+    d.mkdir(parents=True, exist_ok=True)
+    pred, partial = {}, []
+    for l in lessons:
+        final, part = d / f"{l.name}.json", d / f"{l.name}.partial.json"
+        if not final.exists():
+            before = sum(client.counters[k] for k in TRANSIENT)
+            res = fn(l, client, SUBJECT_NAME[l.subject], **(kwargs_for(l) if kwargs_for else {}))
+            failed = sum(client.counters[k] for k in TRANSIENT) > before
+            _write_atomic(part if failed else final, res)
+            if failed:
+                partial.append(l.name)
+            else:
+                part.unlink(missing_ok=True)
+        src = final if final.exists() else part
+        pred[l.name] = {c for cs in json.loads(src.read_text(encoding="utf-8")).values() for c in cs}
+    return pred, partial
+
+
 def load_run(run_dir: Path) -> dict:
     files = sorted((Path(run_dir) / "lessons").glob("*.json"))
     return {f.stem: json.loads(f.read_text(encoding="utf-8")) for f in files if not f.stem.endswith(".partial")}
