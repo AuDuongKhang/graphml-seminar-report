@@ -2,6 +2,7 @@
 *.txt
 !requirements*.txt
 SciMKG.pdf
+GraphViS.pdf
 *_GraphVis_*.pdf
 /papers/
 
@@ -43,3 +44,6 @@ outputs/
 Thumbs.db
 ~$*
 .vscode/
+
+# superpowers workspace
+.superpowers/
