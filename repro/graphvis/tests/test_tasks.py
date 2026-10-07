@@ -79,6 +79,7 @@ def test_build_dv_and_text(tmp_path):
     assert dv["answer"] == "B" and dv["image"] and dv["prompt"].startswith("The image represents a knowledge graph")
     assert "A. store\nB. box\nC. neck" in dv["prompt"]
     assert tx["image"] is None and "image" not in tx["prompt"].lower() and tx["answer"] == "B"
+    assert dv["question"] == tx["question"] == ITEM.question
 
 
 def test_build_respects_max_items(tmp_path):

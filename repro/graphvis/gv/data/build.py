@@ -41,10 +41,10 @@ def build_dataset(kind: str, items: list, graphs: dict, img_dir: Path, out_jsonl
                     q, a = make_task_sample(task, sg, rng)
                     rows.append({"id": f"{it.id}-{task}", "image": image, "prompt": q, "answer": a, "task": task, **meta})
             elif kind == "dv":
-                rows = [{"id": it.id, "image": image, "answer": it.answer, "task": "qa",
+                rows = [{"id": it.id, "image": image, "answer": it.answer, "task": "qa", "question": it.question,
                          "prompt": QA_PROMPT.format(question=it.question, options=format_options(it)), **meta}]
             elif kind == "text":
-                rows = [{"id": it.id, "image": None, "answer": it.answer, "task": "qa",
+                rows = [{"id": it.id, "image": None, "answer": it.answer, "task": "qa", "question": it.question,
                          "prompt": TEXT_PROMPT.format(question=it.question, options=format_options(it)), **meta}]
             else:
                 raise ValueError(f"unknown kind {kind}")
