@@ -24,31 +24,47 @@ def _concepts(reply):
     return _uniq(normalize_concept(c) for c in items), (reply.error or status)
 
 
-def run_extraction(lesson, clients: dict, extractors: list, workers: int = 4) -> dict:
-    """Mỗi đoạn được mọi extractor trích; ứng viên của đoạn = hợp các kết quả trừ khái niệm đã gặp ở đoạn trước
-    (khái niệm gắn với lần xuất hiện đầu tiên, như mã gốc)."""
-    subject = SUBJECT_NAME.get(lesson.subject, lesson.subject)
-    jobs = [(t, text, m) for t, text in lesson.segments for m in extractors]
+TRANSIENT = {"no_response", "timeout", "api_error"}
 
-    def work(job):
-        t, text, m = job
-        return job, _concepts(clients[m].chat(extract_prompt(text, subject)))
+
+def extract_one_model(lesson, client, workers: int = 4):
+    """Một mô hình trích xuất mọi đoạn của bài -> ({mốc: [khái niệm]}, {mốc: trạng thái})."""
+    subject = SUBJECT_NAME.get(lesson.subject, lesson.subject)
+
+    def work(seg):
+        t, text = seg
+        return t, _concepts(client.chat(extract_prompt(text, subject)))
 
     with ThreadPoolExecutor(max_workers=workers) as ex:
-        results = dict(ex.map(work, jobs))
-    per_model, status, candidates, seen = {}, {}, {}, set()
-    for t, text in lesson.segments:
-        per_model[t] = {m: results[(t, text, m)][0] for m in extractors}
-        status[t] = {m: results[(t, text, m)][1] for m in extractors}
-        union = _uniq(c for m in extractors for c in per_model[t][m])
+        res = dict(ex.map(work, lesson.segments))
+    return {t: r[0] for t, r in res.items()}, {t: r[1] for t, r in res.items()}
+
+
+def combine_candidates(lesson, per_model: dict, extractors: list) -> dict:
+    """Ứng viên của đoạn = hợp kết quả các extractor trừ khái niệm đã gặp ở đoạn trước (gắn lần xuất hiện đầu)."""
+    candidates, seen = {}, set()
+    for t, _ in lesson.segments:
+        union = _uniq(c for m in extractors for c in per_model.get(t, {}).get(m, []))
         candidates[t] = [c for c in union if c not in seen]
         seen.update(candidates[t])
-    return {"candidates": candidates, "per_model": per_model, "status": status}
+    return candidates
+
+
+def run_extraction(lesson, clients: dict, extractors: list, workers: int = 4) -> dict:
+    per_model, status = {}, {}
+    for m in extractors:
+        pm, st = extract_one_model(lesson, clients[m], workers)
+        for t in pm:
+            per_model.setdefault(t, {})[m] = pm[t]
+            status.setdefault(t, {})[m] = st[t]
+    return {"candidates": combine_candidates(lesson, per_model, extractors), "per_model": per_model, "status": status}
 
 
 def run_validation(candidates: dict, clients: dict, validators: list, subject: str, K: int = 5,
-                   workers: int = 4) -> dict:
-    """Self-Refine K vòng cho từng (đoạn, LLM): phản hồi (tích lũy) -> lọc. Ghi danh sách sống sót mỗi vòng."""
+                   workers: int = 4, statuses: list | None = None) -> dict:
+    """Self-Refine K vòng cho từng (đoạn, LLM): phản hồi (tích lũy) -> lọc. Ghi danh sách sống sót mỗi vòng;
+    vòng có lời gọi lỗi/sai định dạng ghi None (không phải phiếu chống) và trạng thái được đưa vào `statuses`."""
+    statuses = statuses if statuses is not None else []
     jobs = [(t, m) for t, cs in candidates.items() if cs for m in validators]
 
     def work(job):
@@ -56,10 +72,15 @@ def run_validation(candidates: dict, clients: dict, validators: list, subject: s
         cs, history, rounds = candidates[t], "hello, ", []
         allowed = set(cs)
         for _ in range(K):
-            fb = clients[m].chat(feedback_prompt(cs, subject, history)).text or ""
-            kept, _ = _concepts(clients[m].chat(refine_prompt(cs, subject, fb)))
-            rounds.append([c for c in kept if c in allowed])
-            history += fb + "\n"
+            fb = clients[m].chat(feedback_prompt(cs, subject, history))
+            statuses.append(fb.error or "ok")
+            if fb.error:
+                rounds.append(None)
+                continue
+            kept, status = _concepts(clients[m].chat(refine_prompt(cs, subject, fb.text)))
+            statuses.append(status)
+            rounds.append([c for c in kept if c in allowed] if status == "ok" else None)
+            history += fb.text + "\n"
         return job, rounds
 
     with ThreadPoolExecutor(max_workers=workers) as ex:
@@ -71,14 +92,11 @@ def run_validation(candidates: dict, clients: dict, validators: list, subject: s
 
 
 def integrate(candidates: dict, votes: dict, models: list, K: int) -> dict:
-    """Điểm = số (LLM, vòng ≤ K) giữ khái niệm / (len(models)·K)."""
+    """Điểm = số (LLM, vòng ≤ K) giữ khái niệm / số (LLM, vòng ≤ K) chạy thành công (vòng None bị loại)."""
     out = {}
     for t, cs in candidates.items():
-        scores = {}
-        for c in cs:
-            n = sum(c in rnd for m in models for rnd in votes.get(t, {}).get(m, [])[:K])
-            scores[c] = n / (len(models) * K)
-        out[t] = scores
+        rounds = [r for m in models for r in votes.get(t, {}).get(m, [])[:K] if r is not None]
+        out[t] = {c: (sum(c in r for r in rounds) / len(rounds) if rounds else 0.0) for c in cs}
     return out
 
 

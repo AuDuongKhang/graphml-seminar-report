@@ -101,14 +101,21 @@ def _add_evia(sub):
     p.add_argument("--lessons", type=int, default=30, help="số bài (chia đều theo môn); 0 = tất cả")
     p.add_argument("--run_name", required=True, help="vd S1-paper-models hoặc S3-open-large")
     p.add_argument("--workers", type=int, default=4)
+    p.add_argument("--allow_partial", action="store_true",
+                   help="chấp nhận bài còn lời gọi lỗi sau nhiều lần chạy lại (mặc định: để dạng .partial, chạy lại sẽ thử lại)")
 
     def run(a):
         from smkg.llm import make_clients
         from smkg.runner import run_evia, score_run
         lessons = _lessons(a.lessons)
         clients = make_clients(sorted(set(a.models + (a.extractors or []))), out_dir() / "cache")
-        rd = run_evia(lessons, clients, a.models, a.extractors or a.models, a.K, out_dir() / "runs" / a.run_name, a.workers)
+        rd = run_evia(lessons, clients, a.models, a.extractors or a.models, a.K, out_dir() / "runs" / a.run_name, a.workers,
+                      allow_partial=a.allow_partial)
+        partial = len(list((rd / "lessons").glob("*.partial.json")))
+        if partial:
+            print(f"{partial} bài còn lời gọi lỗi -> chạy lại lệnh này (lời gọi đã thành công lấy từ cache)")
         m = score_run(rd, lessons, a.models, a.K, a.alpha, "full")
+        m["partial_lessons"] = partial
         calls = {f"calls/{n}/{k}": v for n, c in clients.items() for k, v in c.counters.items()}
         print(m)
         _log(a.run_name, {"models": a.models, "extractors": a.extractors or a.models, "K": a.K, "alpha": a.alpha,

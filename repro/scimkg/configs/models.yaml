@@ -11,9 +11,9 @@ gemini-1.5-pro:   {provider: gemini,   model: gemini-1.5-pro, base_url: "https:/
                    key_env: GEMINI_API_KEY, fallback: gemini-2.5-pro, drop_params: [frequency_penalty, seed]}
 
 # --- Mô hình mở (Bảng 4 của bài) qua Ollama trên Kaggle/Colab: base_url của Ollama ---
-qwen3-4b:     {provider: ollama, model: "qwen3:4b",      base_url: "http://localhost:11434/v1", key_env: null}
-qwen3-8b:     {provider: ollama, model: "qwen3:8b",      base_url: "http://localhost:11434/v1", key_env: null}
-qwen3-14b:    {provider: ollama, model: "qwen3:14b",     base_url: "http://localhost:11434/v1", key_env: null}
+qwen3-4b:     {provider: ollama, no_think: true, model: "qwen3:4b",      base_url: "http://localhost:11434/v1", key_env: null}
+qwen3-8b:     {provider: ollama, no_think: true, model: "qwen3:8b",      base_url: "http://localhost:11434/v1", key_env: null}
+qwen3-14b:    {provider: ollama, no_think: true, model: "qwen3:14b",     base_url: "http://localhost:11434/v1", key_env: null}
 gemma3-4b:    {provider: ollama, model: "gemma3:4b",     base_url: "http://localhost:11434/v1", key_env: null}
 gemma3-12b:   {provider: ollama, model: "gemma3:12b",    base_url: "http://localhost:11434/v1", key_env: null}
 gemma3-27b:   {provider: ollama, model: "gemma3:27b",    base_url: "http://localhost:11434/v1", key_env: null}
@@ -25,7 +25,7 @@ phi3-small:   {provider: vllm,   model: "microsoft/Phi-3-small-8k-instruct", bas
 
 # --- Baseline UniversalNER: `vllm serve Universal-NER/UniNER-7B-type --port 8001` (không có chat template) ---
 uniner-7b:    {provider: vllm, model: "Universal-NER/UniNER-7B-type", base_url: "http://localhost:8001/v1", key_env: null,
-               mode: completion, drop_params: [frequency_penalty]}
+               mode: completion, drop_params: [frequency_penalty], params: {max_tokens: 256}}
 
 # --- Mô hình đa phương thức mở cho regen-align (Gemma 3 nhận ảnh qua Ollama) ---
 qwen2.5vl-7b: {provider: ollama, model: "qwen2.5vl:7b", base_url: "http://localhost:11434/v1", key_env: null}

@@ -36,8 +36,10 @@ giai đoạn đã huấn luyện xong được bỏ qua, giai đoạn dở dang 
 | C1 | độ chính xác theo số nút | VI-C |
 | C2 | độ chính xác theo độ phân giải | VI-C |
 
-**Trước khi chạy:** Kaggle → *Settings*: bật Internet, chọn GPU (T4 x2 hoặc P100); thêm *Secret* `WANDB_API_KEY`
+**Trước khi chạy:** Kaggle → *Settings*: bật Internet, chọn GPU (T4 x2 hoặc P100), và bật
+*Persistence → Files only* (nếu không, `/kaggle/working` mất khi hết phiên). Thêm *Secret* `WANDB_API_KEY`
 (và `HF_TOKEN` nếu dùng `HUB_REPO`). Colab → *Runtime type* GPU; thêm secret cùng tên trong mục 🔑.
+Khuyến nghị đặt `HUB_REPO`: adapter của mỗi giai đoạn được đẩy lên HF Hub và tự tải lại ở phiên sau / máy khác.
 """)
 
 code("""
@@ -49,6 +51,7 @@ WANDB_ENTITY = ""       # để trống = tài khoản mặc định
 HUB_REPO = ""           # vd "your-hf-name/graphvis-adapters" để lưu adapter lên HF Hub (chuyển giữa Kaggle/Colab)
 REPO_URL = "https://github.com/AuDuongKhang/graphml-seminar-report.git"
 BRANCH = "main"
+G6_MAX = {"tiny": 60, "lite": 600, "full": None}[SCALE]   # số câu đọc ảnh (6 câu/ảnh); 600 ~ 100 ảnh
 VQA_MAX = {"tiny": {"scienceqa": 50, "mmbench": 20, "pope": 50},
            "lite": {"scienceqa": None, "mmbench": 400, "pope": 500},
            "full": {"scienceqa": None, "mmbench": None, "pope": None}}[SCALE]
@@ -56,6 +59,7 @@ VQA_MAX = {"tiny": {"scienceqa": 50, "mmbench": 20, "pope": 50},
 
 code("""
 import os, sys, subprocess
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"   # QLoRA chạy 1 GPU; tránh Trainer bọc DataParallel trên Kaggle 2xT4
 ON_KAGGLE = os.path.exists("/kaggle/working")
 ON_COLAB = "google.colab" in sys.modules
 if ON_COLAB:
@@ -70,6 +74,8 @@ os.makedirs(BASE, exist_ok=True)
 os.environ.update(GRAPHML_DATA=f"{BASE}/data", GRAPHML_OUT=f"{BASE}/out", WANDB_PROJECT=WANDB_PROJECT)
 if WANDB_ENTITY:
     os.environ["WANDB_ENTITY"] = WANDB_ENTITY
+if HUB_REPO:
+    os.environ["GRAPHML_HUB_REPO"] = HUB_REPO      # eval tự tải adapter còn thiếu từ HF Hub
 REPO = f"{BASE}/repo"
 if not os.path.exists(REPO):
     subprocess.run(["git", "clone", "-b", BRANCH, REPO_URL, REPO], check=True)
@@ -114,7 +120,7 @@ code("""
 !cd {REPO}/repro && python -m pytest -q
 !cd {REPO}/repro && python -m pytest -q -m gpu graphvis/tests/test_collate.py -p no:cacheprovider
 !python -m gv.cli build-data --dataset csqa --split train --scale tiny --tag smoke --no_wandb
-!python -m gv.cli train --config configs/G1_csqa_curriculum.yaml --dry_run {S} exp_id=SMOKE data_tag=smoke
+!python -m gv.cli train --config configs/G1_csqa_curriculum.yaml --dry_run {S} data_tag=smoke
 """)
 
 md("## G0 — Dựng dữ liệu")
@@ -144,8 +150,9 @@ code("""
 
 md("## G6 — Đọc ảnh đồ thị: mô hình gốc vs sau giai đoạn 1")
 code("""
-!python -m gv.cli eval-graph-reading --exp_id G6-base --group G6 --batch_size 4 {M}
-!python -m gv.cli eval-graph-reading --adapter {adapter('G1-csqa-curriculum','stage1_graph_reading')} --exp_id G6-after-stage1 --group G6 --batch_size 4 {M}
+GM = f"--max_eval {G6_MAX}" if G6_MAX else ""
+!python -m gv.cli eval-graph-reading --exp_id G6-base --group G6 --batch_size 4 {GM} {M}
+!python -m gv.cli eval-graph-reading --adapter {adapter('G1-csqa-curriculum','stage1_graph_reading')} --exp_id G6-after-stage1 --group G6 --batch_size 4 {GM} {M}
 """)
 
 md("## G2 — VQA zero-shot: mô hình gốc vs GraphVis (CSQA)")

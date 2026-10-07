@@ -31,6 +31,7 @@ Có key thì đặt `USE_PAPER_MODELS = True` (GPT-4o, DeepSeek-V3, Gemini-1.5-F
 | S5 | phân loại lỗi, CLIP/BLIP, chấm người, căn chỉnh lại ảnh | XII-D |
 
 Secrets (Kaggle *Add-ons → Secrets* / Colab 🔑): `WANDB_API_KEY`; tùy chọn `OPENAI_API_KEY`, `DEEPSEEK_API_KEY`, `GEMINI_API_KEY`.
+Kaggle: bật *Persistence → Files only* để giữ cache lời gọi LLM và log từng bài giữa các phiên.
 """)
 
 code("""
@@ -91,8 +92,12 @@ import wandb; wandb.login()
 
 md("## Ollama (mô hình mở)")
 code("""
-!curl -fsSL https://ollama.com/install.sh | sh > /dev/null
-os.environ.update(OLLAMA_NUM_PARALLEL=str(WORKERS), OLLAMA_MAX_LOADED_MODELS="3", OLLAMA_KEEP_ALIVE="30m")
+!apt-get -qq install -y zstd > /dev/null
+!curl -fsSL https://ollama.com/install.sh | sh
+# chạy lần lượt từng mô hình (runner model-major) -> chỉ giữ 1 mô hình trong VRAM; context 8k để prompt
+# phản hồi tích lũy qua 5 vòng không bị cắt mất phần đầu
+os.environ.update(OLLAMA_NUM_PARALLEL=str(WORKERS), OLLAMA_MAX_LOADED_MODELS="1", OLLAMA_KEEP_ALIVE="30m",
+                  OLLAMA_CONTEXT_LENGTH="8192")
 ollama = subprocess.Popen(["ollama", "serve"], stdout=open(f"{BASE}/ollama.log", "a"), stderr=subprocess.STDOUT)
 time.sleep(5)
 TAGS = {"qwen3-4b": "qwen3:4b", "qwen3-8b": "qwen3:8b", "qwen3-14b": "qwen3:14b", "gemma3-4b": "gemma3:4b",
@@ -130,12 +135,14 @@ code("""
 for b in ["decomposed_qa", "gpt_ner", "self_improving"]:
     !python -m smkg.cli baseline --name {b} --model {MAIN[0]} --lessons {LESSONS} --pool_run {MAIN_RUN}
 """)
-md("UniversalNER cần vLLM và ~14 GB VRAM: tạm dừng Ollama trước khi chạy.")
+md("UniversalNER cần vLLM (~13 GB trọng số fp16). Nên chạy ô này ở **một phiên riêng** sau các ô khác vì "
+   "`pip install vllm` có thể thay phiên bản torch. Kaggle 2×T4: chia mô hình lên 2 GPU (`--tensor-parallel-size 2`).")
 code("""
 ollama.terminate(); time.sleep(5)
 !pip install -q vllm
+TP = "2" if ON_KAGGLE else "1"
 uniner = subprocess.Popen(["vllm", "serve", "Universal-NER/UniNER-7B-type", "--port", "8001", "--dtype", "half",
-                           "--max-model-len", "2048", "--gpu-memory-utilization", "0.9"],
+                           "--max-model-len", "4096", "--gpu-memory-utilization", "0.9", "--tensor-parallel-size", TP],
                           stdout=open(f"{BASE}/vllm.log", "a"), stderr=subprocess.STDOUT)
 !for i in $(seq 1 120); do curl -s localhost:8001/v1/models > /dev/null && break; sleep 5; done
 !python -m smkg.cli baseline --name universal_ner --model uniner-7b --lessons {LESSONS} --pool_run {MAIN_RUN}

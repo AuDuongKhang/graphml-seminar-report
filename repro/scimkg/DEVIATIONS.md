@@ -16,3 +16,7 @@
 | 12 | Table 7: CLIP, BLIP-ITM, X-VLM-ITM, VQAScore, 5 chuyên gia | CLIPScore (cosine thô và 2,5·max(cos,0)), BLIP-ITM; VQAScore tùy chọn; X-VLM không chạy (không có bản HF); chấm người = 2 thành viên, 100 cặp, có Cohen κ | Khả năng tính toán; bài không nêu cách chuẩn hóa CLIP score |
 | 13 | Khái niệm tiếng Trung đưa thẳng vào CLIP/BLIP? (không nêu) | Dịch sang tiếng Anh bằng LLM (có cache) trước khi chấm | CLIP/BLIP chỉ hiểu tiếng Anh |
 | 14 | Mô hình Qwen3 sinh khối `<think>` | Bỏ khối `<think>` trước khi tách danh sách | Tránh lỗi định dạng giả |
+| 15 | Mã gốc: vòng self-refine lỗi vẫn được tính (danh sách rỗng = phiếu chống mọi ứng viên) | Vòng có lời gọi lỗi/sai định dạng ghi `None`, loại khỏi cả tử và mẫu khi tính điểm; bài còn lời gọi lỗi tạm thời được chạy lại (`*.partial.json`) | Lỗi mạng không được làm giảm recall |
+| 16 | Qwen3 mặc định bật chế độ suy nghĩ | Thêm `/no_think` vào prompt cho Qwen3 | Tránh vượt max_tokens=1000 và cắt mất danh sách |
+| 17 | — | Chạy lần lượt từng mô hình trên mọi bài (Ollama giữ 1 mô hình trong VRAM, context 8k) | Bộ 3 mô hình mở không vừa VRAM cùng lúc |
+

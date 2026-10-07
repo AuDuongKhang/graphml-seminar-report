@@ -44,6 +44,11 @@ def score_graph_task(task: str, pred: str, sg, gold: str) -> float:
     raise ValueError(task)
 
 
+def sort_by_task(rows: list) -> list:
+    """Gom các tác vụ có câu trả lời dài (liệt kê) vào cùng batch để batch ngắn không phải chờ 384 token."""
+    return sorted(rows, key=lambda r: r["task"])
+
+
 def eval_graph_reading(adapter: str | None, exp_id: str, group: str | None = None, dataset: str = "csqa",
                        split: str = "dev", max_eval: int | None = None, batch_size: int = 4, quant: str = "4bit",
                        dtype: str = "fp16", image_mode: str = "pad") -> dict:
@@ -62,7 +67,7 @@ def eval_graph_reading(adapter: str | None, exp_id: str, group: str | None = Non
     from .mcqa import node_bin
 
     d = split_dir(dataset, split)
-    rows = read_rows(d / "dg.jsonl", limit=max_eval)
+    rows = sort_by_task(read_rows(d / "dg.jsonl", limit=max_eval))
     graphs = load_graphs(d / "graphs.jsonl")
     out = out_root() / "graphvis" / "eval" / exp_id
     run = init_wandb(exp_id, {"adapter": adapter, "dataset": dataset, "split": split, "n": len(rows)}, out, group=group)

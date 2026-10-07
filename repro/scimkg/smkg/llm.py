@@ -35,7 +35,11 @@ def load_model_configs(path: Path = CONFIG) -> dict:
 
 
 def strip_think(text: str) -> str:
-    return _THINK.sub("", text or "").strip()
+    """Bỏ khối <think> của Qwen3. Khối mở mà không đóng (bị cắt bởi max_tokens) -> rỗng, tính là không phản hồi."""
+    text = text or ""
+    if "<think>" in text and "</think>" not in text:
+        return ""
+    return _THINK.sub("", text).strip()
 
 
 def parse_concepts(text: str | None):
@@ -56,6 +60,7 @@ class LLMClient:
         self.name, self.cfg = name, cfg
         self.model = cfg.get("model", name)
         self.params = dict(PAPER_PARAMS if params is None else params)
+        self.params.update(cfg.get("params") or {})          # tham số riêng theo mô hình (vd max_tokens của UniNER)
         for p in cfg.get("drop_params", []) or []:
             self.params.pop(p, None)
         self.sleep, self.retries, self.timeout = sleep, retries, timeout
@@ -92,6 +97,8 @@ class LLMClient:
     def chat(self, prompt: str, image=None, **override) -> LLMReply:
         """image: đường dẫn ảnh (cho MLLM, vd căn chỉnh khái niệm-ảnh); được đưa vào khóa cache."""
         params = {**self.params, **override}
+        if self.cfg.get("no_think"):
+            prompt = prompt + " /no_think"                     # tắt chế độ suy nghĩ của Qwen3
         digest = hashlib.sha256(Path(image).read_bytes()).hexdigest() if image is not None else ""
         key = self._key(prompt, params, digest)
         with self._lock:

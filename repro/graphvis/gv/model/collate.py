@@ -54,16 +54,17 @@ class Collator:
         imgs = [pad_image(Image.open(s["image"]), self.image_mode) for s in samples] if all(has_img) else None
         prompts = [self.proc.apply_chat_template(build_messages(s["prompt"], imgs is not None),
                                                  add_generation_prompt=True) for s in samples]
-        fulls = [self.proc.apply_chat_template(build_messages(s["prompt"], imgs is not None, s["answer"]))
+        # rstrip: khoảng trắng sau </s> của chat template không được thành token nhãn
+        fulls = [self.proc.apply_chat_template(build_messages(s["prompt"], imgs is not None, s["answer"])).rstrip()
                  for s in samples]
         prompt_lens = []
         for i, p in enumerate(prompts):
-            kw = {"text": p, "return_tensors": "pt", "add_special_tokens": False}
+            kw = {"text": p, "return_tensors": "pt"}   # giữ BOS như lúc suy luận và lúc LLaVA-1.6 tiền huấn luyện
             if imgs is not None:
                 kw["images"] = imgs[i]
             prompt_lens.append(int(self.proc(**kw)["attention_mask"][0].sum()))
         self.proc.tokenizer.padding_side = "right"
-        kw = {"text": fulls, "return_tensors": "pt", "padding": True, "add_special_tokens": False}
+        kw = {"text": fulls, "return_tensors": "pt", "padding": True}
         if imgs is not None:
             kw["images"] = imgs
         enc = self.proc(**kw)

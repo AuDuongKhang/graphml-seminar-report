@@ -49,7 +49,7 @@ def test_model_forward_backward_on_gpu(tmp_path):
     img = tmp_path / "x.png"
     Image.new("RGB", (300, 120), "white").save(img)
     batch = Collator(proc)([{"image": str(img), "prompt": "How many nodes?", "answer": "There are 2 nodes."},
-                            {"image": None, "prompt": "Question: 1+1?", "answer": "B"}])
+                            {"image": str(img), "prompt": "Question: 1+1? A. 2 B. 3", "answer": "A"}])
     with torch.autocast("cuda", dtype=torch.float16):
         out = model(**{k: v.to(model.device) for k, v in batch.items()})
     assert torch.isfinite(out.loss)

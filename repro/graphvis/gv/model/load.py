@@ -1,11 +1,41 @@
 """Nạp LLaVA-1.6-Mistral-7B (bản HF) theo cấu hình GraphVis: CLIP đóng băng, projector học toàn bộ,
 LLM đóng băng + LoRA r=128/alpha=256 trên mọi lớp tuyến tính. Hỗ trợ QLoRA 4-bit cho GPU miễn phí (T4/P100).
 """
+import os
+import shutil
+from pathlib import Path
+
 MODEL_ID = "llava-hf/llava-v1.6-mistral-7b-hf"
 PAD_PINPOINTS = [[336, 336]]
 # Mọi nn.Linear của khối ngôn ngữ (đường dẫn module khác nhau giữa các bản transformers nên dùng regex)
 LORA_TARGET_REGEX = r".*language_model.*\.(q_proj|k_proj|v_proj|o_proj|gate_proj|up_proj|down_proj)"
 PROJECTOR_KEY = "multi_modal_projector"
+
+
+def _snapshot_download(repo_id: str, allow_patterns: str, local_dir: str):
+    from huggingface_hub import snapshot_download
+    return snapshot_download(repo_id=repo_id, allow_patterns=allow_patterns, local_dir=local_dir)
+
+
+def ensure_adapter(path, hub_repo: str | None = None):
+    """Adapter `<out>/graphvis/<exp>/<stage>/final` chưa có trên máy (phiên Kaggle/Colab mới) thì tải từ HF Hub
+    (repo trong `hub_repo` hoặc biến môi trường GRAPHML_HUB_REPO, cấu trúc `<exp>/<stage>/` do train.py đẩy lên)."""
+    if path in (None, "none"):
+        return None
+    p = Path(path)
+    if (p / "adapter_config.json").exists():
+        return str(p)
+    repo = hub_repo or os.environ.get("GRAPHML_HUB_REPO")
+    if not repo or p.name != "final":
+        return str(p)
+    exp, stage = p.parent.parent.name, p.parent.name
+    cache = p.parent.parent.parent / "_hub"
+    _snapshot_download(repo, f"{exp}/{stage}/*", str(cache))
+    src = cache / exp / stage
+    if (src / "adapter_config.json").exists():
+        p.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(src, p, dirs_exist_ok=True)
+    return str(p)
 
 
 def param_groups(named_params, lr: float, projector_lr: float) -> list:
@@ -34,6 +64,7 @@ def load_model_and_processor(model_id: str = MODEL_ID, image_mode: str = "pad", 
     from transformers import BitsAndBytesConfig, LlavaNextForConditionalGeneration, LlavaNextProcessor
 
     dt = torch_dtype(dtype)
+    adapter_path = ensure_adapter(adapter_path)
     processor = LlavaNextProcessor.from_pretrained(model_id)
     qcfg = None
     if quant == "4bit":

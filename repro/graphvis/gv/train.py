@@ -61,6 +61,30 @@ class _Rows:
         return self.rows[i]
 
 
+def experiment_id(cfg: dict, dry_run: bool) -> str:
+    """Dry-run ghi vào thư mục riêng, không để lại final/ giả làm run thật bỏ qua giai đoạn."""
+    return cfg["exp_id"] + ("-dryrun" if dry_run else "")
+
+
+def single_gpu_guard(args, quant: str) -> None:
+    """Trainer bọc mô hình bằng nn.DataParallel khi thấy >1 GPU (Kaggle 2xT4) — hỏng với bnb 4-bit + PEFT
+    và làm batch thực tế nhân đôi. Ép 1 GPU cho QLoRA."""
+    if quant == "4bit" and getattr(args, "_n_gpu", 1) > 1:
+        args._n_gpu = 1
+
+
+def prune_checkpoints(stage_dir: Path) -> None:
+    """Sau khi đã lưu final/, xóa checkpoint-* (mỗi cái ~4 GB do trạng thái Adam) để không tràn đĩa Kaggle/Drive."""
+    import shutil
+    for ck in Path(stage_dir).glob("checkpoint-*"):
+        shutil.rmtree(ck, ignore_errors=True)
+
+
+def half_state_dict(sd: dict) -> dict:
+    import torch
+    return {k: (v.half() if torch.is_floating_point(v) else v) for k, v in sd.items()}
+
+
 def _upload(folder: Path, hub_repo: str, path_in_repo: str):
     from huggingface_hub import HfApi
     api = HfApi()
@@ -76,17 +100,19 @@ def run_stages(cfg: dict, dry_run: bool = False) -> Path:
     from repro.common.tracking import init_wandb
 
     from .model.collate import Collator
-    from .model.load import load_model_and_processor, param_groups
+    from .model.load import ensure_adapter, load_model_and_processor, param_groups
     from .pipeline import split_dir
 
     plan_stages(cfg)
-    exp = cfg["exp_id"]
+    exp = experiment_id(cfg, dry_run)
     out = out_root() / "graphvis" / exp
     data_dir = split_dir(cfg["dataset"], "train", cfg.get("data_tag", ""))
     prev = None
     for st in cfg["stages"]:
         sdir = out / st["name"]
         final = sdir / "final"
+        if not dry_run and cfg.get("hub_repo"):
+            ensure_adapter(str(final), cfg["hub_repo"])      # phiên mới: lấy lại giai đoạn đã xong từ HF Hub
         if (final / "adapter_config.json").exists():
             prev = final
             continue
@@ -108,6 +134,7 @@ def run_stages(cfg: dict, dry_run: bool = False) -> Path:
             logging_steps=10, save_steps=cfg.get("save_steps", 500), save_total_limit=2, report_to=["wandb"],
             run_name=f"{exp}/{st['name']}", remove_unused_columns=False, label_names=["labels"],
             dataloader_num_workers=2, seed=cfg.get("seed", 42), gradient_checkpointing=False)
+        single_gpu_guard(args, cfg.get("quant", "4bit"))
         opt = torch.optim.AdamW(param_groups(model.named_parameters(), cfg.get("lr", 2e-5),
                                              cfg.get("projector_lr", 2e-5)))
         trainer = Trainer(model=model, args=args, train_dataset=_Rows(rows),
@@ -115,8 +142,10 @@ def run_stages(cfg: dict, dry_run: bool = False) -> Path:
                           optimizers=(opt, None))
         resume = any(sdir.glob("checkpoint-*"))
         trainer.train(resume_from_checkpoint=True if resume else None)
-        model.save_pretrained(str(final))
-        if cfg.get("hub_repo"):
+        from peft import get_peft_model_state_dict
+        model.save_pretrained(str(final), state_dict=half_state_dict(get_peft_model_state_dict(model)))   # fp16: ~0,7 GB
+        prune_checkpoints(sdir)
+        if cfg.get("hub_repo") and not dry_run:
             _upload(final, cfg["hub_repo"], f"{exp}/{st['name']}")
         run.finish()
         prev = final

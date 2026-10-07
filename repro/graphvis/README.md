@@ -9,7 +9,7 @@ Hướng dẫn chạy. Kết quả nằm trong báo cáo và trên W&B; khác bi
 | Nền tảng | Kaggle Notebooks (GPU T4 ×2 hoặc P100, bật Internet) hoặc Google Colab (GPU T4) |
 | GPU | ≥ 15 GB VRAM. Mặc định QLoRA 4-bit + fp16; với A100/L4 dùng `quant=none dtype=bf16` |
 | RAM | ≥ 12 GB (dựng ConceptNet chiếm ~0,6 GB) |
-| Đĩa | ~15 GB (mô hình 15 GB tải từ HF Hub vào cache; dữ liệu + ảnh < 2 GB ở `lite`) |
+| Đĩa | ~15 GB cache mô hình (HF Hub) + < 2 GB dữ liệu ở `lite` + trong lúc train ~4 GB/checkpoint (bị xóa khi xong giai đoạn) + ~0,7 GB/adapter. Kaggle: bật *Persistence → Files only*; nên dùng `hub_repo` để lưu adapter |
 | Phần mềm | Python ≥ 3.10, Graphviz (`apt-get install graphviz`), `pip install -r requirements.txt` |
 | Tài khoản | W&B (`WANDB_API_KEY`); tùy chọn HF Hub (`HF_TOKEN`) để lưu adapter |
 
@@ -48,6 +48,8 @@ Thứ tự và phụ thuộc giữa các thực nghiệm: xem bảng đầu note
 | Đánh giá CSQA dev / OBQA test | 100 câu | đủ | đủ |
 
 ## Chạy lại sau khi phiên bị ngắt
+
+`train --dry_run` ghi vào `<exp_id>-dryrun/`, không ảnh hưởng run thật.
 
 Chạy lại đúng ô/lệnh: dữ liệu đã có sẽ được dùng lại; giai đoạn có `final/` bị bỏ qua; giai đoạn dở dang
 resume từ `checkpoint-*` gần nhất (lưu mỗi 500 bước); W&B run tiếp tục cùng id.
