@@ -32,7 +32,7 @@ def build_dataset(kind: str, items: list, graphs: dict, img_dir: Path, out_jsonl
                 png = img_dir / f"{it.id}.png"
                 if not png.exists():
                     render_fn(sg, png, size_px=size_px)
-                image = str(png)
+                image = png.relative_to(out_jsonl.parent).as_posix()   # tương đối: mang dữ liệu sang máy khác được
             if kind == "dg":
                 rows = []
                 for task in tasks:
@@ -52,3 +52,18 @@ def build_dataset(kind: str, items: list, graphs: dict, img_dir: Path, out_jsonl
                 f.write(json.dumps(r, ensure_ascii=False) + "\n")
                 n += 1
     return n
+
+
+def read_rows(path: Path, limit: int | None = None) -> list:
+    """Đọc jsonl và đổi đường dẫn ảnh tương đối thành tuyệt đối theo thư mục chứa file."""
+    path = Path(path)
+    rows = []
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            if limit is not None and len(rows) >= limit:
+                break
+            r = json.loads(line)
+            if r.get("image"):
+                r["image"] = str(path.parent / r["image"])
+            rows.append(r)
+    return rows

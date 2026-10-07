@@ -69,7 +69,16 @@ def test_build_dg_six_tasks_per_image(tmp_path):
     n = build_dataset("dg", [ITEM], {"q1": SG}, tmp_path / "img", tmp_path / "dg.jsonl", render_fn=_fake_render)
     rows = _read(tmp_path / "dg.jsonl")
     assert n == 6 and sorted(r["task"] for r in rows) == sorted(TASKS)
-    assert all(r["image"].endswith("q1.png") and r["n_nodes"] == 4 and r["n_edges"] == 3 for r in rows)
+    assert all(r["image"] == "img/q1.png" and r["n_nodes"] == 4 and r["n_edges"] == 3 for r in rows)
+
+
+def test_read_rows_resolves_relative_images(tmp_path):
+    from gv.data.build import read_rows
+
+    build_dataset("dv", [ITEM], {"q1": SG}, tmp_path / "img", tmp_path / "dv.jsonl", render_fn=_fake_render)
+    rows = read_rows(tmp_path / "dv.jsonl")
+    assert rows[0]["image"] == str(tmp_path / "img" / "q1.png")
+    assert read_rows(tmp_path / "dv.jsonl", limit=0) == []
 
 
 def test_build_dv_and_text(tmp_path):

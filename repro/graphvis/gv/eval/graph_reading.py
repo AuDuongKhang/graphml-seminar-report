@@ -48,7 +48,6 @@ def eval_graph_reading(adapter: str | None, exp_id: str, group: str | None = Non
                        split: str = "dev", max_eval: int | None = None, batch_size: int = 4, quant: str = "4bit",
                        dtype: str = "fp16", image_mode: str = "pad") -> dict:
     """Tập kiểm tra = dg.jsonl dựng từ split đánh giá (1 câu mỗi tác vụ cho mỗi ảnh), như bài dùng ảnh từ CSQA test."""
-    import json
     from collections import defaultdict
 
     import wandb
@@ -56,13 +55,14 @@ def eval_graph_reading(adapter: str | None, exp_id: str, group: str | None = Non
     from repro.common.paths import out_root
     from repro.common.tracking import init_wandb
 
+    from ..data.build import read_rows
     from ..model.load import load_model_and_processor
     from ..pipeline import load_graphs, split_dir
     from .generate import generate
     from .mcqa import node_bin
 
     d = split_dir(dataset, split)
-    rows = [json.loads(l) for l in open(d / "dg.jsonl", encoding="utf-8")][:max_eval]
+    rows = read_rows(d / "dg.jsonl", limit=max_eval)
     graphs = load_graphs(d / "graphs.jsonl")
     out = out_root() / "graphvis" / "eval" / exp_id
     run = init_wandb(exp_id, {"adapter": adapter, "dataset": dataset, "split": split, "n": len(rows)}, out, group=group)

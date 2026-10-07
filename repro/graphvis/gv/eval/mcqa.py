@@ -59,6 +59,7 @@ def eval_mcqa(dataset: str, split: str, mode: str, adapter: str | None, exp_id: 
     from repro.common.paths import out_root
     from repro.common.tracking import init_wandb
 
+    from ..data.build import read_rows
     from ..data.kaping import kaping_prefix, top_k_triples
     from ..model.load import load_model_and_processor
     from ..pipeline import load_graphs, split_dir
@@ -66,7 +67,7 @@ def eval_mcqa(dataset: str, split: str, mode: str, adapter: str | None, exp_id: 
 
     d = split_dir(dataset, split, data_tag)
     src = "dv.jsonl" if mode.startswith("image") else "text.jsonl"
-    rows = [json.loads(l) for l in open(d / src, encoding="utf-8")][:max_eval]
+    rows = read_rows(d / src, limit=max_eval)
     if "kaping" in mode:
         graphs = load_graphs(d / "graphs.jsonl")
         for r in rows:

@@ -5,10 +5,10 @@ trước (tiếp tục huấn luyện cùng LoRA + projector). Chạy lại cùn
 resume giai đoạn đang dở từ checkpoint gần nhất.
 """
 import gc
-import json
 import random
 from pathlib import Path
 
+from .data.build import read_rows
 from .data.tasks import GRAPH_TASKS, OCR_TASKS
 
 # nguồn dữ liệu -> (file jsonl, bộ lọc task, có ảnh)
@@ -38,11 +38,7 @@ def load_stage_rows(data_dir: Path, sources: list, shuffle: bool = False, seed: 
     rows = []
     for s in sources:
         fname, tasks, _ = SOURCES[s]
-        with open(Path(data_dir) / fname, encoding="utf-8") as f:
-            for line in f:
-                r = json.loads(line)
-                if tasks is None or r["task"] in tasks:
-                    rows.append(r)
+        rows += [r for r in read_rows(Path(data_dir) / fname) if tasks is None or r["task"] in tasks]
     if shuffle:
         random.Random(seed).shuffle(rows)
     return rows[:limit] if limit else rows
