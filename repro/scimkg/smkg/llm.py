@@ -76,6 +76,9 @@ class LLMClient:
             key_env = self.cfg.get("key_env")
             self._client = OpenAI(base_url=self.cfg.get("base_url"), timeout=self.timeout,
                                   api_key=os.environ.get(key_env, "") if key_env else "not-needed")
+        if self.cfg.get("mode") == "completion":   # mô hình không có chat template (UniNER)
+            r = self._client.completions.create(model=self.model, prompt=prompt, **params)
+            return r.choices[0].text
         r = self._client.chat.completions.create(model=self.model, messages=[{"role": "user", "content": prompt}],
                                                  **params)
         return r.choices[0].message.content

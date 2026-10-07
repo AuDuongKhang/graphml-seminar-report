@@ -22,3 +22,7 @@ phi3-medium:  {provider: ollama, model: "phi3:medium",   base_url: "http://local
 # Phi-3-small (7B) không có trên Ollama: chạy vLLM (`vllm serve microsoft/Phi-3-small-8k-instruct --trust-remote-code --port 8000`)
 phi3-small:   {provider: vllm,   model: "microsoft/Phi-3-small-8k-instruct", base_url: "http://localhost:8000/v1", key_env: null,
                fallback_name: phi3-mini}
+
+# --- Baseline UniversalNER: `vllm serve Universal-NER/UniNER-7B-type --port 8001` (không có chat template) ---
+uniner-7b:    {provider: vllm, model: "Universal-NER/UniNER-7B-type", base_url: "http://localhost:8001/v1", key_env: null,
+               mode: completion, drop_params: [frequency_penalty]}

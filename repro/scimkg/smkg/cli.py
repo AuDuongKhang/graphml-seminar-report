@@ -187,7 +187,56 @@ def _add_errors(sub):
     p.set_defaults(func=run)
 
 
-REGISTER = [_add_download, _add_check_models, _add_score_authors, _add_evia, _add_ablate, _add_grid, _add_errors]
+def _add_baseline(sub):
+    p = sub.add_parser("baseline", help="S1b: baseline Table 4 (decomposed_qa | gpt_ner | self_improving | universal_ner)")
+    p.add_argument("--name", required=True, choices=["decomposed_qa", "gpt_ner", "self_improving", "universal_ner"])
+    p.add_argument("--model", required=True, help="vd gpt-4o, qwen3-14b; universal_ner dùng uniner-7b")
+    p.add_argument("--lessons", type=int, default=30)
+    p.add_argument("--pool_run", default=None, help="tên run evia để lấy pool ứng viên cho ACC/MCC (khuyến nghị)")
+    p.add_argument("--si_corpus", type=int, default=50, help="số đoạn không nhãn cho self_improving")
+
+    def run(a):
+        import json
+        import random
+
+        from smkg.baselines import BASELINES
+        from smkg.llm import make_clients
+        from smkg.metrics import set_prf, universe_metrics
+        from smkg.prompts import SUBJECT_NAME
+        from smkg.runner import load_run
+        lessons = _lessons(a.lessons)
+        chosen = {l.name for l in lessons}
+        client = make_clients([a.model], out_dir() / "cache")[a.model]
+        d = out_dir() / "baselines" / f"{a.name}-{a.model}"
+        d.mkdir(parents=True, exist_ok=True)
+        others = [l for l in _lessons(0) if l.name not in chosen]
+        pred = {}
+        for l in lessons:
+            f = d / f"{l.name}.json"
+            if not f.exists():
+                kw = {}
+                if a.name == "self_improving":
+                    segs = [t for o in others if o.subject == l.subject for _, t in o.segments]
+                    kw["corpus_segments"] = random.Random(42).sample(segs, min(a.si_corpus, len(segs)))
+                f.write_text(json.dumps(BASELINES[a.name](l, client, SUBJECT_NAME[l.subject], **kw), ensure_ascii=False),
+                             encoding="utf-8")
+            pred[l.name] = {c for cs in json.loads(f.read_text(encoding="utf-8")).values() for c in cs}
+        gold = {l.name: l.gt for l in lessons}
+        if a.pool_run:
+            run_logs = load_run(out_dir() / "runs" / a.pool_run)
+            pool = {k: {c for cs in v["candidates"].values() for c in cs} for k, v in run_logs.items()}
+        else:
+            pool = {k: set() for k in gold}
+        m = {**set_prf(pred, gold), **universe_metrics(pred, gold, pool), "n_lessons": len(gold),
+             **{f"calls/{k}": v for k, v in client.counters.items()}}
+        print(m)
+        _log(f"S1b-{a.name}-{a.model}", {"baseline": a.name, "model": a.model, "pool_run": a.pool_run}, m, "S1")
+
+    p.set_defaults(func=run)
+
+
+REGISTER = [_add_download, _add_check_models, _add_score_authors, _add_evia, _add_ablate, _add_grid, _add_errors,
+            _add_baseline]
 
 
 def main(argv=None):
