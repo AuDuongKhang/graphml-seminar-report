@@ -1,0 +1,293 @@
+% ============================================================
+% PHẦN A — GRAPHVIS (bài seminar)   ~ 10 trang
+%   III  Bài toán & động cơ
+%   IV   Phương pháp (IV-E: chi tiết huấn luyện)
+%   V    Kết quả công bố
+%   VI   Độ phức tạp ảnh đồ thị
+%   VII  Tái lập (chưa có số liệu)
+%   VIII Đánh giá phê bình
+% ============================================================
+
+% ------------------------------------------------------------
+\section{GraphVis: bài toán và động cơ}\label{sec:gv-problem}
+% ------------------------------------------------------------
+
+\subsection{Vì sao cần đồ thị tri thức}
+LLM trả lời trôi chảy nhưng có ba điểm yếu: tự tạo ra thông tin không có thật (ảo giác), nhớ sai tri thức đã học, và muốn cập nhật tri thức thì phải huấn luyện lại với chi phí lớn. Một cách khắc phục là cung cấp tri thức từ bên ngoài ngay lúc suy luận. \GV{}~\cite{deng2024graphvis} chọn nguồn tri thức là ConceptNet~\cite{speer2017conceptnet} vì các tập dữ liệu đánh giá là câu hỏi thường thức (CommonsenseQA~\cite{talmor2019csqa}, OpenBookQA~\cite{mihaylov2018obqa}). Tri thức thường thức hiếm khi được viết thành văn bản vì ai cũng biết, ví dụ ``ngân hàng thường có cửa xoay''. Vì vậy loại tri thức này phải được gom thủ công thành các cặp khái niệm nối với nhau, và kết quả là một đồ thị.
+
+Bản ConceptNet tiếng Anh dùng trong bài có 799.273 nút và 2.487.810 cạnh. Không thể đưa toàn bộ đồ thị vào cửa sổ ngữ cảnh của mô hình, nên mọi phương pháp đều phải trích một đồ thị con liên quan đến câu hỏi trước.
+
+\subsection{Phát biểu bài toán}
+Gọi $\mathcal{G}=(\mathcal{V},\mathcal{E})$ là đồ thị tri thức, $\mathbf{x}$ là câu hỏi (kèm các lựa chọn) và $\mathbf{y}$ là đáp án đúng. Gọi $\mathcal{V}_\mathbf{x}\subseteq\mathcal{V}$ là các khái niệm xuất hiện trong câu hỏi và các lựa chọn. Bài toán LLM tăng cường bằng KG gồm hai bước:
+\begin{enumerate}
+\item \emph{Truy hồi}: một hàm $f$ trả về đồ thị con liên quan
+\begin{equation}
+\mathcal{G}_\mathbf{x}=f(\mathbf{x},\mathcal{V}_\mathbf{x},\mathcal{G})=(\mathcal{V}_\mathbf{x}',\mathcal{E}_\mathbf{x})\subseteq\mathcal{G}.
+\end{equation}
+\item \emph{Đưa tri thức vào mô hình}: một hàm $g$ biến $\mathcal{G}_\mathbf{x}$ thành đầu vào mà mô hình dùng được, tạo prompt mở rộng $\mathbf{x}_g=[g(\mathcal{G}_\mathbf{x}),\mathbf{x}]$. Mục tiêu là chọn $g$ sao cho xác suất mô hình sinh ra đáp án đúng, $p_\theta(\mathbf{y}\mid\mathbf{x}_g)$, là lớn nhất.
+\end{enumerate}
+\GV{} không đề xuất $f$ mới. Bài dùng lại cách truy hồi các đường đi tối đa $k$ bước nối các khái niệm trong $\mathcal{V}_\mathbf{x}$ của MHGRN~\cite{feng2020mhgrn}, với $k=2$. Đóng góp của bài nằm ở cách chọn $g$.
+
+\subsection{Hai hướng chọn $g$ trước đây và đánh đổi giữa chúng}
+\textbf{Tuyến tính hóa (linearize).} Viết đồ thị con thành danh sách bộ ba $(u,r,v)$ rồi chèn vào prompt; KAPING~\cite{baek2023kaping} là ví dụ tiêu biểu. Cách này đơn giản và không phải sửa mô hình. Tuy nhiên, cấu trúc đồ thị bị duỗi thành một chuỗi: muốn biết nút nào là trung tâm, mô hình phải tự ghép lại từ nhiều bộ ba rời rạc. Ngữ cảnh cũng dài thêm. Trên LLaVA-1.6, KAPING làm độ chính xác CSQA giảm từ 70,5\% xuống 67,7\%.
+
+\textbf{Dựa trên GNN.} Mã hóa đồ thị con bằng một GNN rồi chiếu vector biểu diễn sang không gian token của LLM, như QA-GNN~\cite{yasunaga2021qagnn}, GreaseLM~\cite{zhang2022greaselm} và GNP~\cite{tian2024gnp}. Cấu trúc được giữ lại, nhưng LLM không hiểu sẵn loại tín hiệu này. Cần huấn luyện thêm bộ mã hóa và bộ chiếu cho từng tác vụ, và kết quả khó chuyển sang tác vụ khác.
+
+Tóm lại, hướng thứ nhất giữ được khả năng đọc của LLM nhưng làm mất cấu trúc, còn hướng thứ hai giữ cấu trúc nhưng LLM không đọc được ngay. \GV{} đi theo hướng thứ ba: vẽ đồ thị con thành ảnh. Ảnh giữ nguyên bố cục hai chiều của đồ thị, và LVLM vốn đã có sẵn đường xử lý ảnh nên không phải thiết kế thêm mô-đun mới. Bù lại, LVLM chưa quen đọc ảnh đồ thị, nên bài phải dạy mô hình đọc trước khi dùng ảnh để suy luận.
+
+% ------------------------------------------------------------
+\section{GraphVis: phương pháp}\label{sec:gv-method}
+% ------------------------------------------------------------
+Hình~\ref{fig:gv-pipeline} tóm tắt toàn bộ quy trình. Quy trình có hai phần: dựng dữ liệu (đồ thị con $\rightarrow$ ảnh $\rightarrow$ hai tập dữ liệu) và huấn luyện hai giai đoạn trên cùng một LVLM.
+
+\begin{figure*}[t]
+\centering
+\input{figures/fig_gv_pipeline}
+\caption{Quy trình \GV{} (nhóm vẽ lại).\textbf{Trên}: mỗi câu hỏi QA được truy hồi đồ thị con 2 bước trên ConceptNet và vẽ bằng Graphviz. Cùng một ảnh $v$ tạo ra hai loại mẫu: $\Dg$ gồm câu hỏi về chính đồ thị, với đáp án tính tự động; $\Dv$ gồm câu hỏi QA gốc và đáp án gốc. \textbf{Dưới}: giai đoạn~1 tinh chỉnh trên $\Dg$ và cho ra $\theta_1$; giai đoạn~2 khởi tạo từ $\theta_1$ rồi tinh chỉnh trên $\Dv$ và cho ra $\theta_2$. Hai giai đoạn dùng cùng một kiến trúc và cùng một hàm mất mát, chỉ khác dữ liệu.}
+\label{fig:gv-pipeline}
+\end{figure*}
+
+\subsection{Truy hồi và trực quan hóa đồ thị con}
+Với mỗi câu hỏi, các khái niệm trong câu hỏi và trong từng lựa chọn được khớp với nút ConceptNet. Sau đó hệ thống lấy mọi đường đi dài tối đa hai cạnh nối chúng. 42 loại quan hệ gốc được gộp còn 17 loại (ví dụ \texttt{at location}, \texttt{used for}, \texttt{is a}). Đồ thị con được vẽ bằng Graphviz~\cite{gansner2000graphviz}, một công cụ bố trí đồ thị theo luật, không có tham số học. Ảnh thu được có nút là nhãn khái niệm và cạnh có hướng mang nhãn quan hệ. Trên CSQA, phần lớn đồ thị con có khoảng 10--30 nút, nhưng phân bố có đuôi dài tới khoảng 80 nút và 160 cạnh (Hình~4--5 trong~\cite{deng2024graphvis}). Đặc điểm này quan trọng cho Mục~\ref{sec:gv-complexity}.
+
+\subsection{Ảnh đồ thị đi vào LVLM như thế nào}
+Mô hình gốc là LLaVA-v1.6-Mistral-7B~\cite{liu2024llavanext}, gồm ba khối: bộ mã hóa ảnh $f_v$ (CLIP ViT-L/14, 336\,px~\cite{radford2021clip}), bộ chiếu $f_p$ (MLP hai lớp với GELU) và LLM Mistral-7B~\cite{jiang2023mistral}. Ảnh $e$ được biến thành chuỗi token thị giác $\mathbf{v}=f_p(f_v(e))=[v_1,\dots,v_k]$ cùng số chiều với token chữ, rồi được ghép trước câu hỏi. Xác suất sinh đáp án có dạng
+\begin{equation}
+p_\theta(\mathbf{y}\mid\mathbf{v},\mathbf{x})=\prod_{j=1}^{m}p_\theta(y_j\mid\mathbf{v},\mathbf{x},\mathbf{y}_{<j}).\label{eq:gv-lvlm}
+\end{equation}
+Như vậy $g(\mathcal{G}_\mathbf{x})=f_p(f_v(\textsc{Graphviz}(\mathcal{G}_\mathbf{x})))$. Hàm $g$ là ghép của một bước vẽ cố định với hai khối mạng có sẵn trong LVLM.
+
+\subsection{Giai đoạn 1 --- học đọc ảnh đồ thị}
+Khi chưa tinh chỉnh, LLaVA gần như không đọc được ảnh đồ thị. Với yêu cầu liệt kê bộ ba, mô hình trả lời đúng khuôn dạng nhưng nội dung sai hẳn, chẳng hạn ``(node1, node2, node3)''. Độ chính xác khớp tuyệt đối chỉ đạt 0,6\% (Bảng~\ref{tab:gv-reading}). Vì vậy bài tạo tập $\Dg$ gồm sáu tác vụ. Đáp án của mọi tác vụ được tính trực tiếp từ $\mathcal{G}_\mathbf{x}$ nên không cần gán nhãn thủ công:
+\begin{itemize}
+\item \emph{Nhóm OCR}: (1) liệt kê tên mọi nút; (2) liệt kê mọi bộ ba (đầu, quan hệ, đuôi).
+\item \emph{Nhóm cấu trúc}: (3) bậc của một nút cho trước; (4) nút có bậc cao nhất và bậc của nó; (5) đếm số nút; (6) đếm số cạnh.
+\end{itemize}
+Mỗi tác vụ có năm mẫu câu hỏi diễn đạt khác nhau, và mỗi mẫu dữ liệu chọn ngẫu nhiên một mẫu câu để tăng độ đa dạng. Mỗi ảnh sinh ra một mẫu cho mỗi tác vụ, tức $M=6$ mẫu $(v,p_j,a_j)$.
+
+\subsection{Giai đoạn 2 --- học trả lời câu hỏi có ảnh hỗ trợ}
+Tập $\Dv$ ghép ảnh $v$ với câu hỏi QA gốc theo khuôn:
+\begin{quote}\small\ttfamily
+<ảnh> The image represents a knowledge graph relevant to the question, which may or may not be useful. Question: <câu hỏi gốc>
+\end{quote}
+Đáp án giữ nguyên nhãn của tập QA. Khuôn prompt nói rõ rằng ảnh ``có thể có ích hoặc không''. Lý do là đồ thị con truy hồi theo luật có thể thiếu thông tin hoặc chứa nhiễu, nên mô hình phải học cách tự quyết định có dựa vào ảnh hay không.
+
+\subsection{Chi tiết huấn luyện}\label{sec:gv-training}
+Hình~\ref{fig:gv-pipeline} cho biết thứ tự hai giai đoạn. Mục này đi sâu vào cách mỗi giai đoạn thực sự được huấn luyện: tối ưu hàm mục tiêu nào, phần nào của mô hình được cập nhật, và với cấu hình nào. Thông tin lấy từ bài báo (Phụ lục~A của~\cite{deng2024graphvis}) và được nhóm đối chiếu với mã nguồn công bố (\texttt{llava/train/train.py}, \texttt{scripts/finetune\_lora.sh}).
+
+\textbf{(a) Hàm mục tiêu.} Cả hai giai đoạn dùng cùng một hàm mất mát log-likelihood âm (NLL) của tinh chỉnh có giám sát, chỉ khác tập dữ liệu:
+\begin{align}
+\theta_1&=\arg\min_{\theta}\;\sum_{(v,p,a)\in\Dg}-\log p_\theta(a\mid v,p),\quad \theta\leftarrow\theta_0,\label{eq:gv-loss}\\
+\theta_2&=\arg\min_{\theta}\;\sum_{(v,\mathbf{x},\mathbf{y})\in\Dv}-\log p_\theta(\mathbf{y}\mid v,\mathbf{x}),\quad \theta\leftarrow\theta_1.
+\end{align}
+Trong đó $\theta_0$ là trọng số LLaVA-1.6 gốc, và ``$\theta\leftarrow\theta_1$'' nghĩa là giai đoạn~2 bắt đầu tối ưu từ kết quả của giai đoạn~1. Đây là toàn bộ nội dung của ``curriculum'' trong bài. Với \eqref{eq:gv-lvlm}, mỗi số hạng $-\log p_\theta$ bằng tổng entropy chéo trên từng token của câu trả lời. Trong mã nguồn, token của phần prompt (ảnh và câu hỏi) được gán nhãn \texttt{IGNORE\_INDEX}, nên chỉ token của câu trả lời đóng góp vào mất mát.
+
+\textbf{(b) Phần nào được cập nhật.} Bảng~\ref{tab:gv-trainable} và Hình~\ref{fig:gv-arch} cho thấy LVLM \emph{không} được tinh chỉnh toàn bộ:
+\begin{itemize}
+\item Bộ mã hóa ảnh CLIP được \emph{đóng băng}, tức cách mô hình ``nhìn'' ảnh ở mức đặc trưng không đổi.
+\item Bộ chiếu MLP được \emph{huấn luyện toàn bộ} với tốc độ học riêng $2\times10^{-5}$.
+\item Mistral-7B được \emph{đóng băng} và gắn LoRA~\cite{hu2022lora} vào mọi lớp tuyến tính (\texttt{q,k,v,o,gate,up,down}). Mỗi ma trận được cập nhật dưới dạng $W=W_0+\frac{\alpha}{r}BA$ với $r=128$, $\alpha=256$ (hệ số $\alpha/r=2$).
+\end{itemize}
+Theo ước tính của nhóm dựa trên kích thước các lớp của Mistral-7B, số tham số LoRA khoảng 336 triệu (khoảng 4,6\% của 7,2 tỷ). Bộ chiếu có khoảng 21 triệu tham số.
+
+\begin{table}[t]
+\centering
+\caption{Trạng thái các khối của LLaVA-1.6 khi huấn luyện \GV{} (tổng hợp từ bài và mã nguồn; số tham số do nhóm ước tính)}
+\label{tab:gv-trainable}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}llr@{}}
+\toprule
+Khối & Trạng thái & Số TS học \\
+\midrule
+CLIP-L/14-336 ($f_v$) & đóng băng & 0 \\
+Bộ chiếu MLP ($f_p$) & học toàn bộ (lr $2{\times}10^{-5}$) & $\approx$21\,M \\
+Mistral-7B & đóng băng + LoRA ($r{=}128$) & $\approx$336\,M \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\input{figures/fig_gv_arch}
+\caption{Luồng tính toán trong một bước huấn luyện \GV{}. Khối xám bị đóng băng; khối cam có thêm LoRA; khối xanh được học toàn bộ. Mất mát chỉ tính trên token đáp án (phần prompt bị che).}
+\label{fig:gv-arch}
+\end{figure}
+
+\textbf{(c) Lịch huấn luyện và siêu tham số.} Mỗi giai đoạn chạy đúng \emph{một epoch}. Theo tác giả, giai đoạn~1 chỉ nhằm ``khởi động'' khả năng bám vào nội dung ảnh, không nhằm đọc hoàn hảo. Bộ tối ưu là AdamW, lịch tốc độ học cosine với 3\% bước khởi động, không dùng weight decay, độ dài chuỗi tối đa 2048 token, tính toán bf16 với DeepSpeed ZeRO-2. Ảnh được đệm thành hình vuông (\texttt{image\_aspect\_ratio=pad}) rồi đưa về $336\times336$. Khi suy luận, bài dùng giải mã tham lam và bộ script đánh giá của LLaVA. Tác giả cho biết toàn bộ quá trình tinh chỉnh mất khoảng 3 giờ trên 4 GPU RTX A6000.
+
+\textbf{(d) Những điểm không khớp giữa bài báo và mã nguồn.} Khi đối chiếu, nhóm ghi nhận các điểm sau và sẽ nêu rõ lựa chọn của mình ở Mục~\ref{sec:gv-repro}:
+\begin{itemize}
+\item Bài ghi tốc độ học $10^{-7}$ và batch toàn cục 4. Script ghi $2\times10^{-5}$ và batch 16 mỗi GPU trên 2 GPU, tức batch toàn cục 32.
+\item Script không truyền tham số \texttt{image\_aspect\_ratio}, nên dùng giá trị mặc định \texttt{square}. Khi đó ảnh bị cắt giữa thay vì được đệm như bài mô tả, và các nút ở rìa ảnh đồ thị rộng có thể bị cắt mất.
+\item Tham số \texttt{--vision\_tower} trong script trỏ tới bản CLIP 224\,px, khác bản 336\,px của LLaVA-1.6.
+\item Chỉ có một lệnh huấn luyện. Không có script tách hai giai đoạn, không có mã vẽ Graphviz, không có mã sinh $\Dv$ và không có mã đánh giá sáu tác vụ đọc hình.
+\item Hàm đọc dữ liệu trong \texttt{train.py} lấy trường \texttt{chosen} (định dạng dữ liệu dạng ưu tiên), trong khi \texttt{generate\_data.py} ghi trường \texttt{conversations}. Mô hình cũng được nạp bằng lớp \texttt{LlavaLlamaForCausalLM} dù checkpoint là bản Mistral.
+\end{itemize}
+
+% ------------------------------------------------------------
+\section{GraphVis: kết quả công bố}\label{sec:gv-results}
+% ------------------------------------------------------------
+Phần này tóm tắt số liệu \emph{do tác giả công bố}. Kết quả tái lập của nhóm nằm ở Mục~\ref{sec:gv-repro}.
+
+\textbf{QA văn bản (chiều KG$\rightarrow$LLM).} Bảng~\ref{tab:gv-main} cho thấy trên cùng LLaVA-1.6-7B, \GV{} tăng độ chính xác CSQA thêm 12,3 điểm và OBQA thêm 9,9 điểm, trung bình 11,1 điểm. Trong khi đó, chèn bộ ba văn bản theo KAPING lại làm cả hai giảm. Các dòng ``LM'' và ``LLM'' khác backbone và khác thiết lập huấn luyện, và số liệu được chép từ các bài gốc. Vì vậy việc \GV{} vượt KSL trên GPT-3.5 (+3,2 điểm CSQA) hay GNP trên FLAN-T5-11B (+5,7 điểm OBQA) chỉ nên xem là đối chiếu tham khảo, không phải so sánh có kiểm soát.
+
+\begin{table}[t]
+\centering
+\caption{Kết quả QA thường thức do tác giả công bố (độ chính xác, \%)}
+\label{tab:gv-main}
+\small
+\begin{tabular}{@{}llcc@{}}
+\toprule
+Phương pháp & Mô hình nền & CSQA & OBQA \\
+\midrule
+QA-GNN & AristoRoBERTa 355M & 76,1 & 82,8 \\
+GreaseLM & AristoRoBERTa 355M & 78,5 & 84,8 \\
+KSL & GPT-3.5 & 79,6 & 81,6 \\
+GNP & FLAN-T5-xxl 11B & -- & 79,8 \\
+\midrule
+LVLM gốc & LLaVA-1.6-Mistral-7B & 70,5 & 75,6 \\
+KAPING & LLaVA-1.6-Mistral-7B & 67,7 & 71,2 \\
+\GV{} & LLaVA-1.6-Mistral-7B & \textbf{82,8} & \textbf{85,5} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{VQA (chiều ngược lại).} Mô hình không được tinh chỉnh trên dữ liệu huấn luyện của các benchmark VQA đích, nhưng vẫn cải thiện trên chúng (Bảng~\ref{tab:gv-vqa}). ScienceQA-IMG tăng 4,32 điểm và MMBench tăng 2,66 điểm. Trên POPE, cả độ chính xác lẫn F1 đều tăng ở ba thiết lập, trung bình khoảng 1,09 điểm, tức hiện tượng ảo giác vật thể giảm nhẹ. Theo tác giả, nguyên nhân là ScienceQA và MMBench có nhiều ảnh dạng sơ đồ (chẳng hạn lưới thức ăn) giống ảnh đồ thị tổng hợp. Đây là cách giải thích của tác giả, chưa được kiểm chứng riêng.
+
+\begin{table}[t]
+\centering
+\caption{Kết quả VQA do tác giả công bố (\%)}
+\label{tab:gv-vqa}
+\small
+\setlength{\tabcolsep}{3pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+& SciQA-IMG & MMBench & POPE-r (F1) & POPE-p (F1) & POPE-a (F1) \\
+\midrule
+Gốc & 68,86 & 63,75 & 87,65 & 86,53 & 85,37 \\
+\GV{} & \textbf{73,18} & \textbf{66,41} & \textbf{89,12} & \textbf{87,89} & \textbf{86,32} \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\textbf{Ablation.} Bảng~\ref{tab:gv-ablation} so sánh các cách sắp xếp tác vụ trên CSQA. Trộn mọi dữ liệu và huấn luyện một lần (\emph{joint}) đạt 78,05\%. Tách thành hai giai đoạn (\emph{curriculum}) đạt 82,56\%, cao hơn 4,51 điểm. Chia nhỏ giai đoạn~1 hầu như không thay đổi kết quả: học OCR trước rồi cấu trúc sau đạt 82,80\% (+0,24), làm ngược lại đạt 81,00\% (\textminus1,56). Bài không báo cáo độ dao động giữa các lần chạy, nên chênh lệch dưới 1 điểm chưa đủ cơ sở để kết luận. Nếu ghép thêm bộ ba văn bản kiểu KAPING, mô hình gốc giảm 2,87 điểm và bản curriculum giảm 0,82 điểm, nhưng bản joint lại tăng 0,66 điểm. Như vậy tác dụng của KAPING phụ thuộc vào mô hình sau tinh chỉnh. Bảng 6 của bài cho thấy curriculum cũng tốt hơn joint trên ScienceQA (73,18 so với 71,94).
+
+\begin{table}[t]
+\centering
+\caption{Ablation trên CSQA do tác giả công bố (độ chính xác, \%)}
+\label{tab:gv-ablation}
+\small
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Cấu hình & Không KAPING & Thêm KAPING \\
+\midrule
+LVLM gốc & 70,52 & 67,65 \\
+Joint (trộn $\Dg\cup\Dv$) & 78,05 & 78,71 \\
+Curriculum ($\Dg\rightarrow\Dv$) & 82,56 & 81,74 \\
+Curriculum, cấu trúc trước OCR & 81,00 & -- \\
+Curriculum, OCR trước cấu trúc & \textbf{82,80} & -- \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\textbf{Khả năng đọc ảnh đồ thị.} Bảng~\ref{tab:gv-reading} đo sáu tác vụ của giai đoạn~1 trên ảnh tạo từ tập kiểm tra CSQA, chấm theo khớp tuyệt đối. Sau một epoch, mọi tác vụ đều tăng khoảng 8--12 điểm, nhưng giá trị tuyệt đối vẫn thấp: đếm nút 27,5\% và liệt kê bộ ba 8,2\%. QA tăng mạnh trong khi đọc hình vẫn yếu. Điểm này dẫn tới câu hỏi ở mục tiếp theo.
+
+\begin{table}[t]
+\centering
+\caption{Độ chính xác (\%, khớp tuyệt đối) trên sáu tác vụ đọc ảnh đồ thị, do tác giả công bố}
+\label{tab:gv-reading}
+\small
+\setlength{\tabcolsep}{3pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+& Tên nút & Bậc & Bậc max & Số nút & Số cạnh & Bộ ba \\
+\midrule
+Gốc & 1,4 & 15,3 & 3,3 & 16,7 & 9,7 & 0,6 \\
+Sau GĐ1 & 12,8 & 27,0 & 11,6 & 27,5 & 16,2 & 8,2 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+% ------------------------------------------------------------
+\section{Độ phức tạp của ảnh đồ thị và giới hạn đọc hình}\label{sec:gv-complexity}
+% ------------------------------------------------------------
+Vì ConceptNet quá lớn, \GV{} phải cắt một đồ thị con cho mỗi câu hỏi. Một câu hỏi tự nhiên là đồ thị con, và do đó ảnh, được phép lớn và rối tới mức nào trước khi mô hình đọc sai hoặc trả lời sai, xét theo số nút, số cạnh và độ phân giải ảnh. Mục này tổng hợp những gì bài báo cho biết, phân tích vì sao ảnh lớn khó đọc, và thiết kế thực nghiệm để đo ngưỡng mà bài báo bỏ ngỏ.
+
+\subsection{Bài báo cho biết gì}
+\begin{enumerate}
+\item \emph{Không có ngưỡng định lượng.} Bài chỉ giới hạn đồ thị con ở 2 bước nhảy ``để ảnh không quá phức tạp với mô hình thị giác'' và xếp kích thước đồ thị con vào phần hạn chế. Bài không báo cáo độ chính xác theo số nút, số cạnh hay kích thước ảnh.
+\item \emph{Phân bố kích thước.} Đồ thị con trên CSQA tập trung ở khoảng 10--30 nút và 10--40 cạnh, nhưng có đuôi tới khoảng 80 nút và 160 cạnh. Một bộ phận đáng kể của dữ liệu vì vậy là ảnh rất dày.
+\item \emph{Độ phân giải thấp.} Phụ lục thử ảnh $50\times50$\,px. Đọc từ Hình~9 của bài, độ chính xác CSQA chỉ còn khoảng 77--78\%, thấp hơn mức 82--83\% với ảnh đầy đủ nhưng \emph{vẫn cao hơn mô hình gốc khoảng 7 điểm}. Bài không ghi số chính xác, nên các con số này do nhóm ước lượng từ biểu đồ.
+\item \emph{Đọc hình còn rất yếu} ngay cả sau giai đoạn~1 (Bảng~\ref{tab:gv-reading}).
+\end{enumerate}
+
+\subsection{Phân tích của nhóm: vì sao ảnh lớn khó đọc}
+\textbf{Ngân sách điểm ảnh cố định.} Với cấu hình \texttt{pad}, mọi ảnh đồ thị đều được đệm thành hình vuông rồi thu về $336\times336$\,px. CLIP ViT-L/14 chia ảnh này thành lưới $24\times24=576$ ô, mỗi ô $14\times14$\,px, và mỗi ô thành một token. Số token thị giác \emph{không tăng} khi đồ thị lớn lên. Graphviz thì bố trí ảnh rộng dần theo số nút, nên hệ số thu nhỏ $s=336/\max(W,H)$ giảm dần. Giả sử nhãn nút cao khoảng 14\,px ở kích thước gốc (cỡ chữ mặc định của Graphviz). Sau khi thu nhỏ, chiều cao chữ còn khoảng $14s$\,px. Ảnh rộng khoảng 1000\,px cho chữ cao khoảng 4,7\,px; ảnh rộng 2000\,px cho chữ khoảng 2,4\,px, gần như không còn đọc được. \todo{Thay các con số giả định bằng kích thước ảnh Graphviz đo thực tế trên CSQA.}
+
+\textbf{Giới hạn đếm của LVLM.} Ba trong sáu tác vụ là đếm hoặc tính bậc. Các LVLM nói chung đếm kém khi số đối tượng vượt quá khoảng chục. Ngoài ra, cạnh trong Graphviz là đường cong có thể cắt nhau, nên càng nhiều cạnh thì càng khó lần theo.
+
+\textbf{Mô hình vẫn trả lời đúng khi không đọc được ảnh.} Ở $50\times50$\,px, nhãn nút chắc chắn không đọc được, nhưng QA vẫn tăng đáng kể so với mô hình gốc. Kết hợp với Bảng~\ref{tab:gv-reading}, nhóm đặt giả thuyết rằng một phần lớn mức tăng của \GV{} đến từ việc tinh chỉnh trên chính tập QA (giai đoạn~2), chứ không hoàn toàn đến từ việc đọc nội dung ảnh. Bài không có thí nghiệm đối chứng ``tinh chỉnh trên CSQA nhưng không có ảnh''. Vì vậy câu ``ảnh lớn tới mức nào thì mô hình sai'' cần được tách làm hai: (i) tới mức nào thì mô hình \emph{không đọc được ảnh} (đo bằng sáu tác vụ của $\Dg$), và (ii) tới mức nào thì \emph{ảnh không còn giúp trả lời} (đo bằng độ chính xác QA so với đối chứng không ảnh).
+
+\subsection{Thực nghiệm bổ sung của nhóm}
+\todo{Điền kết quả sau khi chạy. Thiết kế:}
+\begin{itemize}
+\item \emph{E-C1 --- theo kích thước đồ thị:} chia tập kiểm tra CSQA theo số nút ($\le$10, 11--20, 21--40, $>$40) và số cạnh. Với mỗi nhóm, báo cáo độ chính xác sáu tác vụ đọc hình và độ chính xác QA của: LVLM gốc, \GV{}, và đối chứng tinh chỉnh không ảnh.
+\item \emph{E-C2 --- theo độ phân giải:} thu ảnh về cạnh dài 50, 112, 224, 336, 672\,px (và thử AnyRes của LLaVA-1.6), giữ nguyên mô hình.
+\item \emph{E-C3 --- đối chứng không ảnh:} tinh chỉnh LLaVA-1.6 trên CSQA chỉ với văn bản, cùng siêu tham số.
+\end{itemize}
+Đầu ra dự kiến là biểu đồ độ chính xác theo số nút và theo độ phân giải. Từ đó nhóm chỉ ra ngưỡng mà độ chính xác đọc hình về gần mức mô hình gốc và ngưỡng mà QA của \GV{} không còn hơn đối chứng không ảnh. \wandbtodo
+
+% ------------------------------------------------------------
+\section{GraphVis: tái lập thực nghiệm}\label{sec:gv-repro}
+% ------------------------------------------------------------
+\todo{Toàn bộ mục này chờ kết quả chạy. Mỗi tiểu mục gắn một link W\&B công khai riêng.}
+
+\subsection{Thiết lập}
+\todo{Phần cứng Colab (loại GPU, VRAM); thư viện; cách dựng lại các phần thiếu (vẽ Graphviz, sinh $\Dv$, script hai giai đoạn, script đánh giá sáu tác vụ); lựa chọn với từng điểm không khớp ở Mục~\ref{sec:gv-training}(d) (tốc độ học, batch, \texttt{pad}, CLIP-336); có dùng QLoRA 4-bit hay không và lý do; số mẫu huấn luyện và kiểm tra; seed.} Mã nguồn: \todo{link GitHub}.
+
+\subsection{Kết quả chính}
+\todo{Bảng: CSQA/OBQA cho LVLM gốc, KAPING, \GV{} --- cột ``bài báo'' và cột ``tái lập''.} \wandbtodo
+
+\subsection{Chuyển giao sang VQA}
+\todo{ScienceQA-IMG, MMBench, POPE (3 thiết lập); kèm ScienceQA joint vs curriculum (Bảng 6 của bài).} \wandbtodo
+
+\subsection{Ablation thứ tự huấn luyện và kết hợp KAPING}
+\todo{Joint / curriculum / cấu trúc trước / OCR trước; $\pm$KAPING.} \wandbtodo
+
+\subsection{Khả năng đọc ảnh đồ thị và ảnh độ phân giải thấp}
+\todo{Sáu tác vụ trước/sau GĐ1; ảnh $50\times50$ (Hình 9 của bài).} \wandbtodo
+
+\subsection{Nhận xét về khả năng tái lập}
+\todo{Mức độ khớp với bài; nguyên nhân chênh lệch (nếu có); chi phí tính toán thực tế.}
+
+% ------------------------------------------------------------
+\section{GraphVis: đánh giá phê bình}\label{sec:gv-critique}
+% ------------------------------------------------------------
+\textbf{Ưu điểm.}
+\begin{itemize}
+\item Ý tưởng đơn giản: không thêm mô-đun mới mà tận dụng đường xử lý ảnh sẵn có của LVLM để đưa cấu trúc đồ thị vào mô hình.
+\item Dữ liệu giai đoạn~1 được sinh tự động từ đồ thị nên không tốn công gán nhãn và có thể mở rộng tới mọi tập QA có KG đi kèm.
+\item Phương pháp có lợi theo cả hai chiều: tăng QA văn bản và chuyển giao được sang VQA dạng sơ đồ.
+\item Ablation cho thấy thứ tự tác vụ có ảnh hưởng thực sự (curriculum hơn joint 4,51 điểm).
+\end{itemize}
+
+\textbf{Hạn chế về thực nghiệm.}
+\begin{itemize}
+\item Chỉ thử một backbone (LLaVA-1.6-7B), một KG (ConceptNet) và đồ thị con 2 bước.
+\item Không có độ lệch chuẩn qua nhiều lần chạy. Tác giả thừa nhận điều này với lý do chi phí.
+\item So sánh với KSL/GNP dùng số liệu chép từ bài khác, trên backbone khác.
+\item Thiếu đối chứng tinh chỉnh không ảnh, nên chưa tách được đóng góp của ảnh khỏi đóng góp của việc tinh chỉnh trên tập QA (Mục~\ref{sec:gv-complexity}).
+\item Đọc hình sau tinh chỉnh vẫn rất yếu (liệt kê bộ ba 8,2\%), trong khi bài khẳng định mô hình ``hiểu'' đồ thị.
+\end{itemize}
+
+\textbf{Hạn chế về khả năng tái lập.} Ngoài các điểm không khớp ở Mục~\ref{sec:gv-training}(d), mã sinh dữ liệu có một số lỗi nhỏ:
+\begin{itemize}
+\item Danh sách mẫu câu ``bậc cao nhất'' thiếu một dấu phẩy, nên hai mẫu cuối bị nối thành một và chỉ còn 4 mẫu.
+\item Một mẫu câu ``bậc của nút'' viết sai \texttt{\{node\textbackslash"\}}, nên tên nút không được thay vào.
+\item Bậc được đếm theo mọi liên kết, nhưng số cạnh được đếm theo các bộ ba \emph{không trùng} có quan hệ hợp lệ. Hai đại lượng vì vậy có thể không nhất quán với nhau và với ảnh.
+\item Mã gộp đồ thị theo khối cố định 4 dòng, và đường dẫn mặc định trỏ tới dữ liệu OBQA. Nhóm hiểu mỗi khối là 4 lựa chọn của một câu OBQA. Với CSQA (5 lựa chọn), cách gộp này cần sửa.
+\end{itemize}

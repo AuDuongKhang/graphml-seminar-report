@@ -1,0 +1,54 @@
+% Luồng xử lý SciMKG: tiền xử lý -> EVIA -> căn chỉnh -> lưu trữ (2 cột, ~17 cm)
+\begin{tikzpicture}[
+  font=\footnotesize, >={Stealth[length=1.7mm]},
+  box/.style={draw, rounded corners=2pt, align=center, inner sep=2.5pt, minimum height=9mm},
+  pre/.style={box, fill=yellow!15, text width=26mm},
+  src/.style={box, fill=yellow!15, text width=18mm},
+  ev/.style={box, fill=orange!15, draw=orange!70!black, text width=31mm, minimum height=12mm},
+  al/.style={box, fill=cyan!12, draw=cyan!50!black, minimum height=11mm},
+  st/.style={box, fill=green!12},
+  lab/.style={font=\scriptsize\itshape, inner sep=1pt},
+  sec/.style={font=\small\bfseries, anchor=west},
+]
+% ---------- (a) tiền xử lý văn bản
+\node[sec] at (-0.9,0.9) {(a) Tiền xử lý};
+\node[pre] (mp4) at (0.75,0)  {Video MP4 $\rightarrow$ MP3};
+\node[pre] (asr) at (4.15,0)  {ASR (công cụ ngoài)\\\scriptsize bản ghi có mốc thời gian};
+\node[pre] (gem) at (7.55,0)  {Gemini: gộp đoạn theo ý\\\scriptsize giữ nguyên văn};
+\node[pre, text width=30mm] (seg) at (11.15,0) {các đoạn $(t_s,p_s)$\\\scriptsize ``07:52--10:24: \dots''};
+\draw[->] (mp4) -- (asr); \draw[->] (asr) -- (gem); \draw[->] (gem) -- (seg);
+
+% ---------- (b) EVIA
+\node[sec] at (-0.9,-1.25) {(b) Trích xuất khái niệm EVIA (chạy trên từng đoạn)};
+\node[ev] (e) at (0.95,-2.45) {\textbf{E}: DeepSeek-V3\\\scriptsize danh từ $\rightarrow$ lọc theo môn\\ $\rightarrow$ danh sách \texttt{-xxx}};
+\node[ev] (v) at (4.8,-2.45) {\textbf{V}: 3 LLM $\times$ 5 vòng\\\scriptsize phản hồi (từ mơ hồ) $\rightarrow$\\ sửa (loại ngoài môn, dụng cụ)};
+\node[ev] (i) at (8.65,-2.45) {\textbf{I}: bỏ phiếu\\\scriptsize giữ $c$ nếu tỉ lệ phiếu $\ge\alpha{=}0{,}7$};
+\node[ev] (a) at (12.5,-2.45) {\textbf{A}: ConceptNet (8 qh)\\\scriptsize + LLM lọc; Wikipedia\\ $\rightarrow$ giải thích $\le$20 từ};
+\node[st, text width=15mm, minimum height=12mm] (C) at (15.7,-2.45) {tập $C$\\\scriptsize kèm $t_s$};
+\draw[->] (seg.south) -- ++(0,-0.45) -| (e.north);
+\draw[->] (e) -- node[above, lab]{$\tilde C_s$} (v);
+\draw[->] (v) -- node[above, lab]{sc$(c)$} (i);
+\draw[->] (i) -- node[above, lab]{$C_s$} (a);
+\draw[->] (a) -- (C);
+
+% ---------- (c) căn chỉnh
+\node[sec] at (-0.9,-4.05) {(c) Căn chỉnh đa phương thức};
+\node[src] (pdf)  at (0.55,-5.2) {slide PDF\\ $\rightarrow$ ảnh PNG};
+\node[al, text width=36mm] (ai) at (3.95,-5.2) {\textbf{Ảnh}: GPT-4o $\times$3, lấy hợp\\\scriptsize C4 (danh sách của bài) $>$ C3 $>$ C2 $>$ C1};
+\node[src] (clip) at (7.55,-5.2) {clip cắt\\ theo $t_s$ (a)};
+\node[al, text width=33mm] (av) at (10.75,-5.2) {\textbf{Video}: khái niệm $\leftrightarrow$ clip\\\scriptsize của đoạn sinh ra nó};
+\node[al, text width=26mm] (aa) at (14.95,-5.2) {\textbf{Âm thanh}\\\scriptsize giải thích $\rightarrow$ TTS $\rightarrow$ MP3};
+\draw[->] (pdf) -- (ai);
+\draw[->] (clip) -- (av);
+\draw (C.south) -- ++(0,-0.75) coordinate (bus);
+\draw[->] (bus) -| (ai.north);
+\draw[->] (bus) -| (av.north);
+\draw[->] (bus) -| (aa.north);
+
+% ---------- (d) lưu trữ
+\node[sec] at (-0.9,-6.45) {(d) Lưu trữ};
+\node[st, text width=150mm, minimum height=7mm] (js) at (7.5,-7.2) {bản ghi JSON cho khái niệm và điểm kiến thức $\rightarrow$ bộ ba thuận--nghịch (11 nhãn quan hệ) $\rightarrow$ RDF (\texttt{rdflib}, không gian tên \texttt{edukg})};
+\draw[->] (ai.south) -- (ai.south |- js.north);
+\draw[->] (av.south) -- (av.south |- js.north);
+\draw[->] (aa.south) -- (aa.south |- js.north);
+\end{tikzpicture}

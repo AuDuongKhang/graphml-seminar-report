@@ -1,0 +1,23 @@
+% ============================================================
+% II. KIẾN THỨC NỀN  (~1,5 trang) — SƯỜN
+% Chỉ trình bày những gì hai phần sau thực sự dùng.
+% ============================================================
+\section{Kiến thức nền}\label{sec:background}
+
+\subsection{Đồ thị tri thức và ConceptNet}
+\todo{Định nghĩa KG $\mathcal{G}=(\mathcal{V},\mathcal{E})$ với bộ ba (đầu, quan hệ, đuôi); KG thường thức vs KG thực thể; ConceptNet 5.5: nút là khái niệm đời thường, cạnh có hướng và nhãn; bản tiếng Anh dùng trong GraphVis có 799.273 nút, 2.487.810 cạnh, 42 quan hệ gộp còn 17.}
+
+\subsection{Mô hình ngôn ngữ sinh và tinh chỉnh có giám sát}
+\todo{Phân rã tự hồi quy $p_\theta(\mathbf{y}\mid\mathbf{x})=\prod_t p_\theta(y_t\mid\mathbf{x},\mathbf{y}_{<t})$; hàm mất mát NLL của SFT (sẽ dùng lại ở \eqref{eq:gv-loss}); giải mã tham lam khi đánh giá.}
+
+\subsection{Mô hình ngôn ngữ--thị giác lớn (LVLM)}
+\todo{Cấu trúc LLaVA: bộ mã hóa ảnh CLIP ViT-L/14 $f_v$, bộ chiếu $f_p$, LLM; ảnh được biến thành chuỗi token thị giác ghép trước token văn bản; LLaVA-1.6 (LLaVA-NeXT) dùng AnyRes khi suy luận. Hình nhỏ vẽ luồng ảnh $\rightarrow$ token.}
+
+\subsection{LoRA}
+\todo{$W=W_0+\frac{\alpha}{r}BA$, $B\in\mathbb{R}^{d\times r}$, $A\in\mathbb{R}^{r\times k}$, $r\ll\min(d,k)$; chỉ cập nhật $A,B$; QLoRA (lượng tử hóa 4-bit $W_0$) — phương án nhóm dùng khi tái lập trên Colab nếu bộ nhớ không đủ.}
+
+\subsection{Học theo giáo trình (curriculum learning)}
+\todo{Ý tưởng của Bengio và cộng sự: sắp xếp dữ liệu/tác vụ từ dễ đến khó; trong GraphVis ``giáo trình'' ở mức tác vụ (đọc hình $\rightarrow$ trả lời câu hỏi), không phải mức mẫu.}
+
+\subsection{LLM cho trích xuất thông tin}
+\todo{NER bằng LLM (GPT-NER, UniversalNER); Self-Refine (vòng phản hồi--sửa); Self-Consistency (bỏ phiếu nhiều lần sinh); các chỉ số Precision/Recall/F1, MCC, AUC; điểm căn chỉnh ảnh--văn bản CLIPScore, BLIP-ITM.}

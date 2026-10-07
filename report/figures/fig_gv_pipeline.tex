@@ -1,0 +1,45 @@
+% Quy trình GraphVis: dựng dữ liệu + huấn luyện hai giai đoạn (2 cột, ~16 cm)
+\begin{tikzpicture}[
+  font=\footnotesize, >={Stealth[length=1.8mm]},
+  box/.style={draw, rounded corners=2pt, align=center, inner sep=3pt, minimum height=10mm},
+  data/.style={box, fill=yellow!15},
+  ds/.style={box, fill=green!12, text width=50mm},
+  model/.style={box, fill=black!8, text width=15mm},
+  stage/.style={box, fill=orange!20, draw=orange!70!black, text width=32mm},
+  lab/.style={font=\scriptsize\itshape, inner sep=1pt},
+]
+% --- Hàng 1: từ câu hỏi đến ảnh
+\node[data, text width=33mm] (q)   at (1.9,0)  {\textbf{Câu hỏi QA} $\mathbf{x}^{(i)}$, đáp án $\mathbf{y}^{(i)}$\\\scriptsize ``Cửa xoay\dots{} biện pháp an ninh ở đâu?''};
+\node[box, text width=24mm]  (ret) at (5.6,0)  {Truy hồi $f$\\\scriptsize đường đi $\le$2 bước, ConceptNet};
+\node[box, text width=20mm]  (gv)  at (8.7,0)  {Graphviz\\\scriptsize vẽ, không tham số};
+\node[data, text width=14mm] (img) at (11.3,0) {ảnh $v^{(i)}$};
+\draw[->] (q) -- (ret);
+\draw[->] (ret) -- node[above, lab]{$\mathcal{G}_{\mathbf{x}}$} (gv);
+\draw[->] (gv) -- (img);
+
+% --- Hàng 2: hai tập dữ liệu từ cùng một ảnh
+\node[ds] (dg) at (5.0,-1.75)  {$\Dg=\{(v^{(i)},p_j,a_j)\}_{j=1}^{6}$\\\scriptsize câu hỏi về chính đồ thị; $a_j$ tính tự động từ $\mathcal{G}_{\mathbf{x}}$};
+\node[ds] (dv) at (11.3,-1.75) {$\Dv=\{(v^{(i)},\mathbf{x}^{(i)},\mathbf{y}^{(i)})\}$\\\scriptsize câu hỏi QA gốc trong khuôn prompt; đáp án gốc};
+\draw[->] (img) -- (dv);
+\draw[->] (img.south) -- ++(0,-0.3) -| (dg.north);
+
+% --- Hàng 3: huấn luyện theo giáo trình
+\node[model] (m0) at (1.4,-3.6)  {LLaVA-1.6\\ $\theta_0$};
+\node[stage] (s1) at (5.0,-3.6)  {\textbf{Giai đoạn 1}: học đọc ảnh\\\scriptsize SFT trên $\Dg$, 1 epoch};
+\node[model, text width=9mm] (m1) at (8.15,-3.6) {$\theta_1$};
+\node[stage] (s2) at (11.3,-3.6) {\textbf{Giai đoạn 2}: học trả lời\\\scriptsize SFT trên $\Dv$, 1 epoch, khởi tạo từ $\theta_1$};
+\node[model] (m2) at (14.9,-3.6) {\GV{}\\ $\theta_2$};
+\draw[->] (m0) -- (s1);
+\draw[->] (s1) -- (m1);
+\draw[->] (m1) -- (s2);
+\draw[->] (s2) -- (m2);
+\draw[->, dashed] (dg) -- (s1);
+\draw[->, dashed] (dv) -- (s2);
+
+\begin{scope}[on background layer]
+\node[draw=black!30, dashed, rounded corners, fit=(q)(img)(dg)(dv), inner sep=2mm,
+      label={[lab]above right:Phần 1 --- dựng dữ liệu (lặp với mọi câu hỏi $i$)}] {};
+\node[draw=black!30, dashed, rounded corners, fit=(m0)(m2), inner sep=2mm,
+      label={[lab]below:Phần 2 --- huấn luyện theo giáo trình (cùng kiến trúc, cùng hàm mất mát, chỉ khác dữ liệu)}] {};
+\end{scope}
+\end{tikzpicture}

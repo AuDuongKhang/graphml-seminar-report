@@ -1,0 +1,108 @@
+% ============================================================
+% Báo cáo giữa kỳ — Học máy trên đồ thị
+% Phần A: GraphVis (seminar) — Phần B: SciMKG (chỉ báo cáo)
+% Biên dịch: xelatex main -> bibtex main -> xelatex main x2
+%   (hoặc: latexmk -xelatex main)
+% ============================================================
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+% ---------- Ngôn ngữ & phông ----------
+\usepackage{fontspec}
+\setmainfont{Times New Roman}[NFSSFamily=ptm]
+\setmonofont{Consolas}[Scale=0.85]
+\usepackage[vietnamese]{babel}
+
+% ---------- Gói chung ----------
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage[table]{xcolor}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,backgrounds,calc,shapes.geometric}
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+
+% ---------- Đổi tên thành phần IEEE sang tiếng Việt ----------
+\addto\captionsvietnamese{%
+  \renewcommand{\abstractname}{Tóm tắt}%
+  \renewcommand{\figurename}{Hình}%
+  \renewcommand{\tablename}{Bảng}%
+  \renewcommand{\refname}{Tài liệu tham khảo}%
+}
+\renewcommand{\IEEEkeywordsname}{Từ khóa}
+% Từ khóa của algorithmic
+\renewcommand{\algorithmicrequire}{\textbf{Vào:}}
+\renewcommand{\algorithmicensure}{\textbf{Ra:}}
+\renewcommand{\algorithmicfor}{\textbf{với}}
+\renewcommand{\algorithmicdo}{\textbf{làm}}
+\renewcommand{\algorithmicend}{\textbf{hết}}
+
+% ---------- Macro tiện ích ----------
+% Đánh dấu việc còn phải làm (xóa hết trước khi nộp: grep "\\todo")
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO:} #1\textbf{]}}}
+% Link W&B công khai cho từng thực nghiệm
+\newcommand{\wandb}[1]{\textcolor{blue}{\textbf{W\&B:} \url{#1}}}
+\newcommand{\wandbtodo}{\textcolor{blue}{\textbf{W\&B:}} \todo{link báo cáo W\&B công khai}}
+% Tiêu đề phân phần (Phần A / Phần B)
+\newcommand{\phan}[2]{%
+  \vspace{6pt}\noindent\colorbox{black!8}{\parbox{\dimexpr\columnwidth-2\fboxsep}{%
+  \centering\large\bfseries #1\\[1pt]\normalsize\mdseries\itshape #2}}\vspace{2pt}}
+\newcommand{\GV}{\textsc{GraphVis}}
+\newcommand{\SM}{\textsc{SciMKG}}
+\newcommand{\Dg}{\mathcal{D}_g}
+\newcommand{\Dv}{\mathcal{D}_v}
+
+\begin{document}
+
+% ---------- Trang bìa ----------
+\input{sections/00_cover}
+
+% ---------- Tiêu đề bài ----------
+\title{Báo cáo hai mô hình: GraphVis và SciMKG}
+
+\author{\IEEEauthorblockN{Âu Dương Khang}
+\IEEEauthorblockA{\textit{MSHV: 25C15045}\\
+Trường ĐH Khoa học Tự nhiên, ĐHQG-HCM}
+\and
+\IEEEauthorblockN{Nguyễn Bùi Mẫn Nhi}
+\IEEEauthorblockA{\textit{MSHV: 25C15055}\\
+Trường ĐH Khoa học Tự nhiên, ĐHQG-HCM}
+}
+
+\maketitle
+
+\begin{abstract}
+\todo{Viết sau cùng (150--200 từ): giới thiệu ngắn hai bài (GraphVis: đưa đồ thị con dạng ảnh vào LVLM, huấn luyện hai giai đoạn; SciMKG: dựng tự động đồ thị tri thức giáo dục đa phương thức bằng nhiều LLM); điều nhóm làm được: trình bày chi tiết cơ chế hoạt động, đối chiếu bài báo với mã nguồn, phân tích ảnh hưởng độ phức tạp ảnh, tái lập thực nghiệm và các phát hiện chính.}
+\end{abstract}
+
+\begin{IEEEkeywords}
+đồ thị tri thức, mô hình ngôn ngữ--thị giác lớn, học theo giáo trình, đồ thị tri thức đa phương thức, trích xuất khái niệm
+\end{IEEEkeywords}
+
+\input{sections/01_intro}
+\input{sections/02_background}
+
+% ================= PHẦN A =================
+\phan{PHẦN A --- GraphVis}{Tăng cường LLM bằng đồ thị tri thức dạng ảnh (NeurIPS 2024)}
+\input{sections/A_graphvis}
+
+% ================= PHẦN B =================
+\phan{PHẦN B --- SciMKG}{Đồ thị tri thức đa phương thức cho giáo dục khoa học (AAAI 2026)}
+\input{sections/B_scimkg}
+
+% ================= KẾT LUẬN =================
+\input{sections/03_conclusion}
+
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+\appendices
+\input{sections/99_appendix}
+
+\end{document}

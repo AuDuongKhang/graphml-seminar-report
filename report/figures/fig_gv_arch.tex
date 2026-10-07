@@ -1,0 +1,26 @@
+% Kiến trúc + trạng thái tham số khi huấn luyện GraphVis (1 cột, ~8,6 cm)
+\begin{tikzpicture}[
+  font=\footnotesize, >={Stealth[length=1.6mm]},
+  blk/.style={draw, rounded corners=2pt, align=center, inner sep=2pt, minimum height=8mm, text width=18mm},
+  frozen/.style={blk, fill=black!10},
+  lora/.style={blk, fill=orange!25, draw=orange!70!black},
+  train/.style={blk, fill=cyan!20, draw=cyan!50!black},
+  io/.style={align=center, inner sep=1pt, text width=15mm},
+]
+\node[io]     (img)  at (0,0)    {ảnh đồ thị $v$\\\scriptsize đệm vuông, 336$\times$336};
+\node[frozen] (clip) at (2.6,0) {CLIP ViT-L/14\\\scriptsize đóng băng};
+\node[train]  (proj) at (5.25,0)  {Bộ chiếu MLP\\\scriptsize học toàn bộ};
+\node[io]     (txt)  at (0,-1.25){prompt $p$ hoặc câu hỏi $\mathbf{x}$};
+\node[frozen] (emb)  at (2.6,-1.25) {Embedding\\\scriptsize đóng băng};
+\node[lora, text width=50mm] (llm) at (3.9,-2.6)
+  {Mistral-7B: $W_0$ đóng băng $+\,\tfrac{\alpha}{r}BA$\\\scriptsize LoRA $r{=}128,\ \alpha{=}256$ ở mọi lớp tuyến tính};
+\node[io, text width=78mm] (loss) at (3.5,-3.8)
+  {sinh đáp án $a$ hoặc $\mathbf{y}$\\ $\mathcal{L}=-\sum_j\log p_\theta(y_j\mid v,\mathbf{x},\mathbf{y}_{<j})$, chỉ tính trên token đáp án};
+
+\draw[->] (img) -- (clip);
+\draw[->] (clip) -- (proj);
+\draw[->] (txt) -- (emb);
+\draw[->] (proj.south) -- node[right, font=\scriptsize, text width=12mm, align=left]{576 token thị giác} (proj.south |- llm.north);
+\draw[->] (emb.south) -- node[left, font=\scriptsize]{token chữ} (emb.south |- llm.north);
+\draw[->] (llm) -- (llm.south |- loss.north);
+\end{tikzpicture}

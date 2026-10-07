@@ -1,0 +1,33 @@
+% ============================================================
+% PHỤ LỤC (~0,5–1 trang)
+% ============================================================
+\section{Siêu tham số tinh chỉnh GraphVis}\label{app:gv-hparams}
+\begin{table}[h]
+\centering
+\caption{Siêu tham số: bài báo, script công bố và lựa chọn của nhóm}
+\setlength{\tabcolsep}{3pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Tham số & Bài báo & Script & Nhóm dùng \\
+\midrule
+LoRA $r$ / $\alpha$ / đích & 128 / 256 / all & 128 / 256 / all & \todo{} \\
+Tốc độ học (LoRA) & $10^{-7}$ & $2{\times}10^{-5}$ & \todo{} \\
+Tốc độ học (bộ chiếu) & $2{\times}10^{-5}$ & $2{\times}10^{-5}$ & \todo{} \\
+Batch toàn cục & 4 & 16$\times$2 GPU & \todo{} \\
+Epoch mỗi giai đoạn & 1 & 1 & \todo{} \\
+Bộ tối ưu / lịch & AdamW / cosine & AdamW / cosine & \todo{} \\
+Warmup / weight decay & 0,03 / 0 & 0,03 / 0 & \todo{} \\
+Độ dài tối đa & 2048 & 2048 & \todo{} \\
+Tỉ lệ ảnh & pad & (mặc định: square) & \todo{} \\
+Bộ mã hóa ảnh & CLIP-L/14-336 & CLIP-L/14 (224) & \todo{} \\
+Độ chính xác số & -- & bf16, ZeRO-2 & \todo{} \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\section{Prompt dùng trong tái lập}\label{app:prompts}
+\todo{Năm mẫu câu cho mỗi tác vụ đọc hình (rút gọn); khuôn prompt giai đoạn~2; prompt EVIA của SciMKG mà nhóm dùng.}
+
+\section{Danh sách liên kết}\label{app:links}
+\todo{GitHub; các báo cáo W\&B công khai theo từng mục VII-B..F và XII-B..D.}
