@@ -1,0 +1,3 @@
+[submodule "SciMKG"]
+	path = SciMKG
+	url = https://github.com/kg-bnu/SciMKG.git

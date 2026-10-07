@@ -1,0 +1,45 @@
+# --- Ngữ cảnh cá nhân, không đưa lên git (đã tóm tắt trong docs/context.md) ---
+*.txt
+!requirements*.txt
+SciMKG.pdf
+*_GraphVis_*.pdf
+/papers/
+
+# --- LaTeX build ---
+report/*.aux
+report/*.log
+report/*.out
+report/*.bbl
+report/*.blg
+report/*.fls
+report/*.fdb_latexmk
+report/*.synctex.gz
+report/*.toc
+report/*.xdv
+report/main.pdf
+report/build.out
+# Bản nộp cuối (đặt tên MSHV) thì giữ lại khi cần: git add -f 25C15045-25C15055.pdf
+
+# --- Python / notebook ---
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
+venv/
+.env
+
+# --- Dữ liệu, checkpoint, log thực nghiệm ---
+data/
+checkpoints/
+wandb/
+outputs/
+*.ckpt
+*.safetensors
+*.bin
+*.pt
+
+# --- Hệ điều hành / editor ---
+.DS_Store
+Thumbs.db
+~$*
+.vscode/
