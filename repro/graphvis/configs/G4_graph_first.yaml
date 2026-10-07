@@ -1,0 +1,20 @@
+# G4 — fine-grained: tác vụ cấu trúc trước, OCR sau, rồi QA (Fig 7)
+exp_id: G4-csqa-graph-first
+dataset: csqa
+image_mode: pad          # đệm vuông + 1 ô 336 (gần image_aspect_ratio=pad của bài)
+quant: 4bit              # QLoRA cho T4/P100 miễn phí; A100/L4: đổi thành none và dtype bf16
+dtype: fp16
+lora: {r: 128, alpha: 256, dropout: 0.05}
+lr: 2.0e-5               # bài ghi 1e-7, script tác giả 2e-5 (xem DEVIATIONS.md)
+projector_lr: 2.0e-5
+global_batch: 4          # như bài
+per_device_batch: 1
+epochs_per_stage: 1
+max_len: 2048
+save_steps: 500
+seed: 42
+# hub_repo: <user>/graphvis-adapters   # bỏ comment để đẩy adapter lên HF Hub (chuyển giữa Kaggle/Colab)
+stages:
+  - {name: stage1a_graph, data: [dg_graph]}
+  - {name: stage1b_ocr, data: [dg_ocr]}
+  - {name: stage2_qa, data: [dv]}

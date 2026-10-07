@@ -35,7 +35,25 @@ def main(argv=None):
     a.func(a)
 
 
-_EXTRA = []   # các task sau đăng ký thêm lệnh (train, eval-*) vào đây
+def _add_train(sub):
+    p = sub.add_parser("train", help="huấn luyện theo các giai đoạn trong file config (G1, G4, G7, C3)")
+    p.add_argument("--config", required=True)
+    p.add_argument("--dry_run", action="store_true", help="16 mẫu, 2 bước mỗi giai đoạn — kiểm tra nhanh")
+    p.add_argument("--set", nargs="*", default=[], metavar="KEY=VALUE", help="ghi đè config, vd quant=none dtype=bf16")
+
+    def run(a):
+        import yaml
+        from gv.train import run_stages
+        cfg = yaml.safe_load(open(a.config, encoding="utf-8"))
+        for kv in a.set:
+            k, v = kv.split("=", 1)
+            cfg[k] = yaml.safe_load(v)
+        print(f"adapter -> {run_stages(cfg, dry_run=a.dry_run)}")
+
+    p.set_defaults(func=run)
+
+
+_EXTRA = [_add_train]   # các task sau đăng ký thêm lệnh eval-* vào đây
 
 if __name__ == "__main__":
     main()
