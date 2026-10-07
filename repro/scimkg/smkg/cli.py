@@ -41,7 +41,20 @@ def _add_download(sub):
     p.set_defaults(func=run)
 
 
-REGISTER = [_add_download]
+def _add_check_models(sub):
+    p = sub.add_parser("check-models", help="thử gọi các mô hình; in mô hình nào dùng được / bị thay thế")
+    p.add_argument("--models", nargs="+", default=["gpt-4o", "deepseek-v3", "gemini-1.5-flash", "gemini-1.5-pro",
+                                                   "qwen3-14b", "gemma3-27b", "phi3-medium"])
+
+    def run(a):
+        from smkg.llm import check_models
+        for k, v in check_models(a.models, out_dir() / "cache").items():
+            print(f"{k:18s} {v}")
+
+    p.set_defaults(func=run)
+
+
+REGISTER = [_add_download, _add_check_models]
 
 
 def main(argv=None):
