@@ -30,7 +30,9 @@ venv/
 .env
 
 # --- Dữ liệu, checkpoint, log thực nghiệm ---
-data/
+/data/
+_data/
+_out/
 checkpoints/
 wandb/
 outputs/
