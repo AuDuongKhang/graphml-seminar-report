@@ -50,7 +50,8 @@ def n_choices_in(prompt: str) -> int:
 
 def eval_mcqa(dataset: str, split: str, mode: str, adapter: str | None, exp_id: str, group: str | None = None,
               data_tag: str = "", max_eval: int | None = None, batch_size: int = 8, quant: str = "4bit",
-              dtype: str = "fp16", image_mode: str = "pad", kaping_k: int = 10) -> dict:
+              dtype: str = "fp16", image_mode: str = "pad", kaping_k: int = 10,
+              image_size: int | None = None, model=None, proc=None) -> dict:
     import json
 
     import wandb
@@ -73,10 +74,13 @@ def eval_mcqa(dataset: str, split: str, mode: str, adapter: str | None, exp_id: 
             r["prompt"] = insert_kaping(r["prompt"], kaping_prefix(top_k_triples(q, graphs[r["id"]].triples, k=kaping_k)))
     out = out_root() / "graphvis" / "eval" / exp_id
     run = init_wandb(exp_id, {"dataset": dataset, "split": split, "mode": mode, "adapter": adapter,
-                              "n": len(rows), "data_tag": data_tag, "quant": quant}, out, group=group)
-    model, proc = load_model_and_processor(image_mode=image_mode, quant=quant, dtype=dtype,
-                                           adapter_path=adapter if adapter not in (None, "none") else None)
-    preds = generate(model, proc, rows, image_mode=image_mode, batch_size=batch_size, max_new_tokens=8, dtype=dtype)
+                              "n": len(rows), "data_tag": data_tag, "quant": quant, "image_size": image_size,
+                              "image_mode": image_mode}, out, group=group)
+    if model is None:
+        model, proc = load_model_and_processor(image_mode=image_mode, quant=quant, dtype=dtype,
+                                               adapter_path=adapter if adapter not in (None, "none") else None)
+    preds = generate(model, proc, rows, image_mode=image_mode, batch_size=batch_size, max_new_tokens=8, dtype=dtype,
+                     image_size=image_size)
     letters = [extract_choice_letter(p, n_choices_in(r["prompt"])) for p, r in zip(preds, rows)]
     correct = [l == r["answer"] for l, r in zip(letters, rows)]
     acc = sum(correct) / max(len(rows), 1)

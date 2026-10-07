@@ -96,7 +96,53 @@ def _add_eval_graph_reading(sub):
     p.set_defaults(func=run)
 
 
-_EXTRA = [_add_train, _add_eval_mcqa, _add_eval_graph_reading]   # Task 8 thêm eval-vqa, resolution-sweep
+def _add_eval_vqa(sub):
+    p = sub.add_parser("eval-vqa", help="G2/G3: ScienceQA-IMG, MMBench (circular), POPE")
+    p.add_argument("--benchmark", choices=["scienceqa", "mmbench", "pope", "all"], required=True)
+    _model_args(p)
+
+    def run(a):
+        from gv.eval.vqa import eval_vqa
+        names = ["scienceqa", "mmbench", "pope"] if a.benchmark == "all" else [a.benchmark]
+        for b in names:
+            exp = a.exp_id if len(names) == 1 else f"{a.exp_id}-{b}"
+            print(b, eval_vqa(b, a.adapter, exp, a.group, a.max_eval, a.batch_size, a.quant, a.dtype, a.image_mode))
+
+    p.set_defaults(func=run)
+
+
+def _add_resolution_sweep(sub):
+    p = sub.add_parser("resolution-sweep", help="C2: độ chính xác CSQA theo độ phân giải ảnh đồ thị")
+    p.add_argument("--adapter", default="none")
+    p.add_argument("--exp_prefix", required=True, help="vd C2-graphvis hoặc C2-base")
+    p.add_argument("--sizes", type=int, nargs="+", default=[50, 112, 224, 336, 672])
+    p.add_argument("--image_modes", nargs="+", default=["pad", "anyres"])
+    p.add_argument("--max_eval", type=int, default=None)
+    p.add_argument("--batch_size", type=int, default=8)
+    p.add_argument("--quant", default="4bit")
+    p.add_argument("--dtype", default="fp16")
+
+    def run(a):
+        from gv.eval.complexity import resolution_sweep
+        print(resolution_sweep(a.adapter, a.exp_prefix, a.sizes, a.image_modes, max_eval=a.max_eval,
+                               batch_size=a.batch_size, quant=a.quant, dtype=a.dtype))
+
+    p.set_defaults(func=run)
+
+
+def _add_c1_report(sub):
+    p = sub.add_parser("c1-report", help="C1: gộp predictions của các lần eval-mcqa theo số nút đồ thị")
+    p.add_argument("--eval_exp_ids", nargs="+", required=True)
+
+    def run(a):
+        from gv.eval.complexity import c1_report
+        for row in c1_report(a.eval_exp_ids):
+            print(row)
+
+    p.set_defaults(func=run)
+
+
+_EXTRA = [_add_train, _add_eval_mcqa, _add_eval_graph_reading, _add_eval_vqa, _add_resolution_sweep, _add_c1_report]
 
 if __name__ == "__main__":
     main()
