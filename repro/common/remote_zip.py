@@ -1,6 +1,9 @@
 """Đọc file .zip từ xa qua HTTP Range: chỉ tải các member cần dùng thay vì cả archive (QA-GNN 4,2 GB; SciMKG RawData 5,4 GB)."""
+import http.client
 import io
 import shutil
+import time
+import urllib.error
 import urllib.request
 import zipfile
 from pathlib import Path
@@ -40,8 +43,15 @@ class HttpRangeFile(io.RawIOBase):
             return b""
         end = min(self.pos + n, self.size) - 1
         req = urllib.request.Request(self.url, headers={"Range": f"bytes={self.pos}-{end}"})
-        with urllib.request.urlopen(req) as r:
-            data = r.read()
+        for attempt in range(6):
+            try:
+                with urllib.request.urlopen(req) as r:
+                    data = r.read()
+                break
+            except (http.client.IncompleteRead, urllib.error.URLError, ConnectionError, TimeoutError):
+                if attempt == 5:
+                    raise
+                time.sleep(2 ** attempt)
         self.pos += len(data)
         return data
 
