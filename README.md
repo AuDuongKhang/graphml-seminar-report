@@ -46,8 +46,19 @@ Chi tiết: [`repro/graphvis/README.md`](repro/graphvis/README.md).
 
 ## Tái lập SciMKG
 
-> *Đang xây dựng.* Sẽ bổ sung: môi trường, khóa API cần có (đặt trong `.env`, không commit), tải dữ liệu,
-> lệnh chạy chuỗi trích xuất khái niệm, các ablation, và lệnh đánh giá.
+Chi tiết: [`repro/scimkg/README.md`](repro/scimkg/README.md).
+
+- **Phần cứng:** Kaggle Notebooks (T4 ×2 khuyến nghị) hoặc Colab (T4); mô hình mở chạy bằng Ollama.
+- **Môi trường:** Python ≥ 3.10, `pip install -r repro/scimkg/requirements.txt`, Ollama; vLLM cho baseline UniversalNER.
+- **Khóa API (tùy chọn):** `OPENAI_API_KEY`, `DEEPSEEK_API_KEY`, `GEMINI_API_KEY` — đặt trong Secrets của notebook, không commit.
+- **Chạy:** mở `repro/scimkg/notebooks/SciMKG_Repro.ipynb`, sửa ô cấu hình, chạy từ trên xuống (S0–S5).
+- **Dòng lệnh:** `cd repro/scimkg && python -m smkg.cli --help`.
+
+## Kiểm thử
+
+```bash
+cd repro && python -m pytest -q     # chạy trên CPU, không cần mạng
+```
 
 ## Theo dõi thực nghiệm
 

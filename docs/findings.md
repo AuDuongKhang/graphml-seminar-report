@@ -98,3 +98,24 @@ Dùng file này thay vì đọc lại bài báo. Số dòng tính theo bản mã
 - ACC .88–.99 cho mọi cấu hình → mất cân bằng lớp; AUC tính từ điểm gì không rõ.
 - Văn bản: F1 .741, ΔF1 .062; bảng: .739, .064. Chú thích "P-27B = Phi-3-medium" (thực tế ~14B).
 - CLIP score .83 cao bất thường nếu là cosine thô. Không có quy trình gán nhãn vàng, không có độ đồng thuận chuyên gia.
+
+### B4. Kết quả đã chạy trên máy local (không cần API/GPU)
+- **Dữ liệu Zenodo 19691725:** `Groundtruth.zip` khớp tên với 98 thư mục bài trong `RawData.zip`: 1.526 đoạn,
+  3.896 khái niệm vàng (bài báo ghi 100 bài, 4.479 khái niệm). 64 bài có file phiếu `_Validationner` của tác giả
+  (điểm 1..16 = 1 + 3 LLM × 5 vòng — khớp mã nguồn). Tên ảnh PNG đánh số toàn cục theo môn, khớp `SciMKG.zip`.
+- **Chấm lại đầu ra LLM gốc của tác giả** (`smkg.cli score-authors`, điểm chuẩn hóa (s−1)/15, vũ trụ = nhãn vàng ∪ ứng viên):
+
+| α | P | R | F1 | ACC | MCC | AUC |
+|---|---|---|---|---|---|---|
+| 0,5 | .891 | .959 | .924 | .911 | .819 | .949 |
+| 0,7 | .953 | .740 | .833 | .831 | .690 | .949 |
+| 0,9 | .963 | .543 | .695 | .728 | .547 | .949 |
+
+  So với bài (α=0,7): P .947, R .702, F1 .803, MCC .729 — rất sát; nhưng ACC .831 so với .986 của bài →
+  bài gần như chắc chắn tính ACC trên một tập mẫu âm lớn hơn nhiều (vd mọi từ/cụm từ). Ở α=0 recall .995:
+  nhãn vàng gần như nằm trọn trong tập ứng viên trích xuất → nhãn vàng được tuyển từ ứng viên. α=0,5 cho F1 cao hơn α=0,7.
+
+## C. GraphVis — số liệu dữ liệu đã đo trên máy local
+- Đồ thị con CSQA dev (300 câu) theo cấu hình mặc định (bậc ≤ 500, 1 nút trung gian/cặp): trung vị 21 nút / 26 cạnh,
+  p90 38 / 53, max 68 / 114, 1,7–1,9% rỗng — gần Fig 4–5 của bài. Không tỉa: trung vị 133 nút.
+- Ảnh Graphviz mẫu rộng ~2.000 px → khi đưa về 336 px chữ còn ~2,5 px (minh chứng cho mục VI).

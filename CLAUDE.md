@@ -24,6 +24,7 @@ File nộp: `25C15045-25C15055.pdf`, ≤ 25 trang (tính cả bìa, tham khảo,
 
 ```
 CLAUDE.md               ← file này
+AGENTS.md               ← trỏ về file này (cho Codex/Cursor/agent khác)
 README.md               ← hướng dẫn CHẠY tái lập (yêu cầu môn học; KHÔNG ghi kết quả/giải pháp ở đây)
 docs/
   context.md            ← yêu cầu môn học, nhận xét của GV, quyết định đã chốt
@@ -40,7 +41,8 @@ report/                 ← mã LaTeX của báo cáo
 GraphVis-code/          ← mã gốc GraphVis (Apache-2.0). Commit đầu tiên = bản gốc chưa sửa;
                           mọi sửa đổi để tái lập xem bằng `git diff <commit đầu> -- GraphVis-code`
 SciMKG/                 ← git submodule trỏ tới kg-bnu/SciMKG (chỉ đọc, không sửa trong submodule)
-repro/                  ← (sẽ tạo) code tái lập của nhóm: notebook Colab, script, cấu hình W&B
+repro/                  ← code tái lập: common/ (W&B, đường dẫn, đọc zip từ xa), graphvis/ (package gv),
+                          scimkg/ (package smkg); mỗi bài có README, DEVIATIONS, notebook Kaggle/Colab (sinh từ make_notebook.py)
 ```
 
 Không có trong git (chỉ có trên máy Khang): các file `.txt` ngữ cảnh (yêu cầu, nhận xét GV,
@@ -91,9 +93,12 @@ Trước khi nộp: `grep -rn "\\\\todo\|wandbtodo" report/` phải rỗng.
 | B: IX–XI, XIII (SciMKG) | Bản nháp hoàn chỉnh, đã đối chiếu mã nguồn |
 | B: XII Tái lập | **Chờ chạy** |
 | Kết luận, Phân công, Tóm tắt, Phụ lục B–C | **Sườn** |
-| Repo code tái lập (`repro/`) + README chạy | **Chưa làm** — việc tiếp theo |
+| Code tái lập (`repro/`), notebook, README, DEVIATIONS | **Xong** — 101 test CPU; chưa chạy trên GPU |
+| Chạy thực nghiệm trên Kaggle/Colab, dán link W&B | **Việc tiếp theo** — xem `docs/experiments.md` |
 
-Việc tiếp theo được đề xuất (theo thứ tự): xem `docs/experiments.md`.
+Việc tiếp theo: chạy ô "Kiểm tra nhanh" của hai notebook trước (test GPU + dry-run), rồi các ô theo thứ tự.
+Kết quả đã có từ local: `score-authors` (đầu ra gốc của tác giả, α=0,7) P .953 R .740 F1 .833 MCC .690 — xem `docs/findings.md` §B4.
+Mọi khác biệt so với bài nằm trong `repro/*/DEVIATIONS.md` (nguồn cho mục VII-A, XII-A của báo cáo).
 
 ## 6. Làm việc nhóm (2 người, 2 agent)
 

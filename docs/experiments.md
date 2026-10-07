@@ -28,16 +28,18 @@ batch nhỏ + gradient accumulation, hoặc tập con. Ghi rõ mọi sai khác t
 (bảng "Bài báo / Script / Nhóm dùng" đã có sẵn trong `report/sections/99_appendix.tex`).
 Các điểm phải quyết định khi dựng code: xem `docs/findings.md` §A3 (lr, batch, pad vs square, CLIP 336, trường `chosen`).
 
-## SciMKG
+## SciMKG (Kaggle/Colab, mô hình mở qua Ollama nếu không có API key)
+
+Chạy bằng `repro/scimkg/notebooks/SciMKG_Repro.ipynb`. Sai khác: `repro/scimkg/DEVIATIONS.md`.
 
 | ID | Thực nghiệm (bài) | Cấu hình | Mục báo cáo | Trạng thái | W&B |
 |---|---|---|---|---|---|
-| S0 | Chuẩn bị tập đánh giá + nhãn vàng (bài không công bố → tự gán trên tập con, mô tả quy trình) | Zenodo | XII-A | todo | – |
-| S1 | Table 4: EVIA đầy đủ + baseline (Decomposed-QA, GPT-NER, …) | GPT-4o/Gemini-1.5-Flash/DeepSeek-V3 nếu còn API | XII-B | todo | – |
-| S2 | Table 4: w/o MLs, w/o SF-FD, w/o cả hai | | XII-B | todo | – |
-| S3 | Table 4: bộ LLM mở Qwen3/Gemma3/Phi-3 theo kích thước | Colab/Ollama | XII-B | todo | – |
-| S4 | Table 5: lưới iter{1,3,5} × α{0.5,0.7,0.9} | | XII-C | todo | – |
-| S5 | Fig 5 phân loại lỗi; Table 7 CLIP/BLIP/X-VLM/VQAScore cho cặp khái niệm–ảnh | | XII-D | todo | – |
+| S0 | Chuẩn bị tập đánh giá + nhãn vàng (bài không công bố → tự gán trên tập con, mô tả quy trình) | Zenodo | XII-A | code sẵn sàng | – |
+| S1 | Table 4: EVIA đầy đủ + baseline (Decomposed-QA, GPT-NER, Self-Improving, UniversalNER) + chấm lại đầu ra gốc của tác giả (`score-authors`, không tốn API) | GPT-4o/Gemini-1.5-Flash/DeepSeek-V3 nếu còn API | XII-B | code sẵn sàng | – |
+| S2 | Table 4: w/o MLs, w/o SF-FD, w/o cả hai | | XII-B | code sẵn sàng | – |
+| S3 | Table 4: bộ LLM mở Qwen3/Gemma3/Phi-3 theo kích thước | Colab/Ollama | XII-B | code sẵn sàng | – |
+| S4 | Table 5: lưới iter{1,3,5} × α{0.5,0.7,0.9} | | XII-C | code sẵn sàng | – |
+| S5 | Fig 5 phân loại lỗi; Table 7 CLIP/BLIP/X-VLM/VQAScore cho cặp khái niệm–ảnh | | XII-D | code sẵn sàng | – |
 
 Trước khi chạy SciMKG: sửa bước Integration (chuẩn hóa sc/(|M|·K)), dùng đủ 3 LLM ở bước E nếu theo bài,
 quyết định có thêm bước chấm tin cậy ảnh >0.8 không — ghi rõ trong XII-A. Chi tiết lỗi: `docs/findings.md` §B2.
