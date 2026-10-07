@@ -5,21 +5,23 @@ Cập nhật cột *Trạng thái* và *W&B* ngay khi xong. Không ghi số li�
 
 Trạng thái: `todo` · `đang chạy` · `xong` · `bỏ (lý do)`
 
-## GraphVis (Colab)
+## GraphVis (Kaggle/Colab GPU miễn phí)
+
+Chạy bằng `repro/graphvis/notebooks/GraphVis_Repro.ipynb` — mỗi ID có một ô. Sai khác: `repro/graphvis/DEVIATIONS.md`.
 
 | ID | Thực nghiệm (bài) | Cấu hình | Mục báo cáo | Trạng thái | W&B |
 |---|---|---|---|---|---|
-| G0 | Dựng dữ liệu: truy hồi 2-hop, vẽ Graphviz, sinh D_g (6 tác vụ) và D_v | CSQA, OBQA | VII-A | todo | – |
-| G1 | Table 1: CSQA/OBQA — base, KAPING, GraphVis | | VII-B | todo | – |
-| G2 | Table 2: ScienceQA-IMG, MMBench, POPE ×3 | eval LLaVA | VII-C | todo | – |
-| G3 | Table 6: ScienceQA joint vs curriculum | | VII-C | todo | – |
-| G4 | Fig 7: joint / curriculum / graph-first / OCR-first | CSQA | VII-D | todo | – |
-| G5 | Table 3: ±KAPING trên base / joint / curriculum | CSQA | VII-D | todo | – |
-| G6 | Table 4: 6 tác vụ đọc hình trước/sau GĐ1 (exact match) | test CSQA | VII-E | todo | – |
-| G7 | Fig 9: ảnh 50×50 | CSQA | VII-E | todo | – |
-| C1 | Độ chính xác theo số nút/cạnh (≤10, 11–20, 21–40, >40) | base, GraphVis, C3 | VI-C | todo | – |
-| C2 | Độ chính xác theo độ phân giải (50/112/224/336/672, AnyRes) | | VI-C | todo | – |
-| C3 | Đối chứng: tinh chỉnh CSQA **không ảnh**, cùng siêu tham số | | VI-C | todo | – |
+| G0 | Dựng dữ liệu: truy hồi 2-hop, vẽ Graphviz, sinh D_g (6 tác vụ) và D_v | CSQA, OBQA | VII-A | code sẵn sàng | – |
+| G1 | Table 1: CSQA/OBQA — base, KAPING, GraphVis | | VII-B | code sẵn sàng | – |
+| G2 | Table 2: ScienceQA-IMG, MMBench, POPE ×3 | eval LLaVA | VII-C | code sẵn sàng | – |
+| G3 | Table 6: ScienceQA joint vs curriculum | | VII-C | code sẵn sàng | – |
+| G4 | Fig 7: joint / curriculum / graph-first / OCR-first | CSQA | VII-D | code sẵn sàng | – |
+| G5 | Table 3: ±KAPING trên base / joint / curriculum | CSQA | VII-D | code sẵn sàng | – |
+| G6 | Table 4: 6 tác vụ đọc hình trước/sau GĐ1 (exact match) | test CSQA | VII-E | code sẵn sàng | – |
+| G7 | Fig 9: ảnh 50×50 | CSQA | VII-E | code sẵn sàng | – |
+| C1 | Độ chính xác theo số nút/cạnh (≤10, 11–20, 21–40, >40) | base, GraphVis, C3 | VI-C | code sẵn sàng | – |
+| C2 | Độ chính xác theo độ phân giải (50/112/224/336/672, AnyRes) | | VI-C | code sẵn sàng | – |
+| C3 | Đối chứng: tinh chỉnh CSQA **không ảnh**, cùng siêu tham số | | VI-C | code sẵn sàng | – |
 
 Ghi chú tính toán: bài dùng 4×A6000 ~3 giờ (LoRA bf16). Colab T4/L4 16–24 GB có thể cần QLoRA 4-bit,
 batch nhỏ + gradient accumulation, hoặc tập con. Ghi rõ mọi sai khác trong VII-A và Phụ lục A
