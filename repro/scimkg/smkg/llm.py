@@ -66,11 +66,11 @@ class LLMClient:
         self._lock = threading.Lock()
         self._client = None
 
-    def _key(self, prompt: str, params: dict) -> str:
-        raw = json.dumps([self.model, prompt, params], ensure_ascii=False, sort_keys=True)
+    def _key(self, prompt: str, params: dict, image_digest: str = "") -> str:
+        raw = json.dumps([self.model, prompt, params, image_digest], ensure_ascii=False, sort_keys=True)
         return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-    def _call(self, prompt: str, **params) -> str:
+    def _call(self, prompt: str, image=None, **params) -> str:
         if self._client is None:
             from openai import OpenAI
             key_env = self.cfg.get("key_env")
@@ -79,13 +79,21 @@ class LLMClient:
         if self.cfg.get("mode") == "completion":   # mô hình không có chat template (UniNER)
             r = self._client.completions.create(model=self.model, prompt=prompt, **params)
             return r.choices[0].text
-        r = self._client.chat.completions.create(model=self.model, messages=[{"role": "user", "content": prompt}],
+        content = prompt
+        if image is not None:
+            import base64
+            b64 = base64.b64encode(Path(image).read_bytes()).decode()
+            content = [{"type": "text", "text": prompt},
+                       {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{b64}"}}]
+        r = self._client.chat.completions.create(model=self.model, messages=[{"role": "user", "content": content}],
                                                  **params)
         return r.choices[0].message.content
 
-    def chat(self, prompt: str, **override) -> LLMReply:
+    def chat(self, prompt: str, image=None, **override) -> LLMReply:
+        """image: đường dẫn ảnh (cho MLLM, vd căn chỉnh khái niệm-ảnh); được đưa vào khóa cache."""
         params = {**self.params, **override}
-        key = self._key(prompt, params)
+        digest = hashlib.sha256(Path(image).read_bytes()).hexdigest() if image is not None else ""
+        key = self._key(prompt, params, digest)
         with self._lock:
             row = self._db.execute("SELECT v FROM c WHERE k=?", (key,)).fetchone()
         if row:
@@ -94,7 +102,7 @@ class LLMClient:
         err = None
         for attempt in range(self.retries):
             try:
-                text = self._call(prompt, **params)
+                text = self._call(prompt, image=image, **params) if image is not None else self._call(prompt, **params)
                 text = strip_think(text) if text else text
                 if not text or not text.strip():
                     err = "no_response"

@@ -235,8 +235,118 @@ def _add_baseline(sub):
     p.set_defaults(func=run)
 
 
+def _pairs():
+    import json
+
+    from smkg.align_eval import build_image_index, load_pairs
+    from smkg.data import KG_URL, _download
+    kg = _download(KG_URL, data_dir() / "SciMKG.zip")
+    manifest = json.loads((data_dir() / "manifest.json").read_text(encoding="utf-8"))
+    pairs = load_pairs(kg, build_image_index(manifest, data_dir() / "lessons"))
+    if not pairs:
+        raise SystemExit("không có cặp khái niệm-ảnh: chạy `download` (không dùng --no_images) trước")
+    return pairs
+
+
+def _add_align_eval(sub):
+    p = sub.add_parser("align-eval", help="S5b: CLIPScore / BLIP-ITM / VQAScore cho các cặp khái niệm-ảnh của SciMKG")
+    p.add_argument("--metrics", nargs="+", default=["clip", "blip"], choices=["clip", "blip", "vqascore"])
+    p.add_argument("--translator", default="qwen3-14b", help="LLM dịch khái niệm sang tiếng Anh")
+    p.add_argument("--max_pairs", type=int, default=1000)
+
+    def run(a):
+        import random
+
+        import wandb
+
+        from smkg import align_eval as ae
+        from smkg.llm import make_clients
+        pairs = _pairs()
+        pairs = random.Random(42).sample(pairs, min(a.max_pairs, len(pairs)))
+        client = make_clients([a.translator], out_dir() / "cache")[a.translator]
+        en = {}
+        for subj in {p.subject for p in pairs}:
+            en.update(ae.translate(sorted({p.concept for p in pairs if p.subject == subj}), subj, client))
+        texts = [en.get(p.concept) or p.concept for p in pairs]
+        cols, summary = {}, {"n_pairs": len(pairs)}
+        if "clip" in a.metrics:
+            cos = ae.clip_scores(pairs, texts)
+            cols["clip_cos"] = cos
+            summary["clip_cos_mean"] = sum(cos) / len(cos)
+            summary["clipscore_mean"] = sum(ae.clipscore_from_cos(c) for c in cos) / len(cos)
+        if "blip" in a.metrics:
+            cols["blip_itm"] = ae.blip_itm(pairs, texts)
+            summary["blip_itm_mean"] = sum(cols["blip_itm"]) / len(pairs)
+        if "vqascore" in a.metrics:
+            cols["vqascore"] = ae.vqascore(pairs, texts)
+            summary["vqascore_mean"] = sum(cols["vqascore"]) / len(pairs)
+        print(summary)
+        keys = list(cols)
+        table = wandb.Table(columns=["image", "concept_zh", "concept_en"] + keys,
+                            data=[[wandb.Image(str(p.image)), p.concept, t] + [cols[k][i] for k in keys]
+                                  for i, (p, t) in enumerate(zip(pairs[:200], texts[:200]))])
+        _log("S5-align-eval", {"metrics": a.metrics, "translator": a.translator, "max_pairs": a.max_pairs}, summary,
+             "S5", {"pairs": table})
+
+    p.set_defaults(func=run)
+
+
+def _add_human_sheet(sub):
+    p = sub.add_parser("human-sheet", help="S5c: tạo phiếu chấm người (100 cặp) hoặc chấm phiếu đã điền (--score)")
+    p.add_argument("--n", type=int, default=100)
+    p.add_argument("--score", default=None, help="đường dẫn human_sheet.csv đã điền đủ 2 cột rater")
+
+    def run(a):
+        from smkg import align_eval as ae
+        if a.score:
+            m = ae.score_human_sheet(Path(a.score))
+            print(m)
+            _log("S5-human-eval", {"sheet": a.score}, m, "S5")
+        else:
+            print("sheet ->", ae.make_human_sheet(_pairs(), a.n, out_dir() / "human_eval"))
+
+    p.set_defaults(func=run)
+
+
+def _add_regen_align(sub):
+    p = sub.add_parser("regen-align", help="S5d (tùy chọn): căn chỉnh lại ảnh bằng prompt C1-C4 và so với bản công bố")
+    p.add_argument("--model", default="gemma3-27b", help="mô hình đa phương thức (vd gpt-4o nếu có key)")
+    p.add_argument("--max_images", type=int, default=200)
+    p.add_argument("--runs", type=int, default=3)
+
+    def run(a):
+        import collections
+        import random
+
+        from smkg.align_eval import regenerate_alignment
+        from smkg.llm import make_clients
+        from smkg.metrics import set_prf
+        from smkg.normalize import normalize_concept
+        pairs = _pairs()
+        released = collections.defaultdict(set)
+        subject = {}
+        for p in pairs:
+            released[p.image].add(normalize_concept(p.concept))
+            subject[p.image] = p.subject
+        lesson_concepts = {}
+        for l in _lessons(0):
+            lesson_concepts[l.name] = sorted(l.gt)
+        images = random.Random(42).sample(sorted(released), min(a.max_images, len(released)))
+        client = make_clients([a.model], out_dir() / "cache")[a.model]
+        pred = {}
+        for img in images:
+            concepts = lesson_concepts.get(img.parent.name, [])
+            pred[str(img)] = {normalize_concept(x) for x in regenerate_alignment(img, concepts, subject[img], client, a.runs)}
+        m = {**set_prf(pred, {str(i): released[i] for i in images}), "n_images": len(images),
+             **{f"calls/{k}": v for k, v in client.counters.items()}}
+        print(m)
+        _log(f"S5-regen-align-{a.model}", {"model": a.model, "runs": a.runs}, m, "S5")
+
+    p.set_defaults(func=run)
+
+
 REGISTER = [_add_download, _add_check_models, _add_score_authors, _add_evia, _add_ablate, _add_grid, _add_errors,
-            _add_baseline]
+            _add_baseline, _add_align_eval, _add_human_sheet, _add_regen_align]
 
 
 def main(argv=None):
