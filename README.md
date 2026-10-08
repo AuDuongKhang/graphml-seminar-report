@@ -22,7 +22,7 @@ git submodule update --init
 | `report/` | Mã LaTeX của báo cáo (XeLaTeX) |
 | `GraphVis-code/` | Mã gốc GraphVis (Apache-2.0) và các chỉnh sửa của nhóm để tái lập |
 | `SciMKG/` | Submodule mã gốc SciMKG (`kg-bnu/SciMKG`) |
-| `repro/` | Notebook/script tái lập của nhóm *(đang xây dựng)* |
+| `repro/` | Code tái lập của nhóm: `graphvis/` (package `gv`), `scimkg/` (package `smkg`), `common/` |
 | `docs/` | Tài liệu nội bộ cho nhóm |
 
 ## Biên dịch báo cáo
@@ -36,14 +36,29 @@ latexmk -xelatex main
 
 ## Tái lập GraphVis
 
-> *Đang xây dựng.* Sẽ bổ sung: môi trường (Python, CUDA, thư viện), phần cứng (Google Colab, loại GPU),
-> tải dữ liệu (CSQA, OBQA, ConceptNet, ScienceQA, MMBench, POPE), lệnh sinh dữ liệu, lệnh huấn luyện
-> giai đoạn 1 và 2, lệnh đánh giá, và notebook tương ứng với từng thực nghiệm.
+Chi tiết: [`repro/graphvis/README.md`](repro/graphvis/README.md).
+
+- **Phần cứng:** Kaggle Notebooks (T4 ×2 / P100) hoặc Google Colab (T4), GPU ≥ 15 GB; mặc định QLoRA 4-bit.
+- **Môi trường:** Python ≥ 3.10, Graphviz, `pip install -r repro/graphvis/requirements.txt`.
+- **Chạy:** mở `repro/graphvis/notebooks/GraphVis_Repro.ipynb`, sửa ô cấu hình, chạy từ trên xuống
+  (mỗi ô ứng với một ID thực nghiệm G0–G7, C1–C3).
+- **Dòng lệnh:** `cd repro/graphvis && python -m gv.cli --help`.
 
 ## Tái lập SciMKG
 
-> *Đang xây dựng.* Sẽ bổ sung: môi trường, khóa API cần có (đặt trong `.env`, không commit), tải dữ liệu,
-> lệnh chạy chuỗi trích xuất khái niệm, các ablation, và lệnh đánh giá.
+Chi tiết: [`repro/scimkg/README.md`](repro/scimkg/README.md).
+
+- **Phần cứng:** Kaggle Notebooks (T4 ×2 khuyến nghị) hoặc Colab (T4); mô hình mở chạy bằng Ollama.
+- **Môi trường:** Python ≥ 3.10, `pip install -r repro/scimkg/requirements.txt`, Ollama; vLLM cho baseline UniversalNER.
+- **Khóa API (tùy chọn):** `OPENAI_API_KEY`, `DEEPSEEK_API_KEY`, `GEMINI_API_KEY` — đặt trong Secrets của notebook, không commit.
+- **Chạy:** mở `repro/scimkg/notebooks/SciMKG_Repro.ipynb`, sửa ô cấu hình, chạy từ trên xuống (S0–S5).
+- **Dòng lệnh:** `cd repro/scimkg && python -m smkg.cli --help`.
+
+## Kiểm thử
+
+```bash
+cd repro && python -m pytest -q     # chạy trên CPU, không cần mạng
+```
 
 ## Theo dõi thực nghiệm
 

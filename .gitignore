@@ -2,6 +2,7 @@
 *.txt
 !requirements*.txt
 SciMKG.pdf
+GraphViS.pdf
 *_GraphVis_*.pdf
 /papers/
 
@@ -29,7 +30,9 @@ venv/
 .env
 
 # --- Dữ liệu, checkpoint, log thực nghiệm ---
-data/
+/data/
+_data/
+_out/
 checkpoints/
 wandb/
 outputs/
@@ -43,3 +46,4 @@ outputs/
 Thumbs.db
 ~$*
 .vscode/
+

@@ -1,0 +1,9 @@
+# SciMKG reproduction (Kaggle / Colab). Ollama/vLLM cài trong notebook.
+openai>=1.40
+pyyaml
+tqdm
+wandb
+pillow
+transformers>=4.40      # CLIP, BLIP-ITM cho align-eval
+pytest
+# tùy chọn: t2v-metrics (VQAScore, cần GPU lớn), vllm (UniversalNER, Phi-3-small)

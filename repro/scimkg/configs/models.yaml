@@ -1,0 +1,31 @@
+# Tên dùng trong lệnh (--models) -> nhà cung cấp. Mọi mục đều gọi qua API kiểu OpenAI (chat.completions).
+# key_env: tên biến môi trường chứa khóa (null = không cần). fallback: mô hình thay thế nếu bản gốc đã ngừng.
+# drop_params: tham số giải mã endpoint không hỗ trợ.
+
+# --- Cấu hình của bài (cần API key; chưa có thì bỏ qua) ---
+gpt-4o:           {provider: openai,   model: gpt-4o-2024-11-20, base_url: null, key_env: OPENAI_API_KEY}
+deepseek-v3:      {provider: deepseek, model: deepseek-chat, base_url: "https://api.deepseek.com/v1", key_env: DEEPSEEK_API_KEY}
+gemini-1.5-flash: {provider: gemini,   model: gemini-1.5-flash, base_url: "https://generativelanguage.googleapis.com/v1beta/openai/",
+                   key_env: GEMINI_API_KEY, fallback: gemini-2.0-flash, drop_params: [frequency_penalty, seed]}
+gemini-1.5-pro:   {provider: gemini,   model: gemini-1.5-pro, base_url: "https://generativelanguage.googleapis.com/v1beta/openai/",
+                   key_env: GEMINI_API_KEY, fallback: gemini-2.5-pro, drop_params: [frequency_penalty, seed]}
+
+# --- Mô hình mở (Bảng 4 của bài) qua Ollama trên Kaggle/Colab: base_url của Ollama ---
+qwen3-4b:     {provider: ollama, no_think: true, model: "qwen3:4b",      base_url: "http://localhost:11434/v1", key_env: null}
+qwen3-8b:     {provider: ollama, no_think: true, model: "qwen3:8b",      base_url: "http://localhost:11434/v1", key_env: null}
+qwen3-14b:    {provider: ollama, no_think: true, model: "qwen3:14b",     base_url: "http://localhost:11434/v1", key_env: null}
+gemma3-4b:    {provider: ollama, model: "gemma3:4b",     base_url: "http://localhost:11434/v1", key_env: null}
+gemma3-12b:   {provider: ollama, model: "gemma3:12b",    base_url: "http://localhost:11434/v1", key_env: null}
+gemma3-27b:   {provider: ollama, model: "gemma3:27b",    base_url: "http://localhost:11434/v1", key_env: null}
+phi3-mini:    {provider: ollama, model: "phi3:mini",     base_url: "http://localhost:11434/v1", key_env: null}
+phi3-medium:  {provider: ollama, model: "phi3:medium",   base_url: "http://localhost:11434/v1", key_env: null}
+# Phi-3-small (7B) không có trên Ollama: chạy vLLM (`vllm serve microsoft/Phi-3-small-8k-instruct --trust-remote-code --port 8000`)
+phi3-small:   {provider: vllm,   model: "microsoft/Phi-3-small-8k-instruct", base_url: "http://localhost:8000/v1", key_env: null,
+               fallback_name: phi3-mini}
+
+# --- Baseline UniversalNER: `vllm serve Universal-NER/UniNER-7B-type --port 8001` (không có chat template) ---
+uniner-7b:    {provider: vllm, model: "Universal-NER/UniNER-7B-type", base_url: "http://localhost:8001/v1", key_env: null,
+               mode: completion, drop_params: [frequency_penalty], params: {max_tokens: 256}}
+
+# --- Mô hình đa phương thức mở cho regen-align (Gemma 3 nhận ảnh qua Ollama) ---
+qwen2.5vl-7b: {provider: ollama, model: "qwen2.5vl:7b", base_url: "http://localhost:11434/v1", key_env: null}

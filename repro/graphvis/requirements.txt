@@ -1,0 +1,14 @@
+# GraphVis reproduction (Colab / Kaggle, T4/P100). Ghim phiên bản sau lần chạy đầu thành công.
+transformers>=4.45,<5
+peft>=0.13
+bitsandbytes>=0.44
+accelerate>=1.0
+datasets>=2.20
+sentence-transformers>=3.0
+graphviz>=0.20
+networkx>=3.0
+pillow
+pyyaml
+wandb
+scikit-learn
+pytest
