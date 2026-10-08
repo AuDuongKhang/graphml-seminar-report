@@ -59,3 +59,22 @@ def test_baseline_finished_lessons_are_not_recomputed(tmp_path):
     run_baseline(LESSONS, _baseline, c, tmp_path / "out")
     run_baseline(LESSONS, _baseline, c, tmp_path / "out")
     assert len(calls) == 1
+
+
+# ---------------- PR #1, llm.py:164 — check-models báo "ok" dù đã chuyển sang fallback ----------------
+def test_check_models_reports_fallback_not_ok(tmp_path, monkeypatch):
+    from smkg import llm
+
+    cfgs = {"gem": {"provider": "gemini", "model": "gemini-1.5-flash", "fallback": "gemini-2.0-flash", "key_env": None},
+            "good": {"provider": "x", "model": "m-ok", "key_env": None}}
+    monkeypatch.setattr(llm, "load_model_configs", lambda: cfgs)
+
+    def fake_call(self, prompt, **p):
+        if self.model == "gemini-1.5-flash":
+            raise RuntimeError("404 model not found")
+        return "OK"
+    monkeypatch.setattr(llm.LLMClient, "_call", fake_call)
+    monkeypatch.setattr(llm.time, "sleep", lambda s: None)
+    out = llm.check_models(["gem", "good"], tmp_path)
+    assert out["gem"].startswith("fallback gemini-2.0-flash")
+    assert out["good"] == "ok (m-ok)"

@@ -23,10 +23,9 @@ Chạy bằng `repro/graphvis/notebooks/GraphVis_Repro.ipynb` — mỗi ID có m
 | C2 | Độ chính xác theo độ phân giải (50/112/224/336/672, AnyRes) | | VI-C | code sẵn sàng | – |
 | C3 | Đối chứng: tinh chỉnh CSQA **không ảnh**, cùng siêu tham số | | VI-C | code sẵn sàng | – |
 
-Ghi chú tính toán: bài dùng 4×A6000 ~3 giờ (LoRA bf16). Colab T4/L4 16–24 GB có thể cần QLoRA 4-bit,
-batch nhỏ + gradient accumulation, hoặc tập con. Ghi rõ mọi sai khác trong VII-A và Phụ lục A
-(bảng "Bài báo / Script / Nhóm dùng" đã có sẵn trong `report/sections/99_appendix.tex`).
-Các điểm phải quyết định khi dựng code: xem `docs/findings.md` §A3 (lr, batch, pad vs square, CLIP 336, trường `chosen`).
+Ghi chú tính toán: bài dùng 4×A6000 ~3 giờ (LoRA bf16). Code mặc định QLoRA 4-bit fp16, 1 GPU, quy mô `lite`
+(xem `repro/graphvis/README.md`). Mọi sai khác ghi trong `repro/graphvis/DEVIATIONS.md` → đưa vào VII-A và Phụ lục A
+(bảng "Bài báo / Script / Nhóm dùng" trong `report/sections/99_appendix.tex`, cột "Nhóm dùng" điền theo config đã chạy).
 
 ## SciMKG (Kaggle/Colab, mô hình mở qua Ollama nếu không có API key)
 
@@ -41,9 +40,10 @@ Chạy bằng `repro/scimkg/notebooks/SciMKG_Repro.ipynb`. Sai khác: `repro/sci
 | S4 | Table 5: lưới iter{1,3,5} × α{0.5,0.7,0.9} | | XII-C | code sẵn sàng | – |
 | S5 | Fig 5 phân loại lỗi; Table 7 CLIP/BLIP/X-VLM/VQAScore cho cặp khái niệm–ảnh | | XII-D | code sẵn sàng | – |
 
-Trước khi chạy SciMKG: sửa bước Integration (chuẩn hóa sc/(|M|·K)), dùng đủ 3 LLM ở bước E nếu theo bài,
-quyết định có thêm bước chấm tin cậy ảnh >0.8 không — ghi rõ trong XII-A. Chi tiết lỗi: `docs/findings.md` §B2.
-Kiểm tra mô hình nào còn được cung cấp qua API (đặc biệt Gemini-1.5) trước khi cam kết cấu hình.
+Đã xử lý trong code: tích hợp chuẩn hóa theo số (LLM, vòng) chạy thành công; cả 3 LLM trích xuất (`--extractors`
+để chạy như mã gốc); `regen-align` theo mã gốc (không có bước chấm tin cậy 0,8) — ghi rõ trong XII-A theo
+`repro/scimkg/DEVIATIONS.md`. Trước khi chạy: `check-models` để biết mô hình nào dùng được; mô hình có `fallback`
+được tự thay và tên mô hình thực tế được ghi trong W&B (`resolved_models`).
 
 ## Quy ước W&B
 - Entity/project: `<điền>` — đặt project **public** (hoặc Teams + cross-project report công khai).

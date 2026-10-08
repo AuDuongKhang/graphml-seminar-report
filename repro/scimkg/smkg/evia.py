@@ -106,17 +106,20 @@ def select(scores: dict, alpha: float) -> dict:
 
 def ablation_scores(variant: str, candidates: dict, per_model: dict, votes: dict, models: list, K: int) -> dict:
     """full | wo_MLs (chỉ LLM đầu) | wo_SFFD (bỏ tự phản hồi: tỉ lệ LLM trích ra) | wo_both (LLM đầu, trích trực tiếp)."""
+    # mô hình trích xuất thực tế lấy từ log (có thể khác --models khi chạy evia --extractors)
+    extractors = sorted({m for seg in per_model.values() for m in seg}) or list(models)
     first = models[0]
+    first_ext = first if first in extractors else extractors[0]
+    own = {t: [c for c in candidates[t] if c in set(per_model.get(t, {}).get(first_ext, []))] for t in candidates}
     if variant == "full":
         return integrate(candidates, votes, models, K)
     if variant == "wo_MLs":
-        own = {t: [c for c in candidates[t] if c in set(per_model.get(t, {}).get(first, []))] for t in candidates}
         return integrate(own, votes, [first], K)
     if variant == "wo_SFFD":
-        return {t: {c: sum(c in per_model.get(t, {}).get(m, []) for m in models) / len(models) for c in candidates[t]}
-                for t in candidates}
+        return {t: {c: sum(c in per_model.get(t, {}).get(m, []) for m in extractors) / len(extractors)
+                    for c in candidates[t]} for t in candidates}
     if variant == "wo_both":
-        return {t: {c: 1.0 for c in candidates[t] if c in set(per_model.get(t, {}).get(first, []))} for t in candidates}
+        return {t: {c: 1.0 for c in own[t]} for t in candidates}
     raise ValueError(variant)
 
 

@@ -150,7 +150,8 @@ def make_clients(names: list, cache_dir: Path, params: dict | None = None) -> di
 
 
 def check_models(names: list, cache_dir: Path) -> dict:
-    """Thử gọi từng mô hình; nếu lỗi và có `fallback` thì thử mô hình thay thế. Trả trạng thái để ghi DEVIATIONS."""
+    """Thử gọi từng mô hình (cùng đường gọi với evia/baseline, kể cả tự chuyển sang `fallback`) và báo
+    mô hình THỰC SỰ trả lời — để báo cáo không ghi nhầm là đã dùng mô hình gốc. Trả trạng thái để ghi DEVIATIONS."""
     cfgs = load_model_configs()
     out = {}
     for n in names:
@@ -159,14 +160,12 @@ def check_models(names: list, cache_dir: Path) -> dict:
         if key_env and not os.environ.get(key_env):
             out[n] = f"skip: thiếu {key_env}"
             continue
-        r = LLMClient(n, cfg, Path(cache_dir) / "_check", {"max_tokens": 5}).chat(f"Reply with OK. ({time.time()})")
-        if r.text:
-            out[n] = f"ok ({cfg['model']})"
-        elif cfg.get("fallback"):
-            fb = dict(cfg, model=cfg["fallback"])
-            r2 = LLMClient(n, fb, Path(cache_dir) / "_check", {"max_tokens": 5}).chat(f"Reply with OK. ({time.time()})")
-            out[n] = (f"fallback {cfg['fallback']} (evia/baseline tự chuyển sang mô hình này)" if r2.text
-                      else f"lỗi: {r.error}")
-        else:
+        client = LLMClient(n, cfg, Path(cache_dir) / "_check", {"max_tokens": 5})
+        r = client.chat(f"Reply with OK. ({time.time()})")
+        if not r.text:
             out[n] = f"lỗi: {r.error}"
+        elif client.model != cfg["model"]:
+            out[n] = f"fallback {client.model} ({cfg['model']} không dùng được; evia/baseline tự chuyển sang mô hình này)"
+        else:
+            out[n] = f"ok ({cfg['model']})"
     return out

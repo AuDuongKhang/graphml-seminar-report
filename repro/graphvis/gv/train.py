@@ -69,7 +69,10 @@ def experiment_id(cfg: dict, dry_run: bool) -> str:
 def single_gpu_guard(args, quant: str) -> None:
     """Trainer bọc mô hình bằng nn.DataParallel khi thấy >1 GPU (Kaggle 2xT4) — hỏng với bnb 4-bit + PEFT
     và làm batch thực tế nhân đôi. Ép 1 GPU cho QLoRA."""
-    if quant == "4bit" and getattr(args, "_n_gpu", 1) > 1:
+    if quant != "4bit":
+        return
+    getattr(args, "device", None)          # chạy _setup_devices (cached) TRƯỚC, nếu không nó sẽ đặt lại _n_gpu sau
+    if getattr(args, "_n_gpu", 1) > 1:
         args._n_gpu = 1
 
 
@@ -83,6 +86,17 @@ def prune_checkpoints(stage_dir: Path) -> None:
 def half_state_dict(sd: dict) -> dict:
     import torch
     return {k: (v.half() if torch.is_floating_point(v) else v) for k, v in sd.items()}
+
+
+def halve_adapter_file(adapter_dir: Path) -> None:
+    """Đổi adapter đã lưu (fp32, gồm LoRA + bản sao projector) sang fp16 để giảm một nửa dung lượng.
+    Làm trên file đã lưu thay vì truyền state_dict vào save_pretrained: peft sẽ lọc lại dict đó như state dict
+    đầy đủ và làm rơi khóa modules_to_save (projector)."""
+    from safetensors.torch import load, save_file
+    f = Path(adapter_dir) / "adapter_model.safetensors"
+    if f.exists():
+        tensors = half_state_dict(load(f.read_bytes()))   # đọc từ bytes: không giữ mmap (Windows không cho ghi đè)
+        save_file(tensors, str(f), metadata={"format": "pt"})
 
 
 def _upload(folder: Path, hub_repo: str, path_in_repo: str):
@@ -142,8 +156,8 @@ def run_stages(cfg: dict, dry_run: bool = False) -> Path:
                           optimizers=(opt, None))
         resume = any(sdir.glob("checkpoint-*"))
         trainer.train(resume_from_checkpoint=True if resume else None)
-        from peft import get_peft_model_state_dict
-        model.save_pretrained(str(final), state_dict=half_state_dict(get_peft_model_state_dict(model)))   # fp16: ~0,7 GB
+        model.save_pretrained(str(final))
+        halve_adapter_file(final)                       # fp16: ~0,7 GB thay vì ~1,4 GB
         prune_checkpoints(sdir)
         if cfg.get("hub_repo") and not dry_run:
             _upload(final, cfg["hub_repo"], f"{exp}/{st['name']}")

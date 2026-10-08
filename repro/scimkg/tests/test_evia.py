@@ -62,3 +62,13 @@ def test_author_scores_normalize_votes():
                     author_validation={"t": {"肺": 11, "环境": 1, "鳃": 16}})
     s = author_scores(lesson)
     assert s["t"]["鳃"] == 1.0 and s["t"]["环境"] == 0.0 and abs(s["t"]["肺"] - 10 / 15) < 1e-9
+
+
+def test_ablations_use_the_run_extractors_when_they_differ_from_validators():
+    # evia --models m1 m2 --extractors x : chỉ x trích xuất
+    per_model = {"s": {"x": ["a", "b"]}}
+    cands = {"s": ["a", "b"]}
+    votes = {"s": {"m1": [["a"]], "m2": [["a", "b"]]}}
+    assert ablation_scores("wo_SFFD", cands, per_model, votes, ["m1", "m2"], K=1)["s"] == {"a": 1.0, "b": 1.0}
+    assert ablation_scores("wo_both", cands, per_model, votes, ["m1", "m2"], K=1)["s"] == {"a": 1.0, "b": 1.0}
+    assert ablation_scores("wo_MLs", cands, per_model, votes, ["m1", "m2"], K=1)["s"] == {"a": 1.0, "b": 0.0}

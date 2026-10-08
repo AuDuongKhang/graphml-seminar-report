@@ -93,7 +93,7 @@ Trước khi nộp: `grep -rn "\\\\todo\|wandbtodo" report/` phải rỗng.
 | B: IX–XI, XIII (SciMKG) | Bản nháp hoàn chỉnh, đã đối chiếu mã nguồn |
 | B: XII Tái lập | **Chờ chạy** |
 | Kết luận, Phân công, Tóm tắt, Phụ lục B–C | **Sườn** |
-| Code tái lập (`repro/`), notebook, README, DEVIATIONS | **Xong** — 101 test CPU; chưa chạy trên GPU |
+| Code tái lập (`repro/`), notebook, README, DEVIATIONS | **Xong** — 128 test CPU; đã qua review (Claude + Codex trên PR #1); chưa chạy trên GPU |
 | Chạy thực nghiệm trên Kaggle/Colab, dán link W&B | **Việc tiếp theo** — xem `docs/experiments.md` |
 
 Việc tiếp theo: chạy ô "Kiểm tra nhanh" của hai notebook trước (test GPU + dry-run), rồi các ô theo thứ tự.

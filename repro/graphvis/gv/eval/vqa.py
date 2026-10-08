@@ -44,6 +44,22 @@ def sample_mmbench_groups(rows: list, n_groups: int | None, seed: int = 42) -> l
     return [r for r in rows if r["index"] % 1_000_000 in keep]
 
 
+def sample_indices(n: int, k: int | None, seed: int = 42) -> list:
+    """Chọn chỉ số mẫu TRƯỚC khi đọc ảnh (tránh giải mã cả 3.000 ảnh COCO của POPE rồi mới lấy mẫu)."""
+    if not k or k >= n:
+        return list(range(n))
+    return sorted(random.Random(seed).sample(range(n), k))
+
+
+def mmbench_group_indices(index_col: list, n_groups: int | None, seed: int = 42) -> list:
+    """Chỉ số các dòng thuộc n_groups câu gốc (giữ đủ mọi bản xoay vòng của mỗi câu)."""
+    if not n_groups:
+        return list(range(len(index_col)))
+    ids = sorted({x % 1_000_000 for x in index_col})
+    keep = set(random.Random(seed).sample(ids, min(n_groups, len(ids))))
+    return [i for i, x in enumerate(index_col) if x % 1_000_000 in keep]
+
+
 def pope_yes(text: str) -> bool:
     words = set(re.findall(r"[a-z']+", (text or "").lower()))
     return not ({"no", "not"} & words)
@@ -85,13 +101,12 @@ def eval_vqa(benchmark: str, adapter: str | None, exp_id: str, group: str | None
     if model is None:
         model, proc = load_model_and_processor(image_mode=image_mode, quant=quant, dtype=dtype,
                                                adapter_path=adapter if adapter not in (None, "none") else None)
-    rng = random.Random(seed)
     summary = {}
     if benchmark == "scienceqa":
         ds = _load(*SCIENCEQA).filter(lambda r: r["image"] is not None)
+        ds = ds.select(sample_indices(len(ds), max_eval, seed))
         rows = [{"image": r["image"], "prompt": scienceqa_prompt(r), "answer": "ABCDE"[r["answer"]],
                  "n": len(r["choices"])} for r in ds]
-        rows = rng.sample(rows, max_eval) if max_eval and max_eval < len(rows) else rows
         preds = generate(model, proc, rows, image_mode=image_mode, batch_size=batch_size, max_new_tokens=8, dtype=dtype)
         correct = [extract_choice_letter(p, r["n"]) == r["answer"] for p, r in zip(preds, rows)]
         summary["img_accuracy"] = 100 * sum(correct) / len(rows)
@@ -99,9 +114,9 @@ def eval_vqa(benchmark: str, adapter: str | None, exp_id: str, group: str | None
                                             data=[[r["answer"], p, c] for r, p, c in zip(rows, preds, correct)])})
     elif benchmark == "mmbench":
         ds = _load(*MMBENCH)
+        ds = ds.select(mmbench_group_indices(ds["index"], max_eval, seed))   # cột index không giải mã ảnh
         rows = [{"index": r["index"], "image": r["image"], "prompt": mmbench_prompt(r), "answer": r["answer"],
                  "n": sum(_ok(r[k]) for k in "ABCD"), "category": r["category"]} for r in ds]
-        rows = sample_mmbench_groups(rows, max_eval, seed)
         preds = generate(model, proc, rows, image_mode=image_mode, batch_size=batch_size, max_new_tokens=8, dtype=dtype)
         for r, p in zip(rows, preds):
             r["correct"] = extract_choice_letter(p, r["n"]) == r["answer"]
@@ -115,8 +130,8 @@ def eval_vqa(benchmark: str, adapter: str | None, exp_id: str, group: str | None
         name, config, splits = POPE
         for sp in splits:
             ds = _load(name, config, sp)
+            ds = ds.select(sample_indices(len(ds), max_eval, seed))
             rows = [{"image": r["image"], "prompt": f"{r['question']}\n{POPE_SUFFIX}", "answer": r["answer"]} for r in ds]
-            rows = rng.sample(rows, max_eval) if max_eval and max_eval < len(rows) else rows
             preds = generate(model, proc, rows, image_mode=image_mode, batch_size=batch_size, max_new_tokens=4,
                              dtype=dtype)
             m = pope_metrics(preds, [r["answer"] for r in rows])

@@ -46,3 +46,19 @@ def test_combine_bins():
     table = combine_bins(rows)
     assert ["base", "0-10", 1.0, 1] in table and ["base", ">40", 0.0, 1] in table
     assert ["graphvis", ">40", 1.0, 1] in table
+
+
+def test_sample_indices_is_deterministic_and_bounded():
+    from gv.eval.vqa import sample_indices
+    a = sample_indices(3000, 500, seed=42)
+    assert a == sample_indices(3000, 500, seed=42) and len(a) == 500 and a == sorted(a)
+    assert sample_indices(10, None) == list(range(10)) and sample_indices(10, 50) == list(range(10))
+
+
+def test_mmbench_group_indices_select_whole_groups():
+    from gv.eval.vqa import mmbench_group_indices
+    index_col = [1, 2, 3, 1_000_001, 1_000_002, 2_000_001]
+    picked = mmbench_group_indices(index_col, n_groups=1, seed=0)
+    groups = {index_col[i] % 1_000_000 for i in picked}
+    assert len(groups) == 1 and len(picked) == sum(1 for x in index_col if x % 1_000_000 in groups)
+    assert mmbench_group_indices(index_col, None) == list(range(6))

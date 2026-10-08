@@ -101,3 +101,38 @@ def test_dry_run_uses_separate_experiment_id():
     from gv.train import experiment_id
     assert experiment_id({"exp_id": "G1-csqa-curriculum"}, dry_run=True) == "G1-csqa-curriculum-dryrun"
     assert experiment_id({"exp_id": "G1-csqa-curriculum"}, dry_run=False) == "G1-csqa-curriculum"
+
+
+# ---------------- Rà soát lại: _setup_devices (cached) chạy sau guard sẽ đặt lại _n_gpu = 2 ----------------
+def test_single_gpu_guard_survives_lazy_device_setup():
+    from gv.train import single_gpu_guard
+
+    class Args:
+        _n_gpu = 0
+
+        @property
+        def device(self):          # mô phỏng TrainingArguments._setup_devices: đặt _n_gpu khi lần đầu truy cập
+            if not getattr(self, "_setup", False):
+                self._setup = True
+                self._n_gpu = 2
+            return "cuda:0"
+    a = Args()
+    single_gpu_guard(a, quant="4bit")
+    assert a.device == "cuda:0" and a._n_gpu == 1
+
+
+# ---------------- Rà soát lại: truyền state_dict đã lọc vào PeftModel.save_pretrained làm mất projector ----------------
+def test_halve_adapter_file_keeps_every_tensor(tmp_path):
+    from safetensors.torch import load_file, save_file
+
+    from gv.train import halve_adapter_file
+    f = tmp_path / "adapter_model.safetensors"
+    save_file({"base_model.model.multi_modal_projector.linear_1.weight": torch.ones(2, 2),
+               "base_model.model.language_model.layers.0.q_proj.lora_A.weight": torch.ones(2, 2),
+               "step": torch.tensor([3])}, str(f))
+    halve_adapter_file(tmp_path)
+    sd = load_file(str(f))
+    assert set(sd) == {"base_model.model.multi_modal_projector.linear_1.weight",
+                       "base_model.model.language_model.layers.0.q_proj.lora_A.weight", "step"}
+    assert sd["base_model.model.multi_modal_projector.linear_1.weight"].dtype == torch.float16
+    assert sd["step"].dtype == torch.int64
