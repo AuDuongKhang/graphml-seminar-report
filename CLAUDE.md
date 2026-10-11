@@ -40,10 +40,11 @@ report/                 ← mã LaTeX của báo cáo
   refs.bib
 GraphVis-code/          ← mã gốc GraphVis (Apache-2.0). Commit đầu tiên = bản gốc chưa sửa;
                           mọi sửa đổi để tái lập xem bằng `git diff <commit đầu> -- GraphVis-code`
-SciMKG/                 ← git submodule trỏ tới kg-bnu/SciMKG (chỉ đọc, không sửa trong submodule)
-repro/                  ← code tái lập: common/ (W&B, đường dẫn, đọc zip từ xa), graphvis/ (package gv),
-                          scimkg/ (package smkg); mỗi bài có README, DEVIATIONS, notebook Kaggle/Colab (sinh từ make_notebook.py)
+SciMKG/                 ← fork nhinbm/SciMKG; phát triển và kiểm thử tại đây
+repro/                  ← common/ và graphvis/ (package gv, README, DEVIATIONS, notebook)
 ```
+
+Hướng dẫn `smkg` trong `docs/` là bản cũ; mã SciMKG hiện nằm trong fork.
 
 Không có trong git (chỉ có trên máy Khang): các file `.txt` ngữ cảnh (yêu cầu, nhận xét GV,
 link slide Canva), PDF hai bài báo. Nội dung cần thiết đã được tóm tắt vào `docs/context.md`.
@@ -93,17 +94,17 @@ Trước khi nộp: `grep -rn "\\\\todo\|wandbtodo" report/` phải rỗng.
 | B: IX–XI, XIII (SciMKG) | Bản nháp hoàn chỉnh, đã đối chiếu mã nguồn |
 | B: XII Tái lập | **Chờ chạy** |
 | Kết luận, Phân công, Tóm tắt, Phụ lục B–C | **Sườn** |
-| Code tái lập (`repro/`), notebook, README, DEVIATIONS | **Xong** — 128 test CPU; đã qua review (Claude + Codex trên PR #1); chưa chạy trên GPU |
+| Code tái lập | GraphVis ở `repro/graphvis/`; SciMKG phát triển trong fork `SciMKG/`. |
 | Chạy thực nghiệm trên Kaggle/Colab, dán link W&B | **Việc tiếp theo** — xem `docs/experiments.md` |
 
-Việc tiếp theo: chạy ô "Kiểm tra nhanh" của hai notebook trước (test GPU + dry-run), rồi các ô theo thứ tự.
+Việc tiếp theo: notebook GraphVis; sửa và kiểm thử SciMKG trong fork.
 Kết quả đã có từ local: `score-authors` (đầu ra gốc của tác giả, α=0,7) P .953 R .740 F1 .833 MCC .690 — xem `docs/findings.md` §B4.
-Mọi khác biệt so với bài nằm trong `repro/*/DEVIATIONS.md` (nguồn cho mục VII-A, XII-A của báo cáo).
+Sai khác GraphVis: `repro/graphvis/DEVIATIONS.md`; SciMKG: ghi tại fork.
 
 ## 6. Làm việc nhóm (2 người, 2 agent)
 
 - Mỗi người làm trên **nhánh riêng** (`khang/...`, `nhi/...`), mở PR vào `main`; `git pull --rebase` trước khi bắt đầu.
 - Tránh sửa cùng một file cùng lúc. Phân chia gợi ý: một người giữ `sections/A_graphvis.tex` + `repro/graphvis/`,
-  người kia giữ `sections/B_scimkg.tex` + `repro/scimkg/`. `main.tex`, `refs.bib` sửa nhỏ, báo trước.
+  người kia giữ `sections/B_scimkg.tex` + fork `SciMKG/`. `main.tex`, `refs.bib` sửa nhỏ, báo trước.
 - Khi xong một việc: cập nhật bảng §5 ở trên và trạng thái trong `docs/experiments.md` trong cùng commit.
 - Không commit file build LaTeX, dữ liệu lớn, checkpoint, khóa API (`.env`). Xem `.gitignore`.

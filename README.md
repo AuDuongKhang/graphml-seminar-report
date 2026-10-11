@@ -9,10 +9,9 @@ README này chỉ mô tả **cách chạy lại**. Kết quả và phân tích n
 ## Lấy mã nguồn
 
 ```bash
-git clone --recurse-submodules https://github.com/AuDuongKhang/graphml-seminar-report.git
+git clone https://github.com/AuDuongKhang/graphml-seminar-report.git
 cd graphml-seminar-report
-# nếu đã clone mà thiếu submodule:
-git submodule update --init
+git submodule update --init SciMKG
 ```
 
 ## Cấu trúc
@@ -21,8 +20,8 @@ git submodule update --init
 |---|---|
 | `report/` | Mã LaTeX của báo cáo (XeLaTeX) |
 | `GraphVis-code/` | Mã gốc GraphVis (Apache-2.0) và các chỉnh sửa của nhóm để tái lập |
-| `SciMKG/` | Submodule mã gốc SciMKG (`kg-bnu/SciMKG`) |
-| `repro/` | Code tái lập của nhóm: `graphvis/` (package `gv`), `scimkg/` (package `smkg`), `common/` |
+| `SciMKG/` | Fork [`nhinbm/SciMKG`](https://github.com/nhinbm/SciMKG) |
+| `repro/` | GraphVis (`graphvis/`, package `gv`) và tiện ích `common/` |
 | `docs/` | Tài liệu nội bộ cho nhóm |
 
 ## Biên dịch báo cáo
@@ -44,20 +43,15 @@ Chi tiết: [`repro/graphvis/README.md`](repro/graphvis/README.md).
   (mỗi ô ứng với một ID thực nghiệm G0–G7, C1–C3).
 - **Dòng lệnh:** `cd repro/graphvis && python -m gv.cli --help`.
 
-## Tái lập SciMKG
+## SciMKG
 
-Chi tiết: [`repro/scimkg/README.md`](repro/scimkg/README.md).
-
-- **Phần cứng:** Kaggle Notebooks (T4 ×2 khuyến nghị) hoặc Colab (T4); mô hình mở chạy bằng Ollama.
-- **Môi trường:** Python ≥ 3.10, `pip install -r repro/scimkg/requirements.txt`, Ollama; vLLM cho baseline UniversalNER.
-- **Khóa API (tùy chọn):** `OPENAI_API_KEY`, `DEEPSEEK_API_KEY`, `GEMINI_API_KEY` — đặt trong Secrets của notebook, không commit.
-- **Chạy:** mở `repro/scimkg/notebooks/SciMKG_Repro.ipynb`, sửa ô cấu hình, chạy từ trên xuống (S0–S5).
-- **Dòng lệnh:** `cd repro/scimkg && python -m smkg.cli --help`.
+Phát triển và kiểm thử trong fork `SciMKG/`; xem [README](SciMKG/README.md).
+Push commit vào fork trước khi cập nhật con trỏ submodule trong repo báo cáo.
 
 ## Kiểm thử
 
 ```bash
-cd repro && python -m pytest -q     # chạy trên CPU, không cần mạng
+cd repro && python -m pytest -q     # common và GraphVis; CPU, không cần mạng
 ```
 
 ## Theo dõi thực nghiệm
