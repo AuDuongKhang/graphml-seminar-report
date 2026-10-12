@@ -1,7 +1,7 @@
 # CLAUDE.md — Hướng dẫn cho agent (Claude Code) làm tiếp báo cáo này
 
 Đọc file này trước tiên, sau đó đọc `docs/context.md`. Không cần đọc lại hai bài báo từ đầu:
-những gì đã kiểm chứng nằm trong `docs/findings.md`.
+Phát hiện GraphVis: `docs/findings.md`; SciMKG: đọc `SciMKG/docs/FINDINGS.md`.
 
 ## 1. Dự án là gì
 
@@ -28,7 +28,7 @@ AGENTS.md               ← trỏ về file này (cho Codex/Cursor/agent khác)
 README.md               ← hướng dẫn CHẠY tái lập (yêu cầu môn học; KHÔNG ghi kết quả/giải pháp ở đây)
 docs/
   context.md            ← yêu cầu môn học, nhận xét của GV, quyết định đã chốt
-  findings.md           ← sự thật đã kiểm chứng: số liệu bài báo, điểm không khớp bài ↔ mã (có số dòng)
+  findings.md           ← phát hiện GraphVis; SciMKG ở SciMKG/docs/FINDINGS.md
   experiments.md        ← danh sách thực nghiệm cần tái lập, trạng thái, chỗ dán link W&B
   plan_bao_cao.md       ← kế hoạch & sườn ban đầu (lịch sử; ưu tiên các file trên khi mâu thuẫn)
 report/                 ← mã LaTeX của báo cáo
@@ -95,10 +95,11 @@ Trước khi nộp: `grep -rn "\\\\todo\|wandbtodo" report/` phải rỗng.
 | B: XII Tái lập | **Chờ chạy** |
 | Kết luận, Phân công, Tóm tắt, Phụ lục B–C | **Sườn** |
 | Code tái lập | GraphVis ở `repro/graphvis/`; SciMKG phát triển trong fork `SciMKG/`. |
+| SciMKG: mã và findings | Giữ hai sửa đổi EVIA về Integration và cờ nguồn ngoài; phát hiện F1 ngắn ở `SciMKG/docs/FINDINGS.md`. |
 | Chạy thực nghiệm trên Kaggle/Colab, dán link W&B | **Việc tiếp theo** — xem `docs/experiments.md` |
 
 Việc tiếp theo: notebook GraphVis; sửa và kiểm thử SciMKG trong fork.
-Kết quả đã có từ local: `score-authors` (đầu ra gốc của tác giả, α=0,7) P .953 R .740 F1 .833 MCC .690 — xem `docs/findings.md` §B4.
+Kết quả chấm tác giả trước đây giữ trong lịch sử Git; phát hiện SciMKG đang duyệt ở `SciMKG/docs/FINDINGS.md`.
 Sai khác GraphVis: `repro/graphvis/DEVIATIONS.md`; SciMKG: ghi tại fork.
 
 ## 6. Làm việc nhóm (2 người, 2 agent)
