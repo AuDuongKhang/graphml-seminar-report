@@ -1,265 +1,106 @@
 % ============================================================
-% PHẦN B — SCIMKG (bài chỉ báo cáo)   ~ 8–9 trang
-%   Mỗi phần đánh số mục lại từ I. Các mục của Phần B:
-%   I–II  Giới thiệu và công trình liên quan (B_intro, B_related)
-%   III   Bài toán & động cơ
-%   IV    Phương pháp: cơ chế hoạt động chi tiết (đối chiếu bài báo + mã nguồn)
-%   V     Kết quả công bố
-%   VI    Tái lập (chưa có số liệu)
-%   VII   Đánh giá phê bình
-%   VIII  Kết luận riêng (B_conclusion)
+% PHẦN B - PHƯƠNG PHÁP VÀ CÁC MỤC CÒN LẠI CỦA SCIMKG (bài chỉ báo cáo)
+%   Mỗi phần đánh số mục lại từ I. Đánh số TẠM của Phần B cho đến khi tái cấu trúc
+%   thành 5 mục (Giới thiệu, Công trình liên quan, Phương pháp, Thực nghiệm, Kết luận):
+%   I-II  Giới thiệu và công trình liên quan (B_intro, B_related)
+%   III   Phương pháp (mục Tổng quan đã viết xong; các mục con còn lại ở dạng cũ,
+%         sẽ viết lại thành đoạn văn từng mục một)
+%   IV    Kết quả công bố
+%   V     Tái lập (chưa có số liệu)
+%   VI    Đánh giá phê bình
+%   VII   Kết luận riêng (B_conclusion)
 % ============================================================
 
 % ------------------------------------------------------------
-\section{SciMKG: bài toán và động cơ}\label{sec:sm-problem}
+\section{Phương pháp}\label{sec:sm-method}
 % ------------------------------------------------------------
-\subsection{Đồ thị tri thức giáo dục và hai trở ngại}
-Đồ thị tri thức giáo dục (EKG) tổ chức nội dung học tập thành khái niệm và quan hệ giữa chúng. Dạng tổ chức này phục vụ các ứng dụng như sinh câu hỏi, hỏi đáp theo ngữ cảnh, truy hồi tri thức hay trợ lý học tập. Theo \SM{}~\cite{lu2026scimkg}, các EKG hiện có vướng hai trở ngại:
-\begin{itemize}
-\item \emph{Phụ thuộc gán nhãn và mô hình huấn luyện riêng.} KnowEdu~\cite{chen2018knowedu} huấn luyện mô hình nhận dạng thực thể (NER), còn MOOCCube/MOOCCubeX~\cite{yu2021mooccubex} tinh chỉnh mô hình họ BERT. Cả hai cần dữ liệu gán nhãn và khó theo kịp nguồn học liệu mở thay đổi liên tục. Các cách dùng LLM gần đây vẫn cần một khung KG dựng tay.
-\item \emph{Thiếu phương thức.} Hầu hết EKG chỉ có văn bản, và tri thức trong ảnh hay video bị quy về chữ. TIVA-KG~\cite{wang2023tivakg} có đủ bốn phương thức nhưng phải căn chỉnh thủ công và thuộc miền tổng quát.
-\end{itemize}
+\subsection{Tổng quan}\label{sec:sm-overview}
+\SM{} nhận đầu vào là tài nguyên của các khóa học trực tuyến mở, gồm video bài giảng, slide, bài tập và chuẩn chương trình của môn học (Hình~\ref{fig:sm-pipeline}a).
+Bài báo chọn ba môn khoa học tự nhiên bậc phổ thông của Trung Quốc là sinh học, vật lý và hóa học, vì các môn này giàu nội dung trực quan hơn những môn còn lại.
+Đầu ra là một EKG đa phương thức tổ chức theo ba tầng: môn học, điểm kiến thức và khái niệm.
+Mỗi khái niệm được gắn với lời giải thích bằng văn bản, ảnh minh họa, đoạn video nơi khái niệm được giảng và âm thanh đọc lời giải thích.
 
-\subsection{Phát biểu bài toán}
-Cho tập đoạn văn $P=\{p_1,\dots,p_n\}$ lấy từ phụ đề video bài giảng, mỗi đoạn gắn với một khoảng thời gian, và một môn học $d$ (sinh học, vật lý hoặc hóa học). Hệ thống cần giải hai bài toán con:
-\begin{enumerate}
-\item \emph{Trích xuất khái niệm}: tìm tập $C=\{c_1,\dots,c_m\}$ gồm những khái niệm thực sự thuộc môn $d$. Ví dụ, ``mô biểu bì'' và ``tế bào cơ'' là khái niệm sinh học, còn ``hệ thống'' thì quá chung chung và ``kính hiển vi'' chỉ là dụng cụ.
-\item \emph{Căn chỉnh đa phương thức}: với tài nguyên $A=\{\text{văn bản},\text{ảnh},\text{video},\text{âm thanh}\}$, gán mỗi phần tử của $A$ vào đúng khái niệm trong $C$.
-\end{enumerate}
-Đầu ra là một đồ thị ba tầng, trong đó mỗi khái niệm là một nút ``đa phương thức''. Lấy ví dụ trong bài: khái niệm \emph{mô biểu bì} có một câu giải thích, các ảnh slide minh họa, đoạn video bài giảng 07:52--10:24 nơi khái niệm được giảng, và một tệp âm thanh đọc lời giải thích. Khái niệm này được nối với điểm kiến thức ``các cấp tổ chức của cơ thể động vật'', và điểm kiến thức thuộc môn sinh học.
+Về hình thức, bài toán gồm hai bài toán con nối tiếp nhau.
+Bài toán thứ nhất là trích xuất khái niệm: cho tập đoạn văn $P=\{p_1,\dots,p_n\}$ lấy từ phụ đề video, mỗi đoạn gắn với một khoảng thời gian, tìm tập $C=\{c_1,\dots,c_m\}$ gồm những khái niệm thực sự thuộc môn $d$.
+Chẳng hạn ``mô biểu bì'' và ``tế bào cơ'' là khái niệm sinh học, còn ``hệ thống'' quá chung chung và ``kính hiển vi'' chỉ là dụng cụ.
+Bài toán thứ hai là căn chỉnh đa phương thức: với tài nguyên $A=\{\text{văn bản},\text{ảnh},\text{video},\text{âm thanh}\}$, gán mỗi phần tử của $A$ vào đúng khái niệm trong $C$.
+Lấy khái niệm \emph{mô biểu bì} làm ví dụ, nó có một câu giải thích, các ảnh slide minh họa, đoạn video 07:52--10:24 nơi khái niệm được giảng và một tệp âm thanh đọc lời giải thích, rồi được nối với điểm kiến thức ``các cấp tổ chức của cơ thể động vật'' thuộc môn sinh học.
 
-% ------------------------------------------------------------
-\section{SciMKG: phương pháp và cơ chế hoạt động}\label{sec:sm-method}
-% ------------------------------------------------------------
-Mục này mô tả \SM{} theo đúng thứ tự dữ liệu đi qua hệ thống (Hình~\ref{fig:sm-pipeline}): nguyên liệu vào, mô hình dùng ở mỗi bước, và đầu ra của từng bước. Bài báo chỉ mô tả ở mức khái quát, nên nhóm bổ sung chi tiết từ mã nguồn công bố (\texttt{kg-bnu/SciMKG}). Những chỗ bài và mã không khớp được tổng hợp ở Mục~\ref{sec:sm-mismatch}.
+Luồng xử lý (Hình~\ref{fig:sm-pipeline}) gồm bốn thành phần nối tiếp.
+Tiền xử lý biến video và slide thành các đoạn văn có mốc thời gian, các đoạn video và các ảnh.
+Trích xuất khái niệm chạy chuỗi EVIA (Extraction, Verification, Integration, Augmentation) trên từng đoạn văn để ra tập $C$.
+Căn chỉnh đa phương thức gắn ảnh, video và âm thanh vào từng khái niệm.
+Cuối cùng, khái niệm và tài nguyên đi kèm được tổ chức và lưu thành JSON và RDF, phục vụ các ứng dụng như sinh câu hỏi đa phương thức, hỏi đáp, truy hồi chéo phương thức và trợ lý học tập.
+
+Điểm đáng chú ý là \SM{} không huấn luyện hay tinh chỉnh trọng số của bất kỳ mô hình nào: mọi bước cần ``hiểu'' nội dung đều gọi mô hình có sẵn qua API với prompt soạn trước.
+Phần gần với việc ``học'' nhất là vòng Self-Refine ở bước kiểm chứng, nơi mô hình nhận lại phản hồi của chính nó để sửa danh sách khái niệm, nhưng toàn bộ diễn ra lúc suy luận và không có gradient.
+Tham số giải mã được cố định để giảm ngẫu nhiên: nhiệt độ 0, top-$p$ 0,1, frequency penalty 0,5, độ dài tối đa 1000 token và seed 42.
+Riêng thí nghiệm theo kích thước mô hình dùng các LLM mở cỡ nhỏ (Qwen3, Gemma3, Phi-3), chạy cục bộ trên một GPU RTX 3090, cũng chỉ ở chế độ suy luận.
 
 \begin{figure*}[t]
 \centering
-\input{figures/fig_sm_pipeline}
-\caption{Luồng xử lý của \SM{} (nhóm vẽ lại, bổ sung các bước tiền xử lý theo mã nguồn). \textbf{(a)} Video được chuyển thành đoạn văn có mốc thời gian và được cắt thành các clip tương ứng; slide được tách thành ảnh. \textbf{(b)} Chuỗi EVIA chạy trên từng đoạn văn với ba LLM để ra tập khái niệm $C$. \textbf{(c)} Ảnh, video, lời giải thích và âm thanh được gắn vào từng khái niệm. \textbf{(d)} Sinh bộ ba và lưu thành JSON và RDF.}
+\includegraphics[width=\textwidth]{figures/fig_sm_overview_paper.pdf}
+\caption{Khung xây dựng \SM{} (Hình 2 trong~\cite{lu2026scimkg}, giữ nguyên nhãn tiếng Anh của tác giả). \textbf{(a)} Tài nguyên giáo dục đầu vào: chuẩn chương trình, video, slide và bài tập. \textbf{(b)} Trích xuất khái niệm bằng chuỗi EVIA (Extraction, Verification, Integration, Augmentation). \textbf{(c)} Căn chỉnh đa phương thức: căn chỉnh ngữ nghĩa cho ảnh qua mô tả, căn chỉnh cấu trúc cho video và âm thanh. \textbf{(d)} Tổ chức và lưu trữ theo ba tầng môn học, điểm kiến thức và khái niệm. \textbf{(e)} Các ứng dụng của đồ thị.}
 \label{fig:sm-pipeline}
 \end{figure*}
 
-\subsection{\SM{} có ``huấn luyện'' mô hình nào không?}
-\emph{Không.} \SM{} không tinh chỉnh hay huấn luyện bất kỳ trọng số nào. Mọi bước ``thông minh'' đều là \emph{gọi mô hình có sẵn qua API} với prompt soạn sẵn, theo kiểu zero-shot (không có ví dụ mẫu, trừ một ví dụ định dạng ở prompt phản hồi). Phần giống ``học'' nhất là vòng Self-Refine ở bước kiểm chứng: mô hình nhận lại phản hồi của chính nó và sửa danh sách khái niệm qua nhiều vòng. Toàn bộ diễn ra lúc suy luận, không có gradient. Tham số giải mã được cố định để giảm ngẫu nhiên: nhiệt độ 0, top-$p$ 0,1, frequency penalty 0,5, độ dài tối đa 1000 token, seed 42. Các LLM mở cỡ nhỏ (Qwen3, Gemma3, Phi-3) trong thí nghiệm theo kích thước mô hình được chạy cục bộ trên một GPU RTX 3090, cũng chỉ ở chế độ suy luận. Bảng~\ref{tab:sm-models} liệt kê mô hình và công cụ dùng ở từng bước.
-
-\begin{table*}[t]
-\centering
-\caption{Mô hình và công cụ ở từng bước của \SM{} (theo bài báo và mã nguồn). Không bước nào cập nhật trọng số mô hình.}
-\label{tab:sm-models}
-\footnotesize
-\setlength{\tabcolsep}{5pt}
-\begin{tabular}{@{}lll@{}}
-\toprule
-Bước & Mô hình / công cụ & Đầu ra \\
-\midrule
-Video $\rightarrow$ âm thanh & moviepy & tệp MP3 \\
-Âm thanh $\rightarrow$ chữ & công cụ ASR trực tuyến (thủ công) & bản ghi có mốc thời gian \\
-Phân đoạn theo ngữ nghĩa & Gemini & đoạn ``mm:ss--mm:ss: nội dung'' \\
-Cắt clip & moviepy (libx264) & một clip cho mỗi đoạn \\
-Slide $\rightarrow$ ảnh & dịch vụ tách ảnh từ PDF & ảnh PNG \\
-\midrule
-Trích xuất (E) & DeepSeek-V3$^{\dagger}$ & ứng viên mỗi đoạn \\
-Kiểm chứng (V) & GPT-4o, DeepSeek-V3, Gemini-1.5-Flash & điểm SC mỗi ứng viên \\
-Tích hợp (I) & công thức bỏ phiếu, ngưỡng $\alpha$ & tập $C$ \\
-Bổ sung (A) & ConceptNet API + DeepSeek-V3 & khái niệm mở rộng \\
-Giải thích & Baidu Translate, Wikipedia, LLM & câu $\le$20 từ \\
-\midrule
-Căn chỉnh ảnh & GPT-4o (3 lần)$^{\ddagger}$ & danh sách khái niệm mỗi ảnh \\
-Căn chỉnh video & mốc thời gian của đoạn & URL clip \\
-Âm thanh & OpenAI TTS (\texttt{tts-1}) & MP3 mỗi khái niệm \\
-Lưu trữ & JSON, rdflib & bộ ba, RDF \\
-\bottomrule
-\multicolumn{3}{@{}l}{\scriptsize $^{\dagger}$Bài báo: cả ba LLM. $^{\ddagger}$Bài báo: GPT-4o/Gemini-1.5-Pro, thêm một MLLM chấm độ tin cậy $>0{,}8$.}
-\end{tabular}
-\end{table*}
-
 \subsection{Thu thập và tiền xử lý}\label{sec:sm-preprocess}
-Nguồn dữ liệu là các khóa MOOC phổ thông của Trung Quốc cho ba môn khoa học tự nhiên, gồm video, slide và bài tập, kèm chuẩn chương trình. Theo mã nguồn, một bài giảng được xử lý qua năm bước:
-\begin{enumerate}
-\item Tách âm thanh từ video MP4 thành MP3.
-\item Chuyển âm thanh thành chữ bằng một công cụ nhận dạng giọng nói trực tuyến. Bước này làm thủ công, ngoài mã nguồn. Kết quả là bản ghi có nhãn người nói và mốc thời gian, được phân tích thành các đoạn dạng \texttt{"07:52-10:24": "<nội dung>"}.
-\item Gọi Gemini để \emph{gộp lại các đoạn theo ngữ nghĩa}: mô hình được yêu cầu giữ nguyên văn bản gốc, không tóm tắt, chỉ ghép các câu cùng ý thành một đoạn mới với mốc thời gian mới. Mỗi đoạn sau bước này ứng với một ý giảng trọn vẹn.
-\item Cắt video thành các clip theo đúng mốc thời gian của từng đoạn. Đây là nền tảng của bước căn chỉnh video về sau.
-\item Tách các ảnh nhúng trong slide PDF thành tệp PNG.
-\end{enumerate}
-Đầu ra của tiền xử lý cho mỗi bài giảng là một tệp văn bản (mỗi dòng một đoạn có mốc thời gian), một thư mục clip và một thư mục ảnh. Toàn bộ văn bản là tiếng Trung giản thể, và các khái niệm cũng được giữ ở tiếng Trung.
+Dữ liệu nguồn là video, slide và bài tập của các khóa học trực tuyến mở, kèm chuẩn chương trình.
+Phụ đề của video được trích thành văn bản để tìm khái niệm, còn ảnh được tách từ slide để bổ sung phương thức cho khái niệm.
+Để lời giảng rõ ràng và dễ tiếp cận hơn, bài báo dùng MLLM viết lại văn bản đã trích, sinh âm thanh tương ứng và ghi lại URL của từng video gốc.
+Theo mã nguồn, văn bản được nhận dạng từ âm thanh rồi được Gemini gộp lại theo ngữ nghĩa thành các đoạn có mốc thời gian, và video được cắt thành các clip theo mốc đó; toàn bộ văn bản là tiếng Trung giản thể.
 
 \subsection{Trích xuất khái niệm: chuỗi EVIA}\label{sec:sm-evia}
-Chuỗi EVIA (Extraction--Verification--Integration--Augmentation) chạy \emph{trên từng đoạn} văn bản. Hình~\ref{alg:evia} tóm tắt ba bước đầu dưới dạng mã giả.
+Chuỗi EVIA đã nêu ở phần tổng quan chạy trên từng đoạn phụ đề theo bốn bước.
+Đầu vào của bước trích xuất (E) là văn bản của một đoạn; LLM xác định mọi danh từ và cụm danh từ rồi giữ lại những cụm thuộc môn học, và đầu ra là tập khái niệm ứng viên của đoạn.
+Chẳng hạn, từ một đoạn nói về mô biểu bì, ứng viên có thể gồm ``mô biểu bì'', ``tế bào cơ'', ``hệ thống'', ``kính hiển vi'' và ``cơ quan'' (ví dụ minh họa của nhóm, không phải dữ liệu của bài).
 
-\begin{figure}[t]
-\footnotesize
-\hrule\vspace{2pt}
-\begin{algorithmic}[1]
-\REQUIRE các đoạn $\{(t_s,p_s)\}$; môn $d$; tập LLM $\mathcal{M}$ ($|\mathcal{M}|=3$); số vòng $K=5$; ngưỡng $\alpha=0{,}7$; tập khái niệm đã gặp $\mathcal{U}$
-\FOR{mỗi đoạn $(t_s,p_s)$}
-  \STATE $\tilde C_s\leftarrow\textsc{Extract}(p_s,d)\setminus\mathcal{U}$;\; $\mathcal{U}\leftarrow\mathcal{U}\cup\tilde C_s$ \hfill\textit{(E)}
-  \STATE $\text{sc}(c)\leftarrow 0$ với mọi $c\in\tilde C_s$
-  \FOR{mỗi LLM $M\in\mathcal{M}$}
-    \STATE $F\leftarrow\varnothing$ \hfill\textit{phản hồi tích lũy}
-    \FOR{$k=1..K$}
-      \STATE $f_k\leftarrow\textsc{Feedback}_M(\tilde C_s,d,F)$;\; $F\leftarrow F\cup\{f_k\}$ \hfill\textit{(V)}
-      \STATE $R_k\leftarrow\textsc{Refine}_M(\tilde C_s,d,f_k)$
-      \STATE $\text{sc}(c)\leftarrow\text{sc}(c)+1$ với mọi $c\in R_k$
-    \ENDFOR
-  \ENDFOR
-  \STATE $C_s\leftarrow\{c\in\tilde C_s:\ \text{sc}(c)/(|\mathcal{M}|K)\ge\alpha\}$ \hfill\textit{(I)}
-\ENDFOR
-\ENSURE $C=\bigcup_s C_s$, mỗi khái niệm gắn mốc thời gian $t_s$ của đoạn sinh ra nó
-\end{algorithmic}
-\hrule
-\caption{Mã giả ba bước đầu của chuỗi EVIA cho một bài giảng (nhóm viết lại theo bài báo và mã nguồn; dòng 12 dùng điểm đã chuẩn hóa theo cách hiểu của nhóm).}
-\label{alg:evia}
-\end{figure}
+Bước kiểm chứng (V) nhận tập ứng viên đó và trả về chính tập ấy kèm một điểm phiếu cho từng ứng viên.
+Mỗi LLM trong ba LLM chạy năm vòng Self-Refine~\cite{madaan2023selfrefine}.
+Ở mỗi vòng, LLM tự kiểm tra từng ứng viên có thuộc môn học hay không và nêu lý do ngắn cho ứng viên có thể bị loại (phản hồi), rồi lọc lại danh sách dựa trên các phản hồi đã tích lũy (sửa).
+Ứng viên còn lại sau bước sửa được cộng một phiếu, nên điểm tối đa là 15.
 
-\textbf{(E) Trích xuất.} Mỗi đoạn $p_s$ được ghép với một prompt yêu cầu LLM làm \emph{âm thầm} ba việc: gán nhãn cú pháp để tìm mọi danh từ và cụm danh từ, giữ lại những cụm liên quan tới môn $d$, rồi \emph{chỉ} in danh sách cuối cùng bằng tiếng Trung giản thể theo định dạng \texttt{-xxx} mỗi dòng, không kèm giải thích. Đầu ra được tách bằng biểu thức chính quy. Một chi tiết trong mã có ảnh hưởng lớn về sau là danh sách $\mathcal{U}$ các khái niệm đã gặp, dùng chung cho toàn bộ dữ liệu. Một khái niệm chỉ được ghi nhận ở \emph{đoạn đầu tiên} nó xuất hiện, nên mốc thời gian, và do đó clip video, của khái niệm là lần giảng đầu tiên.
+Bước tích hợp (I) gộp các phiếu theo tinh thần Self-Consistency~\cite{wang2023selfconsistency}: ứng viên được nhiều mô hình và nhiều vòng giữ lại thì đáng tin hơn.
+Ứng viên được giữ khi điểm tổng hợp đạt ngưỡng $\alpha=0{,}7$, mà bài mô tả là tần suất ứng viên được nhận ở bước kiểm chứng; nhóm hiểu đó là tỉ lệ phiếu trên số phiếu tối đa, tức ít nhất 11 trên 15 phiếu.
+Trong ví dụ, ``mô biểu bì'' (15 phiếu), ``tế bào cơ'' (14) và ``cơ quan'' (11) được giữ, còn ``hệ thống'' và ``kính hiển vi'' (3 phiếu) bị loại.
+Theo bài, Self-Refine làm sạch danh sách nên precision tăng, còn dùng nhiều LLM giúp không bỏ sót nên recall tăng; Mục~\ref{sec:sm-results} đối chiếu cách giải thích này với số liệu ablation, và Mục~\ref{sec:sm-repro} kiểm tra lại tác động của kiểm chứng trên nhãn công bố.
 
-\textbf{(V) Kiểm chứng bằng Self-Refine~\cite{madaan2023selfrefine}.} Với danh sách ứng viên $\tilde C_s$ của một đoạn, \emph{từng} LLM trong $\mathcal{M}$ chạy $K=5$ vòng, mỗi vòng gồm hai lời gọi:
-\begin{itemize}
-\item \emph{Phản hồi}: LLM xem danh sách và chỉ ra các thuật ngữ \emph{mơ hồ liên ngành}, tức những từ mang nghĩa khác ở lĩnh vực khác. Với mỗi từ, nó viết một câu nêu nghĩa thay thế theo định dạng \texttt{"thuật ngữ": "lý do"}. Prompt có một ví dụ mẫu: ``hệ thống'' có thể chỉ hệ thống máy tính. Prompt cũng cấm sửa hay tách thuật ngữ gốc. Các phản hồi được nối dồn qua các vòng.
-\item \emph{Sửa}: LLM nhận phản hồi (kèm lưu ý rằng phản hồi có thể sai) và danh sách ứng viên, rồi lọc qua hai lượt. Lượt một loại các từ mà phản hồi chỉ ra là ngoài môn hoặc mơ hồ. Lượt hai loại những thứ chỉ là \emph{dụng cụ, thiết bị thí nghiệm} chứ không phải khái niệm của môn, ví dụ ``kính hiển vi'' trong bài sinh học. LLM giữ nguyên thứ tự và in lại danh sách còn lại.
-\end{itemize}
-Mỗi lần một ứng viên còn nằm trong danh sách sau bước sửa, điểm SC của nó tăng 1. Với ba LLM và năm vòng, một ứng viên có tối đa $|\mathcal{M}|K=15$ ``phiếu''.
-
-\textbf{(I) Tích hợp bằng bỏ phiếu.} Theo tinh thần Self-Consistency~\cite{wang2023selfconsistency}, ứng viên được nhiều mô hình và nhiều vòng giữ lại là đáng tin hơn. Bài báo viết điểm tổng hợp $\text{SC}_G(c)=\sum_{M}\text{SC}(c,M)$ và giữ $c$ nếu $\text{SC}_G(c)\ge\alpha$. Theo bài, $\alpha$ là ``tần suất'' ứng viên được nhận ở bước kiểm chứng, nên nhóm hiểu điểm được chuẩn hóa về $[0,1]$ bằng cách chia cho $|\mathcal{M}|K$, như dòng 12 trong Hình~\ref{alg:evia}. Bảng~\ref{tab:sm-vote} minh họa cách bỏ phiếu quyết định đầu ra.
-
-\begin{table}[t]
-\centering
-\caption{Ví dụ minh họa bước bỏ phiếu cho một đoạn bài giảng sinh học (nhóm dựng, không phải số liệu của bài); số phiếu tối đa là 15, $\alpha=0{,}7$}
-\label{tab:sm-vote}
-\footnotesize
-\setlength{\tabcolsep}{3pt}
-\resizebox{\columnwidth}{!}{%
-\begin{tabular}{@{}lccccl@{}}
-\toprule
-Ứng viên & GPT-4o & DeepSeek & Gemini & Tỉ lệ & Kết quả \\
-\midrule
-mô biểu bì & 5/5 & 5/5 & 5/5 & 1,00 & giữ \\
-tế bào cơ & 5/5 & 5/5 & 4/5 & 0,93 & giữ \\
-hệ thống (bị gắn cờ mơ hồ) & 1/5 & 2/5 & 0/5 & 0,20 & loại \\
-kính hiển vi (dụng cụ) & 0/5 & 1/5 & 2/5 & 0,20 & loại \\
-cơ quan & 4/5 & 3/5 & 4/5 & 0,73 & giữ \\
-\bottomrule
-\end{tabular}}
-\end{table}
-
-Hai thành phần này bổ sung cho nhau. Self-Refine làm \emph{sạch}: phản hồi buộc mô hình xét lại từng từ, nên precision tăng. Dùng nhiều LLM giúp \emph{không bỏ sót}: một khái niệm bị một mô hình loại nhầm vẫn có thể sống sót nhờ phiếu của mô hình khác, nên recall tăng. Ablation ở Mục~\ref{sec:sm-results} xác nhận đúng chiều tác động này.
-
-\textbf{(A) Bổ sung từ ConceptNet và Wikipedia.} Phụ đề chỉ chứa những gì giáo viên nói ra, nên tập $C$ được mở rộng bằng tri thức ngoài:
-\begin{enumerate}
-\item \emph{Tìm khái niệm lân cận.} Tra nút tiếng Trung \texttt{/c/zh/<khái niệm>} trên ConceptNet API, lấy các nút tiếng Anh nối với nó. Với mỗi nút tiếng Anh, lấy tối đa 100 cạnh kèm câu mô tả của cạnh (\emph{surface text}, ví dụ ``muscle cell is a part of muscle tissue'').
-\item \emph{Lọc theo quan hệ.} Bộ luật biểu thức chính quy giữ lại các câu ứng với 8 quan hệ (\texttt{IsA}, \texttt{RelatedTo}, \texttt{HasContext}, \texttt{PartOf}, \texttt{DefinedAs}, \texttt{Synonym}, \texttt{DerivedFrom}, \texttt{HasPrerequisite}) và trích danh từ ở đầu bên kia. Bộ luật cụ thể không được công bố.
-\item \emph{Kiểm duyệt.} Danh sách danh từ được đưa cho LLM với yêu cầu chỉ giữ ``khái niệm thuần túy của môn $d$ ở bậc K12'' và dịch sang tiếng Trung. Khái niệm mới (chưa có trong $C$) được thêm vào.
-\item \emph{Sinh lời giải thích.} Mỗi khái niệm được dịch sang tiếng Anh (Baidu Translate) để tra bản tóm tắt Wikipedia tiếng Anh. Sau đó LLM viết \emph{một câu tiếng Trung không quá 20 từ chỉ dựa trên nội dung Wikipedia}. Nếu không tìm thấy trang, LLM tự viết câu giải thích từ tri thức của nó. Bài báo coi việc bám Wikipedia là cách giảm ảo giác.
-\end{enumerate}
+Bước bổ sung (A) nhận tập khái niệm của I và trả về tập mở rộng cùng lời giải thích cho từng khái niệm, vì phụ đề chỉ chứa những gì giáo viên nói ra.
+Mỗi khái niệm được tra trên ConceptNet để lấy các khái niệm lân cận theo tám quan hệ (IsA, RelatedTo, HasContext, PartOf, DefinedAs, Synonym, DerivedFrom, HasPrerequisite), qua các luật biểu thức chính quy do tác giả thiết kế; LLM sau đó lọc và kiểm tra chéo để chỉ giữ khái niệm thuộc môn học.
+Các khái niệm này được liên kết với Wikipedia để lấy mô tả chi tiết, và LLM tóm tắt thành một câu giải thích ngắn gọn; bài báo coi việc bám Wikipedia là cách giảm ảo giác.
 
 \subsection{Căn chỉnh đa phương thức}\label{sec:sm-align}
-\textbf{Khái niệm--ảnh.} Đây là bước duy nhất cần ``nhìn'' nội dung. Phạm vi xét là \emph{từng bài giảng}: mọi ảnh slide của bài được so với danh sách khái niệm đã trích từ chính bài đó. Với mỗi ảnh, MLLM được yêu cầu phân tích theo bốn tầng rồi gộp kết quả:
-\begin{itemize}
-\item C4: những khái niệm \emph{trong danh sách của bài} xuất hiện trong ảnh hoặc liên quan chặt với ảnh;
-\item C1: chữ đọc được trong ảnh (OCR) là khái niệm của môn;
-\item C2: các thành phần cụ thể nhận ra ở từng vùng ảnh;
-\item C3: khái niệm ở mức tổng thể (mô, hệ cơ quan, \dots).
-\end{itemize}
-Khi trùng lặp, thứ tự ưu tiên là C4 $>$ C3 $>$ C2 $>$ C1, và các thuật ngữ khác cấp đều được giữ (ví dụ cả ``mô biểu bì'' lẫn ``tế bào biểu mô ruột non''). Nếu không có gì liên quan, MLLM trả về \texttt{none}. Trong mã nguồn, GPT-4o (bản 2024-11-20) được gọi \emph{ba lần} trên cùng một ảnh và lấy \emph{hợp} của ba kết quả, nhằm bù cho tính không ổn định của đầu ra. Khái niệm nhận ra trong ảnh mà chưa có trong $C$ được thêm vào đồ thị, nên ảnh cũng là một nguồn khái niệm mới. Bài báo mô tả thêm một MLLM thứ hai chấm độ tin cậy của mỗi cặp dựa trên văn bản và chỉ giữ cặp có độ tin cậy $>0{,}8$. Bước này không có trong mã công bố.
-
-\textbf{Khái niệm--video.} Không có mô hình thị giác nào xem video. Việc căn chỉnh dựa hoàn toàn vào \emph{đồng xuất hiện theo thời gian}: khái niệm được trích từ đoạn $t_s$ (lần xuất hiện đầu tiên) thì được gắn với clip cắt đúng khoảng $t_s$ ở bước tiền xử lý, cùng URL video gốc. Vì bước Gemini đã gộp đoạn theo ý, mỗi clip là một ý giảng trọn vẹn chứ không bị cắt giữa câu. Theo cách làm này, chỉ khái niệm sinh ra từ phụ đề mới có video. Khái niệm đến từ ConceptNet hay từ ảnh thì không có. Nhóm cho rằng đây là lý do video chỉ phủ 80\% khái niệm, còn âm thanh phủ 100\%.
-
-\textbf{Khái niệm--âm thanh.} Câu giải thích của mỗi khái niệm được đọc bằng TTS (mã nguồn dùng mô hình \texttt{tts-1} của OpenAI) thành một tệp MP3 đặt theo tên khái niệm. Âm thanh vì vậy là một cách trình bày khác của lời giải thích, không mang thông tin mới, nhưng hữu ích cho người học nghe.
+Căn chỉnh gắn từng phương thức vào khái niệm đã trích, nhờ khả năng hiểu liên phương thức của các MLLM.
+Với ảnh, một MLLM ánh xạ mỗi ảnh vào khái niệm tương ứng bằng cách sinh mô tả ngữ nghĩa, rồi một MLLM khác kiểm tra cặp đó bằng cách chấm độ tin cậy dựa trên văn bản; chỉ những cặp có độ tin cậy trên 0,8 được giữ.
+Với video, mỗi đoạn video được gắn với các khái niệm cùng xuất hiện trong đoạn đó, dựa trên ngữ nghĩa của văn bản khái niệm kết hợp với cấu trúc thời gian từ mốc thời gian, kèm URL để truy cập video gốc.
+Với âm thanh, lời giải thích của khái niệm được viết lại dựa trên tri thức Wikipedia để giảm ảo giác, rồi chuyển thành âm thanh bằng TTS.
 
 \subsection{Tổ chức và lưu trữ}\label{sec:sm-store}
-\textbf{Bản ghi.} Mỗi khái niệm được lưu thành một bản ghi JSON (Bảng~\ref{tab:sm-record}). Điểm kiến thức có bản ghi riêng (mã, tên, mã điểm kiến thức liên quan, URL bài tập). Điểm kiến thức lấy từ đề cương MOOC và chuẩn chương trình, và hai nguồn được ghép với nhau theo tên.
+\SM{} có ba tầng: tầng môn học ở trên cùng gồm sinh học, vật lý và hóa học; tầng điểm kiến thức ở giữa, tổ chức theo chuẩn chương trình và đề cương của các khóa MOOC; tầng khái niệm ở dưới cùng, chứa mọi khái niệm đa phương thức.
+Môn học, điểm kiến thức, bài tập và khái niệm đa phương thức đều có mã định danh riêng và được liên kết thành một đồ thị phân cấp qua cơ chế tham chiếu chéo, lưu trong các bảng tham chiếu dạng JSON; đồ thị còn được xuất sang RDF tuân thủ IRI để dễ tái sử dụng.
 
-\begin{table}[t]
-\centering
-\caption{Các trường của một bản ghi khái niệm (theo mã nguồn; giá trị là ví dụ minh họa)}
-\label{tab:sm-record}
-\footnotesize
-\setlength{\tabcolsep}{3pt}
-\resizebox{\columnwidth}{!}{%
-\begin{tabular}{@{}lll@{}}
-\toprule
-Trường & Ý nghĩa & Ví dụ \\
-\midrule
-\texttt{id} & mã khái niệm & 1024 \\
-\texttt{concept} & tên (tiếng Trung) & mô biểu bì \\
-\texttt{time} & đoạn sinh ra khái niệm & 07:52--10:24 \\
-\texttt{explanation} & câu giải thích $\le$20 từ & ``Lớp tế bào phủ bề mặt\dots'' \\
-\texttt{png} & danh sách ảnh (hoặc \texttt{none}) & [\texttt{37.png}, \texttt{41.png}] \\
-\texttt{videoUrl} & clip của đoạn (hoặc \texttt{none}) & URL clip \\
-\texttt{audio} & tệp âm thanh & \texttt{1024\_<tên>.mp3} \\
-\texttt{knowledgePointID} & điểm kiến thức cha & 57 \\
-\bottomrule
-\end{tabular}}
-\end{table}
+Mỗi khái niệm và mỗi dữ liệu đa phương thức là một thực thể riêng, nối với nhau bằng mười một loại quan hệ: giải thích, ảnh, video và âm thanh (mỗi loại có một cặp quan hệ thuận và nghịch với khái niệm), quan hệ ``related to'' nối khái niệm với điểm kiến thức, và cặp quan hệ nối bài tập với điểm kiến thức.
+Tổng cộng đồ thị có 1.356 điểm kiến thức, 34.630 khái niệm, 403.400 triple, 763 bài tập, 10.527 ảnh, 10.425 video và 34.630 tệp âm thanh; ảnh phủ 39\% khái niệm, video phủ 80\% và âm thanh phủ 100\%.
 
-\textbf{Sinh bộ ba.} Từ mỗi bản ghi, mã nguồn sinh các bộ ba theo \emph{cặp thuận--nghịch}: \texttt{hasExplanation/isExplanationOf}, \texttt{hasAudio/isAudioOf}, \texttt{hasImage/isImageOf} (mỗi ảnh một cặp), \texttt{hasVideo/isVideoOf}, và \texttt{related to} theo hai chiều giữa khái niệm và điểm kiến thức. Điểm kiến thức nối với bài tập qua \texttt{hasExercise/isExerciseOf} và nối với điểm kiến thức liên quan qua \texttt{related to}. Tổng cộng có 11 nhãn quan hệ. Như vậy mỗi khái niệm đóng góp ít nhất 6 bộ ba (giải thích, âm thanh, điểm kiến thức, mỗi loại hai chiều), cộng thêm 2 cho mỗi ảnh và 2 nếu có video. Đó là lý do 34.630 khái niệm sinh ra hơn 400 nghìn bộ ba.
-
-\textbf{RDF.} Bộ ba được chuyển sang RDF bằng \texttt{rdflib} trong không gian tên \texttt{edukg}. Có bảy lớp thực thể (\texttt{Concept}, \texttt{Explanation}, \texttt{Image}, \texttt{Video}, \texttt{Audio}, \texttt{Knowledgepoint}, \texttt{Exercise}). Mỗi thực thể có IRI tạo từ tên đã mã hóa URL, và câu giải thích được lưu dưới dạng literal có thẻ ngôn ngữ \texttt{@zh}.
-
-\textbf{Quy mô.} \SM{} có 1.356 điểm kiến thức, 34.630 khái niệm, 403.400 bộ ba, 763 bài tập, 10.527 ảnh, 10.425 video và 34.630 tệp âm thanh (Bảng~\ref{tab:sm-stats}). Ảnh phủ 39\% khái niệm, video phủ 80\% và âm thanh phủ 100\%.
-
-\begin{table}[t]
-\centering
-\caption{Thống kê \SM{} theo môn (theo bài báo)}
-\label{tab:sm-stats}
-\small
-\begin{tabular}{@{}lrrrr@{}}
-\toprule
-Môn & Điểm KT & Khái niệm & Bài tập & Bộ ba \\
-\midrule
-Sinh học & 526 & 16.839 & 255 & 191.928 \\
-Vật lý & 521 & 11.015 & 288 & 145.666 \\
-Hóa học & 309 & 6.776 & 220 & 65.806 \\
-\midrule
-Tổng & 1.356 & 34.630 & 763 & 403.400 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{Những điểm không khớp giữa bài báo và mã nguồn}\label{sec:sm-mismatch}
+\subsection{Bổ sung từ mã nguồn và điểm không khớp với bài báo}\label{sec:sm-mismatch}
+Bài báo chỉ mô tả ở mức khái quát, nên nhóm đối chiếu với mã công bố~\cite{kgbnu2026scimkgcode} tại commit 81f2ce2 của tác giả.
+Các điểm đáng chú ý:
 \begin{itemize}
-\item \emph{Bước trích xuất} trong mã chỉ dùng DeepSeek-V3. Bài báo nói cả ba LLM đều tham gia.
-\item \emph{Bước tích hợp} trong mã tính \texttt{SC\_ScoreG = (1/k*k) * sc\_score}. Do thứ tự phép tính, biểu thức này bằng chính \texttt{sc\_score} (không chuẩn hóa). Điểm khởi tạo lại là 1, nên điều kiện $\ge0{,}7$ luôn đúng và \emph{mọi ứng viên đều được giữ}. Điều kiện phụ ``đạt điểm tối đa'' cũng không bao giờ xảy ra vì một lệnh cộng không được gán lại (\texttt{sc\_max[index] +1}).
-\item Ở bước \emph{sửa}, danh sách đưa vào mỗi vòng luôn là danh sách ban đầu, chưa trừ những từ bị loại ở vòng trước. Vì vậy ``Self-Refine'' trong mã giống lấy mẫu lặp có phản hồi tích lũy hơn là sửa dần một danh sách.
-\item \emph{Căn chỉnh ảnh} trong mã không có bước MLLM thứ hai và không có ngưỡng 0,8. Thay vào đó, GPT-4o được gọi ba lần và lấy hợp kết quả.
-\item Bộ luật biểu thức chính quy cho ConceptNet, mã gọi ASR, và khóa API đều bị để trống. Hàm tra Wikipedia trả về một từ điển nhưng được so sánh với chuỗi \texttt{"not found"}, nên nhánh ``không tìm thấy'' không bao giờ chạy.
-\item Trong RDF, khóa ánh xạ là \texttt{"has an video"}, khác với nhãn \texttt{"has a video"} khi sinh bộ ba, nên thực thể video có thể không được gán đúng lớp.
+\item \textbf{Tiền xử lý.} Nhận dạng giọng nói làm thủ công, ngoài mã; việc gộp đoạn bằng Gemini, cắt clip và tách ảnh nằm ở các hàm và dịch vụ ngoài rời nhau, phần điều phối bị chú thích TODO, địa chỉ và khóa API để trống. Phát biểu cuối của mỗi tài liệu bị bỏ.
+\item \textbf{Trích xuất (E).} Chỉ gọi DeepSeek-V3, không phải nhiều LLM như bài mô tả. Một danh sách khái niệm đã gặp dùng chung cho toàn bộ dữ liệu, nên khái niệm chỉ gắn với lần giảng đầu tiên (mốc thời gian và clip).
+\item \textbf{Kiểm chứng (V).} Prompt nhắm vào thuật ngữ mơ hồ liên ngành và dụng cụ thí nghiệm; mỗi vòng sửa luôn xuất phát từ danh sách ban đầu, nên giống lấy mẫu lặp hơn là sửa dần.
+\item \textbf{Tích hợp (I).} Hệ số chuẩn hóa bằng 1 và điểm khởi tạo là 1, nên điều kiện ngưỡng 0,7 luôn đúng và, theo cách nhóm đọc mã, mọi ứng viên đều được giữ. Đây là nhận xét về mã công bố, không phải về cách dữ liệu công bố được sinh ra.
+\item \textbf{Bổ sung (A).} Bộ luật cho ConceptNet để trống; khái niệm được dịch bằng Baidu Translate để tra Wikipedia; nhánh ``không tìm thấy trang'' không bao giờ chạy vì lỗi kiểu dữ liệu.
+\item \textbf{Căn chỉnh.} Ảnh: GPT-4o gọi ba lần rồi lấy hợp, không có MLLM thứ hai và ngưỡng 0,8; ảnh còn bổ sung khái niệm mới. Video: mã chỉ cắt clip, không thấy đoạn gán URL clip vào khái niệm (gói trong README chưa kiểm tra). Âm thanh: mô hình tts-1 của OpenAI.
+\item \textbf{Lưu trữ.} Mỗi khái niệm sinh ít nhất 6 triple theo cặp thuận-nghịch, thêm 2 cho mỗi ảnh và 2 nếu có video, nên tổng hơn 400 nghìn triple; ánh xạ RDF của video dùng khóa ``an video'', khác nhãn ``a video'' lúc sinh triple.
 \end{itemize}
-Nhóm sẽ nêu rõ cách xử lý từng điểm khi tái lập (Mục~\ref{sec:sm-repro}).
 
 % ------------------------------------------------------------
 \section{SciMKG: kết quả công bố}\label{sec:sm-results}
 % ------------------------------------------------------------
 \textbf{Thiết lập đánh giá.} Tập đánh giá là một đồ thị con chọn ngẫu nhiên, gồm điểm kiến thức của 100 bài học thuộc ba môn và 4.479 khái niệm. Mọi baseline dựa trên LLM đều dùng GPT-4o. Trích xuất khái niệm được đo bằng Precision, Recall, F1, ACC, MCC và AUC. Bài không nêu nhãn vàng được tạo thế nào, cũng không nói ACC và AUC được tính trên đơn vị nào. Căn chỉnh ảnh được đo bằng CLIPScore, BLIP-ITM, X-VLM-ITM, VQAScore và điểm của năm chuyên gia.
 
-\textbf{Kết quả chính và ablation.} Bảng~\ref{tab:sm-main} cho thấy phương pháp đạt F1 cao nhất (0,803; baseline tốt nhất là LinkNER với 0,734), và ACC, AUC cũng cao nhất. Các baseline thường lệch về một phía: Decomposed-QA có precision cao nhưng recall thấp, còn GPT-NER ngược lại. Ablation khớp với cơ chế ở Mục~\ref{sec:sm-evia}. Bỏ nhiều LLM (w/o MLs) làm recall giảm mạnh (0,342), vì không còn mô hình khác ``cứu'' khái niệm bị loại nhầm. Bỏ vòng tự phản hồi (w/o SF-FD) làm precision giảm mạnh (0,374), vì không còn bước làm sạch. Bỏ cả hai làm F1 chỉ còn 0,312. Khi thay ba LLM thương mại bằng bộ ba mô hình mở Qwen3/Gemma3/Phi-3, F1 tăng theo kích thước mô hình (0,678 $\rightarrow$ 0,717 $\rightarrow$ 0,739) nhưng vẫn kém bản dùng GPT-4o.
-
-\begin{table}[t]
-\centering
-\caption{Trích xuất khái niệm (theo bài báo, chọn lọc)}
-\label{tab:sm-main}
-\small
-\setlength{\tabcolsep}{4pt}
-\resizebox{\columnwidth}{!}{%
-\begin{tabular}{@{}lcccc@{}}
-\toprule
-Phương pháp & P & R & F1 & MCC \\
-\midrule
-Decomposed-QA & 0,935 & 0,570 & 0,712 & \textbf{0,741} \\
-GPT-NER & 0,530 & \textbf{0,931} & 0,681 & 0,621 \\
-LinkNER & 0,855 & 0,644 & 0,734 & 0,732 \\
-UniversalNER & 0,873 & 0,617 & 0,718 & 0,722 \\
-\midrule
-EVIA, Qwen3-14B+Gemma3-27B+Phi-3-14B & 0,879 & 0,637 & 0,739 & 0,730 \\
-EVIA w/o MLs & 0,769 & 0,342 & 0,477 & 0,509 \\
-EVIA w/o SF-FD & 0,374 & 0,589 & 0,459 & 0,428 \\
-EVIA w/o MLs + SF-FD & 0,340 & 0,290 & 0,312 & 0,315 \\
-\textbf{EVIA (đầy đủ)} & \textbf{0,947} & 0,702 & \textbf{0,803} & 0,729 \\
-\bottomrule
-\end{tabular}}
-\end{table}
+\textbf{Kết quả chính và ablation.} Theo bài, phương pháp đạt F1 cao nhất (0,803; baseline tốt nhất là LinkNER với 0,734), và ACC, AUC cũng cao nhất. Các baseline thường lệch về một phía: Decomposed-QA có precision cao nhưng recall thấp, còn GPT-NER ngược lại. Ablation khớp với cơ chế ở Mục~\ref{sec:sm-evia}. Bỏ nhiều LLM (w/o MLs) làm recall giảm mạnh (0,342), vì không còn mô hình khác ``cứu'' khái niệm bị loại nhầm. Bỏ vòng tự phản hồi (w/o SF-FD) làm precision giảm mạnh (0,374), vì không còn bước làm sạch. Bỏ cả hai làm F1 chỉ còn 0,312. Khi thay ba LLM thương mại bằng bộ ba mô hình mở Qwen3/Gemma3/Phi-3, F1 tăng theo kích thước mô hình (0,678 $\rightarrow$ 0,717 $\rightarrow$ 0,739) nhưng vẫn kém bản dùng GPT-4o.
 
 \textbf{Số vòng lặp và ngưỡng.} Bảng 5 của bài quét $K\in\{1,3,5\}$ và $\alpha\in\{0{,}5;0{,}7;0{,}9\}$. Ngưỡng thấp ưu tiên recall, ngưỡng cao ưu tiên precision. Tăng số vòng giúp cả hai, vì có thêm phiếu nên ước lượng tần suất ổn định hơn. Cấu hình $K=5$, $\alpha=0{,}7$ cho F1 tốt nhất.
 

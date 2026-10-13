@@ -1,0 +1,139 @@
+% ============================================================
+% CÁC BẢNG CỦA PHẦN B TẠM GỠ KHỎI BÁO CÁO (13/10/2026, theo yêu cầu của Nhi)
+% File này KHÔNG được \input trong main.tex. Muốn đưa một bảng trở lại, dán khối
+% \begin{table}...\end{table} vào đúng chỗ ghi bên dưới và khôi phục câu dẫn.
+% ------------------------------------------------------------
+% 1) tab:sm-related  B_related.tex, cuối tiểu mục về đồ thị tri thức đa phương thức.
+%    Câu dẫn đã xóa: Bảng~\ref{tab:sm-related} so sánh các công trình này với \SM{}.
+% 2) tab:sm-models   B_scimkg.tex, mục Phương pháp / Tổng quan, ngay sau hình tổng quan (table*).
+%    Câu dẫn đã xóa: Bảng~\ref{tab:sm-models} liệt kê mô hình và công cụ dùng ở từng bước.
+% 3) tab:sm-record   B_scimkg.tex, mục Tổ chức và lưu trữ, sau đoạn "Bản ghi".
+%    Câu dẫn: đoạn "Bản ghi" nay liệt kê các trường bằng lời; thêm lại (Bảng~\ref{tab:sm-record}).
+% 4) tab:sm-stats    B_scimkg.tex, mục Tổ chức và lưu trữ, sau đoạn "Quy mô".
+%    Câu dẫn đã xóa: (Bảng~\ref{tab:sm-stats}) ở cuối câu liệt kê quy mô.
+% 5) tab:sm-main     B_scimkg.tex, mục Kết quả công bố, sau đoạn "Kết quả chính và ablation".
+%    Câu dẫn: câu mở đầu đoạn nay là "Theo bài, phương pháp đạt..."; đổi lại thành
+%    "Bảng~\ref{tab:sm-main} cho thấy phương pháp đạt...".
+% ============================================================
+
+% ---------- tab:sm-related (từ B_related.tex) ----------
+\begin{table}[t]
+\centering
+\caption{So sánh \SM{} với các đồ thị tri thức đa phương thức (nhóm tổng hợp từ phần tóm tắt của từng công trình; cách căn chỉnh của TIVA-KG theo mô tả của bài \SM{})}
+\label{tab:sm-related}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}llll@{}}
+\toprule
+Công trình & Miền & Phương thức & Cách dựng \\
+\midrule
+TIVA-KG & thường thức & chữ, ảnh, video, âm thanh & căn chỉnh thủ công \\
+UKnow & tin tức & chữ, ảnh & pipeline dựng từ tin tức công khai \\
+MEduKG & giáo dục & chữ, lời giảng & BERT fine-tune + BiLSTM-CRF \\
+\midrule
+\SM{} & giáo dục & chữ, ảnh, video, âm thanh & gọi LLM/MLLM, không huấn luyện \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+% ---------- tab:sm-models (từ B_scimkg.tex) ----------
+\begin{table*}[t]
+\centering
+\caption{Mô hình và công cụ ở từng bước của \SM{} (theo bài báo và mã nguồn). Không bước nào cập nhật trọng số mô hình.}
+\label{tab:sm-models}
+\footnotesize
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Bước & Mô hình / công cụ & Đầu ra \\
+\midrule
+Video $\rightarrow$ âm thanh & moviepy & tệp MP3 \\
+Âm thanh $\rightarrow$ chữ & công cụ ASR trực tuyến (thủ công) & bản ghi có mốc thời gian \\
+Phân đoạn theo ngữ nghĩa & Gemini & đoạn ``mm:ss--mm:ss: nội dung'' \\
+Cắt clip & moviepy (libx264) & một clip cho mỗi đoạn \\
+Slide $\rightarrow$ ảnh & dịch vụ tách ảnh từ PDF & ảnh PNG \\
+\midrule
+Trích xuất (E) & DeepSeek-V3$^{\dagger}$ & ứng viên mỗi đoạn \\
+Kiểm chứng (V) & GPT-4o, DeepSeek-V3, Gemini-1.5-Flash & điểm SC mỗi ứng viên \\
+Tích hợp (I) & công thức bỏ phiếu, ngưỡng $\alpha$ & tập $C$ \\
+Bổ sung (A) & ConceptNet API + DeepSeek-V3 & khái niệm mở rộng \\
+Giải thích & Baidu Translate, Wikipedia, LLM & câu $\le$20 từ \\
+\midrule
+Căn chỉnh ảnh & GPT-4o (3 lần)$^{\ddagger}$ & danh sách khái niệm mỗi ảnh \\
+Căn chỉnh video & mốc thời gian của đoạn & URL clip \\
+Âm thanh & OpenAI TTS (\texttt{tts-1}) & MP3 mỗi khái niệm \\
+Lưu trữ & JSON, rdflib & triple, RDF \\
+\bottomrule
+\multicolumn{3}{@{}l}{\scriptsize $^{\dagger}$Bài báo: cả ba LLM. $^{\ddagger}$Bài báo: GPT-4o/Gemini-1.5-Pro, thêm một MLLM chấm độ tin cậy $>0{,}8$.}
+\end{tabular}
+\end{table*}
+
+% ---------- tab:sm-record (từ B_scimkg.tex) ----------
+\begin{table}[t]
+\centering
+\caption{Các trường của một bản ghi khái niệm (theo mã nguồn; giá trị là ví dụ minh họa)}
+\label{tab:sm-record}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lll@{}}
+\toprule
+Trường & Ý nghĩa & Ví dụ \\
+\midrule
+\texttt{id} & mã khái niệm & 1024 \\
+\texttt{concept} & tên (tiếng Trung) & mô biểu bì \\
+\texttt{time} & đoạn sinh ra khái niệm & 07:52--10:24 \\
+\texttt{explanation} & câu giải thích $\le$20 từ & ``Lớp tế bào phủ bề mặt\dots'' \\
+\texttt{png} & danh sách ảnh (hoặc \texttt{none}) & [\texttt{37.png}, \texttt{41.png}] \\
+\texttt{videoUrl} & clip của đoạn (hoặc \texttt{none}) & URL clip \\
+\texttt{audio} & tệp âm thanh & \texttt{1024\_<tên>.mp3} \\
+\texttt{knowledgePointID} & điểm kiến thức cha & 57 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+% ---------- tab:sm-stats (từ B_scimkg.tex) ----------
+\begin{table}[t]
+\centering
+\caption{Thống kê \SM{} theo môn (theo bài báo)}
+\label{tab:sm-stats}
+\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Môn & Điểm KT & Khái niệm & Bài tập & Bộ ba \\
+\midrule
+Sinh học & 526 & 16.839 & 255 & 191.928 \\
+Vật lý & 521 & 11.015 & 288 & 145.666 \\
+Hóa học & 309 & 6.776 & 220 & 65.806 \\
+\midrule
+Tổng & 1.356 & 34.630 & 763 & 403.400 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ---------- tab:sm-main (từ B_scimkg.tex) ----------
+\begin{table}[t]
+\centering
+\caption{Trích xuất khái niệm (theo bài báo, chọn lọc)}
+\label{tab:sm-main}
+\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Phương pháp & P & R & F1 & MCC \\
+\midrule
+Decomposed-QA & 0,935 & 0,570 & 0,712 & \textbf{0,741} \\
+GPT-NER & 0,530 & \textbf{0,931} & 0,681 & 0,621 \\
+LinkNER & 0,855 & 0,644 & 0,734 & 0,732 \\
+UniversalNER & 0,873 & 0,617 & 0,718 & 0,722 \\
+\midrule
+EVIA, Qwen3-14B+Gemma3-27B+Phi-3-14B & 0,879 & 0,637 & 0,739 & 0,730 \\
+EVIA w/o MLs & 0,769 & 0,342 & 0,477 & 0,509 \\
+EVIA w/o SF-FD & 0,374 & 0,589 & 0,459 & 0,428 \\
+EVIA w/o MLs + SF-FD & 0,340 & 0,290 & 0,312 & 0,315 \\
+\textbf{EVIA (đầy đủ)} & \textbf{0,947} & 0,702 & \textbf{0,803} & 0,729 \\
+\bottomrule
+\end{tabular}}
+\end{table}

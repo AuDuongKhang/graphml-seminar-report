@@ -19,28 +19,7 @@ Hai điểm cần nói rõ: chỉ phần rút khái niệm là không cần hu�
 TIVA-KG~\cite{wang2023tivakg} gắn ảnh, video và âm thanh vào một đồ thị thường thức, và gắn vào cả triple (triplet grounding) thay vì từng thực thể.
 UKnow~\cite{gong2024uknow} là giao thức và bộ dữ liệu đồ thị đa phương thức dựng từ tin tức, phục vụ suy luận thường thức và tiền huấn luyện ảnh--ngôn ngữ.
 Trong giáo dục, MEduKG~\cite{li2022medukg} fine-tune BERT trên từ vựng giáo dục để nhận dạng thực thể và đưa lời giảng của giáo viên vào đồ thị.
-Bảng~\ref{tab:sm-related} so sánh các công trình này với \SM{}.
 Theo bài \SM{}, TIVA-KG phải căn chỉnh thủ công; \SM{} gắn phương thức vào khái niệm chứ không vào triple, và tự động hóa việc gắn bằng MLLM, mốc thời gian và TTS.
-
-\begin{table}[t]
-\centering
-\caption{So sánh \SM{} với các đồ thị tri thức đa phương thức (nhóm tổng hợp từ phần tóm tắt của từng công trình; cách căn chỉnh của TIVA-KG theo mô tả của bài \SM{})}
-\label{tab:sm-related}
-\footnotesize
-\setlength{\tabcolsep}{3pt}
-\resizebox{\columnwidth}{!}{%
-\begin{tabular}{@{}llll@{}}
-\toprule
-Công trình & Miền & Phương thức & Cách dựng \\
-\midrule
-TIVA-KG & thường thức & chữ, ảnh, video, âm thanh & căn chỉnh thủ công \\
-UKnow & tin tức & chữ, ảnh & pipeline dựng từ tin tức công khai \\
-MEduKG & giáo dục & chữ, lời giảng & BERT fine-tune + BiLSTM-CRF \\
-\midrule
-\SM{} & giáo dục & chữ, ảnh, video, âm thanh & gọi LLM/MLLM, không huấn luyện \\
-\bottomrule
-\end{tabular}}
-\end{table}
 
 \subsection{Rút khái niệm bằng LLM}
 Bài toán gần nhất là nhận dạng thực thể có tên (NER).
