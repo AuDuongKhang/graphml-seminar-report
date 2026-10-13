@@ -91,7 +91,7 @@ Trước khi nộp: `grep -rn "\\\\todo\|wandbtodo" report/` phải rỗng.
 | Bìa, tiêu đề, tác giả | Xong (còn link GitHub/W&B trên bìa) |
 | Cấu trúc báo cáo (12/10/2026) | Hai phần độc lập, mỗi phần có giới thiệu, kiến thức nền và kết luận riêng; không còn giới thiệu/kiến thức nền/kết luận chung. Đã bỏ tóm tắt và từ khóa chung; sau tiêu đề/tác giả vào thẳng Phần A. Phần B mở ở trang mới; mỗi phần đánh số mục lại từ I (Phần A I–IX, Phần B I–VIII). Đã biên dịch XeLaTeX (13/10/2026, sau khi viết Giới thiệu và Công trình liên quan của Phần B): **14 trang**, không lỗi, không tràn lề, không tham chiếu chưa giải quyết. |
 | A: I Giới thiệu | Đã viết đoạn giới thiệu ngắn |
-| B: I Giới thiệu (13/10/2026) | Bản nháp đầy đủ: bối cảnh, hai hạn chế (có trích dẫn KnowEdu, MOOCCubeX, Jhajj, TIVA-KG), ý tưởng và số liệu theo bài, đóng góp của báo cáo, lộ trình. Link bài và mã dạng chú thích. Lộ trình chưa có `\ref`: thêm khi tái cấu trúc Phần B thành 5 mục (Giới thiệu, Công trình liên quan, Phương pháp, Thực nghiệm, Kết luận). |
+| B: I Giới thiệu (13/10/2026) | Bản nháp đầy đủ: bối cảnh, hai hạn chế (có trích dẫn KnowEdu, MOOCCubeX, Jhajj, TIVA-KG), ý tưởng và số liệu theo bài, đóng góp của báo cáo, lộ trình. Link bài và mã nằm trong danh mục tham khảo, không dùng chú thích. Lộ trình chưa có `\ref`: thêm khi tái cấu trúc Phần B thành 5 mục (Giới thiệu, Công trình liên quan, Phương pháp, Thực nghiệm, Kết luận). |
 | A: II Kiến thức nền | **Sườn** |
 | B: II Công trình liên quan (13/10/2026) | Bản nháp đầy đủ trong `B_related.tex` (thay `B_background.tex`): 5 mục con, mỗi mục một đoạn, kèm bảng so sánh đồ thị đa phương thức. Mô tả công trình lấy từ tóm tắt hoặc trang dự án, chưa đọc toàn văn. |
 | A: III–VI, VIII (GraphVis) | Bản nháp hoàn chỉnh |
