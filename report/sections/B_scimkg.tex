@@ -1,10 +1,12 @@
 % ============================================================
 % PHẦN B — SCIMKG (bài chỉ báo cáo)   ~ 8–9 trang
-%   IX   Bài toán & động cơ
-%   X    Phương pháp: cơ chế hoạt động chi tiết (đối chiếu bài báo + mã nguồn)
-%   XI   Kết quả công bố
-%   XII  Tái lập (chưa có số liệu)
-%   XIII Đánh giá phê bình
+%   X–XI Giới thiệu và công trình liên quan (B_intro, B_related)
+%   XII  Bài toán & động cơ
+%   XIII Phương pháp: cơ chế hoạt động chi tiết (đối chiếu bài báo + mã nguồn)
+%   XIV  Kết quả công bố
+%   XV   Tái lập (chưa có số liệu)
+%   XVI  Đánh giá phê bình
+%   XVII Kết luận riêng (B_conclusion)
 % ============================================================
 
 % ------------------------------------------------------------
@@ -38,7 +40,7 @@ Mục này mô tả \SM{} theo đúng thứ tự dữ liệu đi qua hệ thốn
 \end{figure*}
 
 \subsection{\SM{} có ``huấn luyện'' mô hình nào không?}
-\emph{Không.} Khác với \GV{}, \SM{} không tinh chỉnh hay huấn luyện bất kỳ trọng số nào. Mọi bước ``thông minh'' đều là \emph{gọi mô hình có sẵn qua API} với prompt soạn sẵn, theo kiểu zero-shot (không có ví dụ mẫu, trừ một ví dụ định dạng ở prompt phản hồi). Phần giống ``học'' nhất là vòng Self-Refine ở bước kiểm chứng: mô hình nhận lại phản hồi của chính nó và sửa danh sách khái niệm qua nhiều vòng. Toàn bộ diễn ra lúc suy luận, không có gradient. Tham số giải mã được cố định để giảm ngẫu nhiên: nhiệt độ 0, top-$p$ 0,1, frequency penalty 0,5, độ dài tối đa 1000 token, seed 42. Các LLM mở cỡ nhỏ (Qwen3, Gemma3, Phi-3) trong thí nghiệm theo kích thước mô hình được chạy cục bộ trên một GPU RTX 3090, cũng chỉ ở chế độ suy luận. Bảng~\ref{tab:sm-models} liệt kê mô hình và công cụ dùng ở từng bước.
+\emph{Không.} \SM{} không tinh chỉnh hay huấn luyện bất kỳ trọng số nào. Mọi bước ``thông minh'' đều là \emph{gọi mô hình có sẵn qua API} với prompt soạn sẵn, theo kiểu zero-shot (không có ví dụ mẫu, trừ một ví dụ định dạng ở prompt phản hồi). Phần giống ``học'' nhất là vòng Self-Refine ở bước kiểm chứng: mô hình nhận lại phản hồi của chính nó và sửa danh sách khái niệm qua nhiều vòng. Toàn bộ diễn ra lúc suy luận, không có gradient. Tham số giải mã được cố định để giảm ngẫu nhiên: nhiệt độ 0, top-$p$ 0,1, frequency penalty 0,5, độ dài tối đa 1000 token, seed 42. Các LLM mở cỡ nhỏ (Qwen3, Gemma3, Phi-3) trong thí nghiệm theo kích thước mô hình được chạy cục bộ trên một GPU RTX 3090, cũng chỉ ở chế độ suy luận. Bảng~\ref{tab:sm-models} liệt kê mô hình và công cụ dùng ở từng bước.
 
 \begin{table*}[t]
 \centering

@@ -48,3 +48,5 @@ Quy tắc: lồng vào như thông tin chi tiết, **không** nhắc "thầy h�
 - SciMKG: tái lập **đúng cấu hình bài** (GPT-4o, Gemini-1.5-Flash, DeepSeek-V3; MLLM GPT-4o/Gemini-1.5-Pro)
   nếu còn dùng được; nếu không, ghi rõ trong báo cáo và dùng LLM mở (Qwen3/Gemma3/Phi-3 như Bảng 4 của bài).
 - Hai bài chọn ngẫu nhiên → không viết phần liên kết/khung chung.
+
+Cập nhật cấu trúc 12/10/2026: bỏ tóm tắt và từ khóa chung; sau tiêu đề và tác giả, vào thẳng **Phần A — GraphVis**, rồi **Phần B — SciMKG** ở trang mới. Mỗi phần có giới thiệu, kiến thức nền và kết luận riêng; không dùng ba mục này ở cấp báo cáo chung. Đánh số mục IEEE liên tục: Phần A I–IX, Phần B X–XVII. Phân công, tài liệu tham khảo và phụ lục dùng chung ở cuối báo cáo.
