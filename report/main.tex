@@ -61,8 +61,11 @@
 \newcommand{\wandbtodo}{\textcolor{blue}{\textbf{W\&B:}} \todo{link báo cáo W\&B công khai}}
 % Tiêu đề phân phần (Phần A / Phần B)
 \newcounter{reportpart}
+% Mỗi phần đánh số mục lại từ I; neo hyperref phải khác nhau giữa hai phần
+\renewcommand{\theHsection}{\arabic{reportpart}.\arabic{section}}
 \newcommand{\phan}[2]{%
   \stepcounter{reportpart}%
+  \setcounter{section}{0}%
   \pdfbookmark[0]{#1}{part.\arabic{reportpart}}%
   \vspace{6pt}\noindent\colorbox{black!8}{\parbox{\dimexpr\columnwidth-2\fboxsep}{%
   \centering\large\bfseries #1\\[1pt]\normalsize\mdseries\itshape #2}}\vspace{2pt}}
@@ -91,7 +94,7 @@ Trường ĐH Khoa học Tự nhiên, ĐHQG-HCM}
 \maketitle
 
 % ================= PHẦN A =================
-\phan{PHẦN A --- GraphVis}{Tăng cường LLM bằng đồ thị tri thức dạng ảnh (NeurIPS 2024)}
+\phan{PHẦN A --- GraphVis}{GraphVis: Boosting LLMs with Visual Knowledge Graph Integration}
 \input{sections/A_intro}
 \input{sections/A_background}
 \input{sections/A_graphvis}
@@ -99,7 +102,7 @@ Trường ĐH Khoa học Tự nhiên, ĐHQG-HCM}
 
 % ================= PHẦN B =================
 \clearpage
-\phan{PHẦN B --- SciMKG}{Đồ thị tri thức đa phương thức cho giáo dục khoa học (AAAI 2026)}
+\phan{PHẦN B --- SciMKG}{SciMKG: A Multimodal Knowledge Graph for Science Education with Text, Image, Video and Audio}
 \input{sections/B_intro}
 \input{sections/B_related}
 \input{sections/B_scimkg}
