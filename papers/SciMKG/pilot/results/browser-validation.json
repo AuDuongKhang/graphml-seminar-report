@@ -1,0 +1,114 @@
+{
+  "date": "2026-10-11",
+  "browser": "Chrome qua chrome-devtools-axi",
+  "files": {
+    "report/pilot-report.html": "78104047ad92a0529d5c9aeb97d872bbe0b0904ab77c55d11a671ab844342e86"
+  },
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "horizontal_overflow": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "horizontal_overflow": false
+    }
+  ],
+  "plan_checkboxes": {
+    "total": 21,
+    "initial_checked": 16,
+    "unchecked": [
+      "e5",
+      "m1",
+      "m2",
+      "m3",
+      "c4"
+    ]
+  },
+  "review": {
+    "review_fields": 12,
+    "options_per_select": 4,
+    "audio_options": [
+      19,
+      11
+    ],
+    "images_loaded": true,
+    "embedded_audio_ready_state": [
+      4,
+      4
+    ],
+    "local_wav_playback_advanced": true,
+    "local_wav_matches_explanation": true,
+    "storage_and_json_export_passed": true,
+    "download": "scimkg-pilot-review.json",
+    "fields_missing_id_or_name": 0,
+    "video": {
+      "duration_seconds": 49.015633,
+      "ready_state": 4,
+      "resolution": [
+        640,
+        360
+      ],
+      "desktop_playback_advanced": true,
+      "mobile_playback_advanced": true,
+      "decoded_frames_desktop": 11,
+      "decoded_frames_mobile": 11,
+      "manual_content_review": "pending"
+    },
+    "author_vietnamese_view": {
+      "translated_explanations": 19,
+      "translated_segments": 2,
+      "translated_labels": 20,
+      "default_original_language_hidden": true,
+      "all_selector_translations_match": true,
+      "selector_originals_and_sources_match": true,
+      "export_contains_review_basis": true,
+      "translation_review": "pending",
+      "Chinese_pronunciation_review": "requires_Chinese_speaking_reviewer"
+    },
+    "author_output_comparison": {
+      "rows": 6,
+      "source_files": 11,
+      "vote_rows": 6,
+      "published_integration_matches_recomputed_votes": false,
+      "scope_accepted_means_pilot_scope_only": true,
+      "export_contains_comparison_and_criteria": true,
+      "expert_quality_review": "unassessed",
+      "wide_and_mobile_no_overflow": true,
+      "reference_image_loaded": true,
+      "renderer_idempotent": true,
+      "raw_metrics_unchanged": true,
+      "local_links_verified": true
+    },
+    "images_count": 4
+  },
+  "external_resource_requests": 0,
+  "console_errors": 0,
+  "print_css": {
+    "details_expand_and_restore": true,
+    "toolbar_hidden": true,
+    "horizontal_overflow": false,
+    "note": "Kiểm tra sự kiện in và CSS in trên trình duyệt, chưa xuất PDF hoặc in giấy.",
+    "video_hidden": true,
+    "original_language_hidden": true
+  },
+  "previous_artifact_fingerprints": {
+    "pilot-plan.html": "36941cfb58e9086ea313c361fe5a10979487f2984badd8fdeb6be8f81b4e8a09",
+    "pilot-review.html": "cfa1d557ad33bd0e0b39a648fc8d7adbb0591a320fb8fa612c5cac269a8d31b6"
+  },
+  "report_sections": [
+    "plan",
+    "review",
+    "results",
+    "source-review",
+    "sources"
+  ],
+  "all_details_horizontal_overflow": false,
+  "checkbox_storage_passed": true,
+  "source_navigation_opens_details": true,
+  "local_links_within_pilot": true,
+  "report_only_folder": "papers/SciMKG/pilot/report",
+  "responsive_layout_method": "scrollWidth <= clientWidth; mobile viewport confirmed 390 px"
+}

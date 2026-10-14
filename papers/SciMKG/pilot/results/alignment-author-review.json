@@ -1,0 +1,152 @@
+{
+  "date": "2026-10-12T04:51:53.481997+00:00",
+  "source_sha256": {
+    "MultimodalAlignment/ImageAligment.py": "c8bf4b782a3a10c8cf76a250dff8202b29cd9b2f62672e07d1c583b39c78e3a2",
+    "llm.py": "5f3575736ba8b50689f381ed70ec2337192fcfa5f846faadd286dbe28275a573",
+    "runtime.py": "cee41990031f22f89b74cc197574bf738342a416e15b2df69a7e02e237ab5257",
+    "MultimodalAlignment/SpeechGenerator.py": "91569506dd3844d55bd479e03657943d19c3fad4544bc0ffb94aa268c07d9a6a",
+    "SciMKGConstruction/GeneratorSubjectJson.py": "3a990160c0284c626049accd29fc0581b29fab23865a73488c407b3971c11c18"
+  },
+  "model": "gpt-6.1-sol",
+  "authentication": "chatgpt",
+  "threshold": "> 0.8",
+  "new_calls_this_execution": 0,
+  "recorded_live_calls": 6,
+  "recorded_usage": {
+    "input_tokens": 66752,
+    "output_tokens": 487,
+    "cached_input_tokens": 0
+  },
+  "image_resource_links_valid": true,
+  "api_cost_usd": null,
+  "image_cases": [
+    {
+      "case_id": "example-01",
+      "links": [
+        {
+          "image_id": "image-01",
+          "concept": "mitochondria",
+          "confidence": 0.99,
+          "reason": "The image shows a mitochondrion with an outer membrane and a folded inner membrane (cristae), alongside oxygen and organic fuel entering and ATP and CO₂ leaving, matching the lesson on ATP production through aerobic respiration."
+        }
+      ],
+      "predicted": [
+        "mitochondria"
+      ],
+      "author_label": "mitochondria",
+      "author_label_vi": "ti thể",
+      "positive_matches_author": true,
+      "rejects_swapped_label": true
+    },
+    {
+      "case_id": "example-02",
+      "links": [
+        {
+          "image_id": "image-02",
+          "concept": "kidney",
+          "confidence": 0.99,
+          "reason": "The image shows a cutaway kidney with a bean-shaped outline, outer cortex, internal medullary pyramids, central renal pelvis, and exiting ureter, directly matching the lesson's organ."
+        }
+      ],
+      "predicted": [
+        "kidney"
+      ],
+      "author_label": "kidney",
+      "author_label_vi": "thận",
+      "positive_matches_author": true,
+      "rejects_swapped_label": true
+    },
+    {
+      "case_id": "previous-image-12",
+      "links": [
+        {
+          "image_id": "author-mito-diagram",
+          "concept": "线粒体",
+          "confidence": 0.99,
+          "reason": "图中两个黄色边缘、绿色内部的椭圆形细胞器被突出显示，与课文明确指出的黄色线粒体结构一致。"
+        },
+        {
+          "image_id": "author-mito-diagram",
+          "concept": "细胞",
+          "confidence": 0.99,
+          "reason": "整幅图呈现细胞的立体剖面，可见细胞核及多种细胞器，与课文讨论线粒体在细胞中的供能作用相符。"
+        }
+      ],
+      "predicted": [
+        "线粒体",
+        "细胞"
+      ],
+      "expert_gold_available": false,
+      "previous_links": [
+        {
+          "image_id": "author-mito-diagram",
+          "concept": "线粒体",
+          "confidence": 0.98,
+          "reason": "细胞示意图左右两处黄色突出显示的细胞器具有内部绿色折叠结构，且课文明确指出黄色结构为线粒体。"
+        },
+        {
+          "image_id": "author-mito-diagram",
+          "concept": "细胞",
+          "confidence": 0.99,
+          "reason": "整幅图呈现切开的细胞，可见细胞边界、细胞核和多种细胞器。"
+        },
+        {
+          "image_id": "author-mito-diagram",
+          "concept": "线粒体外膜",
+          "confidence": 0.82,
+          "reason": "黄色线粒体具有包围内部绿色结构的连续外层轮廓，与课文所述外膜相符，但膜层细节不清晰。"
+        },
+        {
+          "image_id": "author-mito-diagram",
+          "concept": "线粒体嵴",
+          "confidence": 0.87,
+          "reason": "线粒体内部绿色结构呈反复折叠、向内突起的形态，与课文所述内膜形成嵴相符。"
+        }
+      ],
+      "note": "Ảnh 12.png chưa có nhãn chuẩn ảnh–khái niệm; kiểm tra độ ổn định, không chấm đúng/sai bằng suy đoán."
+    }
+  ],
+  "other_modalities": {
+    "video_matches_published_metadata": true,
+    "video_start_seconds": 82,
+    "video_end_seconds": 132,
+    "video_content_verified": false,
+    "tts_input_matches_author_explanation": true,
+    "audio_resource_links_valid": true,
+    "generated_wav_duration_seconds": 9.593968253968255,
+    "author_mp3_duration_seconds": 9.247347,
+    "audio_quality_scored": false,
+    "tts_adaptation": "macOS Samantha thay cho TTS tác giả; không yêu cầu sóng âm giống nhau."
+  },
+  "limitations": [
+    "Chỉ hai cặp ảnh–khái niệm công bố trong Example.zip.",
+    "Những cặp này là đầu ra tham chiếu của tác giả, không phải bộ nhãn chuyên gia đầy đủ.",
+    "Đối chứng đổi nhãn do nhóm tạo; không phải nhãn âm của tác giả.",
+    "Đề xuất và kiểm chứng dùng cùng Codex; khác mô hình cấu hình bài báo.",
+    "Ảnh 12.png chưa có nhãn chuẩn; video chỉ đối chiếu siêu dữ liệu, âm thanh chưa chấm nghe."
+  ],
+  "review_findings": [
+    {
+      "id": "ALIGN-01",
+      "date": "2026-10-12",
+      "status": "open",
+      "status_vi": "Chưa khắc phục",
+      "case_id": "previous-image-12",
+      "source_image_sha256": "53ccf411a5b5a9f0e5a5c3d2b91f4a464b019e7dbc2da0bc8943bb01f4c20fcd",
+      "review_basis": "Người dùng chỉ ra vùng tô màu; Codex đối chiếu trực quan với ảnh lục lạp 14.png. Chưa có nhãn chuẩn toàn ảnh của tác giả.",
+      "observation_vi": "Hai vùng tô màu của 12.png là lục lạp, nhưng mô hình dùng chúng làm bằng chứng cho ti thể và vẫn giữ điểm 0,99.",
+      "scope_vi": "Lời giải thích sai vùng ảnh. Liên kết toàn ảnh với ti thể còn chờ xác định vị trí khác; chưa tính mẫu này là đạt.",
+      "original_verified_reason": "图中两个黄色边缘、绿色内部的椭圆形细胞器被突出显示，与课文明确指出的黄色线粒体结构一致。",
+      "evidence_key": "image_cases[case_id=previous-image-12].links[concept=线粒体]",
+      "source_location": "SciMKG/MultimodalAlignment/ImageAligment.py:32",
+      "next_step_vi": "Yêu cầu bước kiểm chứng chỉ rõ vị trí và cấu trúc quan sát được; chạy lại ảnh 12.png cùng hai mẫu ti thể/thận. Loại lời giải thích sai vùng tô màu; chỉ giữ ti thể khi có bằng chứng ở vị trí đúng.",
+      "acceptance_criteria": [
+        "Không coi hai vùng tô màu là ti thể.",
+        "Hai cặp tham chiếu ti thể/thận vẫn khớp và từ chối nhãn đổi chéo.",
+        "Mọi liên kết ti thể với ảnh 12 phải có vị trí phù hợp; không dùng điểm tin cậy làm nhãn chuẩn."
+      ],
+      "author_gold_available": false,
+      "inference_outputs_modified": false
+    }
+  ]
+}

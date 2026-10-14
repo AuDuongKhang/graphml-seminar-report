@@ -1,0 +1,69 @@
+{
+  "date": "2026-10-11",
+  "purpose": "Bản dịch hỗ trợ đọc và ghi nhận xét cho mẫu tác giả; không thay đầu vào, nhãn hoặc kết quả suy luận.",
+  "translator": "Codex trong phiên làm việc, không phải người chấm độc lập biết tiếng Trung",
+  "translation_review": "pending",
+  "source_files": {
+    "runs/author-mitochondria/input.json": "e22339977f622a75a173f262da25f4e58831458642be8bc55f287154cdebbfde",
+    "runs/author-mitochondria/explanations.json": "c2ee431693b4d5cc132eda25a6a81b4fe1b477dc7d07ff8881ed6ac914865f15",
+    "data/author-gold.json": "7fdccb370bb47f14eacfacc404e27d6701e098694542033737c96709c6cf291c"
+  },
+  "terms": {
+    "白细胞": "bạch cầu",
+    "吞噬": "thực bào",
+    "细菌": "vi khuẩn",
+    "能量": "năng lượng",
+    "线粒体": "ti thể",
+    "细胞": "tế bào",
+    "有氧呼吸": "hô hấp hiếu khí",
+    "细胞生命活动": "hoạt động sống của tế bào",
+    "外膜": "màng ngoài",
+    "内膜": "màng trong",
+    "嵴": "mào ti thể",
+    "内膜的表面积": "diện tích bề mặt màng trong",
+    "酶": "enzyme",
+    "能量供应": "cung cấp năng lượng",
+    "能量需求": "nhu cầu năng lượng",
+    "线粒体的数量": "số lượng ti thể",
+    "生物体结构和功能的相适应": "sự phù hợp giữa cấu trúc và chức năng của cơ thể sinh vật",
+    "细胞器": "bào quan",
+    "真核细胞器": "bào quan của tế bào nhân thực",
+    "生命活动": "hoạt động sống"
+  },
+  "segments": {
+    "a10": "Bạch cầu thực bào vi khuẩn cần liên tục tiêu hao năng lượng. Năng lượng ấy đến từ đâu? Nó được ti thể cung cấp. Ti thể là xưởng năng lượng của tế bào và là nơi chủ yếu diễn ra hô hấp hiếu khí. Theo lời giảng, khoảng 95% năng lượng trong hoạt động sống của tế bào đến từ ti thể. Cấu trúc màu vàng trong hình là ti thể. Hình bên phải là ảnh chụp ti thể [cụm từ mô tả loại ảnh bị ASR ghi bất thường] và sơ đồ cấu trúc của nó.",
+    "a11": "Hãy quan sát xem cấu trúc ti thể có đặc điểm gì. Ti thể gồm hai lớp màng, màng trong và màng ngoài. Màng trong nhô vào phía trong, tạo thành các mào. Cấu trúc này có tác dụng gì? Nó giúp tăng diện tích bề mặt màng trong, vì nhiều enzyme liên quan đến hô hấp hiếu khí chủ yếu phân bố trên màng trong ti thể. Nhu cầu cung cấp năng lượng của các tế bào cũng khác nhau. Tế bào có nhu cầu năng lượng lớn thường có nhiều ti thể hơn. Những đặc điểm này thể hiện sự phù hợp giữa cấu trúc và chức năng của cơ thể sinh vật."
+  },
+  "source_notes": [
+    {
+      "segment_id": "a10",
+      "raw_phrase": "电竞照片",
+      "note_vi": "Cụm từ chỉ loại ảnh có vẻ bị nhận dạng sai; có thể người nói muốn nói ảnh hiển vi điện tử. Đây là suy đoán được đánh dấu, chưa sửa bản chép lời gốc."
+    },
+    {
+      "segment_id": "a10",
+      "note_vi": "95% là nội dung lời giảng trong nguồn, không phải số đo của pilot."
+    }
+  ],
+  "explanations": {
+    "白细胞": "Bạch cầu là các tế bào của hệ miễn dịch, giúp cơ thể chống bệnh truyền nhiễm và các tác nhân xâm nhập từ bên ngoài. Trên thực tế, chúng không màu, có nhân và có thể thay đổi hình dạng để di chuyển. Bạch cầu có trong máu, hệ bạch huyết và các mô khác; chúng có thể được tạo ra từ tế bào gốc tạo máu trong tủy xương.",
+    "吞噬": "Thực bào là quá trình tế bào biến đổi màng hoặc hình thành chân giả để bao lấy và đưa các hạt rắn, như tác nhân gây bệnh và mảnh vụn tế bào, vào bên trong, tạo thành túi thực bào. Túi này sau đó hợp nhất với lysosome để phân giải các hạt. Quá trình đó có thể giúp tế bào thu nhận dinh dưỡng hoặc loại bỏ tác nhân gây bệnh và mảnh vụn tế bào.",
+    "细菌": "Vi khuẩn là sinh vật thuộc miền Vi khuẩn, thường đơn bào, có cấu trúc đơn giản, không có nhân tế bào cũng như các bào quan có màng như ti thể và lục lạp. Phần lớn vi khuẩn rất nhỏ, có dạng cầu, que hoặc xoắn; chúng hiện diện rộng rãi trong đất, nước và cơ thể người, chủ yếu sinh sản bằng phân đôi. Vi khuẩn tham gia phân hủy và tuần hoàn chất dinh dưỡng, được ứng dụng trong chế biến thực phẩm và xử lý nước thải; một số gây bệnh.",
+    "能量": "Năng lượng là một đại lượng vô hướng trong vật lý, thường biểu thị khả năng một hệ thực hiện công lên hệ khác; đơn vị quốc tế là joule. Năng lượng có thể tồn tại dưới dạng động năng, thế năng, nhiệt năng và các dạng khác; nó có thể được truyền giữa các hệ hoặc chuyển hóa qua lại. Trong hệ cô lập, tổng năng lượng được bảo toàn. Công suất biểu thị tốc độ chuyển hóa năng lượng.",
+    "线粒体": "Ti thể là bào quan có hai lớp màng, hiện diện trong phần lớn tế bào nhân thực; màng trong gấp vào phía trong tạo thành các mào. Đây là nơi chủ yếu diễn ra quá trình phosphoryl hóa oxy hóa và tổng hợp adenosine triphosphate (ATP), cung cấp năng lượng hóa học cho hoạt động tế bào, nên được gọi là nhà máy điện của tế bào. Ti thể có vật chất di truyền riêng, là bào quan bán tự chủ và còn tham gia biệt hóa tế bào, truyền tín hiệu và quá trình chết tế bào theo chương trình.",
+    "细胞": "Tế bào là đơn vị cấu trúc và chức năng cơ bản của cơ thể sinh vật, được gọi là viên gạch của sự sống. Tế bào được chia thành tế bào nhân sơ và nhân thực. Khác biệt chủ yếu là tế bào nhân thực có nhân được màng bao bọc, còn tế bào nhân sơ thì không. Sinh vật có thể gồm một hoặc nhiều tế bào; tế bào tham gia các hoạt động sống thông qua sinh trưởng, phân chia và biệt hóa.",
+    "有氧呼吸": "Hô hấp hiếu khí là quá trình hô hấp tế bào có sự tham gia của oxy, giải phóng năng lượng bằng cách oxy hóa và phân giải chất hữu cơ như glucose; một phần năng lượng được lưu trong ATP để phục vụ hoạt động sống. Quá trình này gồm đường phân, chu trình acid tricarboxylic và phosphoryl hóa oxy hóa; oxy là chất nhận electron cuối cùng, tham gia tạo nước. Trong tế bào nhân thực, ti thể là nơi chủ yếu diễn ra hô hấp hiếu khí.",
+    "细胞生命活动": "Hoạt động sống của tế bào là các quá trình sinh lý mà tế bào thực hiện, gồm trao đổi vật chất, truyền thông tin, chuyển hóa năng lượng, sinh trưởng, phân chia, biệt hóa, lão hóa và chết. Màng tế bào điều tiết sự ra vào của vật chất và truyền thông tin; tế bào chất là nơi chủ yếu diễn ra hoạt động tế bào, còn biểu hiện gene tham gia điều hòa các hoạt động này.",
+    "外膜": "Màng ngoài là lớp màng ở phía ngoài cùng của ti thể, có bề mặt tương đối nhẵn, dày khoảng 6–7 nanomet và đóng vai trò màng giới hạn bào quan. Nó chứa protein tạo lỗ, cho phép các phân tử có khối lượng nhỏ hơn 5.000 Da đi qua, đồng thời tham gia các phản ứng sinh hóa như kéo dài chuỗi acid béo và quá trình chết tế bào theo chương trình.",
+    "内膜": "Màng trong nằm phía trong màng ngoài ti thể và bao bọc chất nền ti thể. Màng này gấp vào phía trong, tạo thành các mào để tăng diện tích bề mặt. Nó chứa chuỗi truyền electron và nhiều loại protein, tham gia vận chuyển vật chất, phosphoryl hóa oxy hóa, tổng hợp ATP và các quá trình khác.",
+    "嵴": "Mào ti thể là cấu trúc hình thành khi màng trong gấp về phía chất nền, giúp tăng diện tích bề mặt màng trong; chúng chủ yếu có dạng phiến, ống hoặc túi. Các hạt trên mào ti thể chứa enzyme ATP synthase, có thể dùng năng lượng do chuỗi hô hấp tạo ra để tổng hợp ATP. Tế bào có nhu cầu năng lượng cao thường có nhiều mào hơn.",
+    "内膜的表面积": "Diện tích bề mặt màng trong là tổng diện tích màng trong ti thể, gồm cả các mào được hình thành khi màng gấp về phía chất nền. Sự hình thành mào làm tăng diện tích bề mặt màng trong. Màng trong chứa chuỗi truyền electron; các hạt trên mào chứa ATP synthase và tham gia tổng hợp ATP.",
+    "酶": "Enzyme là các đại phân tử sinh học có tác dụng xúc tác, giúp tăng tốc phản ứng hóa học bằng cách giảm năng lượng hoạt hóa; chúng tham gia gần như mọi quá trình chuyển hóa trong tế bào. Phần lớn enzyme là protein; một số ít là RNA có hoạt tính xúc tác, gọi là ribozyme. Enzyme thường có tính đặc hiệu cao; hoạt tính của chúng chịu ảnh hưởng của nhiệt độ, pH, chất ức chế và các yếu tố khác.",
+    "能量供应": "Cung cấp năng lượng là quá trình tế bào phân giải chất hữu cơ bằng hô hấp, giải phóng năng lượng và lưu một phần năng lượng trong adenosine triphosphate (ATP) để phục vụ hoạt động sống. ATP là nguồn cung cấp năng lượng trực tiếp chủ yếu của tế bào.",
+    "能量需求": "Nhu cầu năng lượng là lượng năng lượng tế bào cần để duy trì các hoạt động sống. Tế bào phân giải chất hữu cơ bằng hô hấp, giải phóng năng lượng và lưu một phần trong ATP; ATP trực tiếp cung cấp năng lượng cho hoạt động sống.",
+    "线粒体的数量": "Số lượng ti thể thay đổi theo loài sinh vật và loại mô, thường liên quan đến mức chuyển hóa của tế bào: chuyển hóa càng mạnh thì thường càng có nhiều ti thể. Ví dụ, tế bào gan có 1.000–2.000 ti thể; tế bào nấm men có thể chỉ có một ti thể lớn dạng phân nhánh, còn hồng cầu trưởng thành của phần lớn động vật có vú không có ti thể.",
+    "生物体结构和功能的相适应": "Sự phù hợp giữa cấu trúc và chức năng của cơ thể sinh vật là sự phối hợp giữa các thành phần của cơ thể và các hoạt động sống. Tế bào là đơn vị cơ bản của sự sống; DNA, RNA, protein và các thành phần khác tương tác để tham gia các quá trình sống. Mô, cơ quan và hệ cơ quan đảm nhiệm các chức năng tương ứng, cùng hỗ trợ chuyển hóa năng lượng và duy trì sự ổn định của môi trường bên trong cơ thể.",
+    "细胞器": "Bào quan là những đơn vị dưới tế bào có hình dạng, cấu trúc nhất định và thực hiện chức năng sinh lý riêng; có thể xem như các cơ quan nhỏ của tế bào. Chúng được chia thành bào quan có màng và không có màng. Ví dụ, ti thể tạo năng lượng bằng hô hấp, còn lục lạp thực hiện quang hợp. Khái niệm bào quan theo nghĩa hẹp không gồm nhân tế bào, còn theo nghĩa rộng hiện đại thì có.",
+    "真核细胞器": "Bào quan của tế bào nhân thực là các đơn vị dưới tế bào có hình dạng, cấu trúc hoặc chức năng nhất định, được chia thành bào quan có màng và không có màng. Theo định nghĩa rộng hiện đại, nhân tế bào cũng là một bào quan: nó chứa DNA và là trung tâm điều hòa di truyền và chuyển hóa. Ti thể tạo năng lượng bằng hô hấp; lục lạp có trong tế bào sinh vật nhân thực tự dưỡng, như thực vật xanh và tảo, và chủ yếu thực hiện quang hợp."
+  }
+}

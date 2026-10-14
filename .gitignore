@@ -4,7 +4,10 @@
 SciMKG.pdf
 GraphViS.pdf
 *_GraphVis_*.pdf
-/papers/
+/papers/*
+!/papers/SciMKG/
+/papers/SciMKG/*
+!/papers/SciMKG/pilot/
 
 # --- LaTeX build ---
 report/*.aux

@@ -1,0 +1,13 @@
+{
+  "id": "author-lesson",
+  "language": "zh",
+  "subject": "Sinh học",
+  "knowledge_point": "Điền điểm kiến thức đúng mẫu",
+  "source_url": "https://zenodo.org/records/19691725",
+  "duration_seconds": 0,
+  "video_url": "",
+  "video_path": "",
+  "segments": [],
+  "images": [],
+  "template_notice": "Đây là mẫu cấu trúc cần điền bằng dữ liệu thật, không phải dữ liệu tác giả hoặc đầu vào chạy được. Mỗi đoạn có id, start, end, text; mỗi ảnh có id, path. Bài tiếng Việt dùng language=vi và id khác."
+}

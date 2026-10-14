@@ -1,0 +1,9 @@
+{
+  "date": "2026-10-11",
+  "command": "python3 -m pytest -q papers/SciMKG/pilot/test_pilot.py",
+  "exit_code": 0,
+  "output": "......................................                                   [100%]\n38 passed in 0.08s",
+  "test_data": "synthetic",
+  "elapsed_process_seconds": 0.298,
+  "model_quality_evaluation": false
+}

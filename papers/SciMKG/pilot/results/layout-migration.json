@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-11",
+  "folder": "papers/SciMKG/pilot",
+  "report": "report/pilot-report.html",
+  "merged_source_sha256": {
+    "pilot-plan.html": "36941cfb58e9086ea313c361fe5a10979487f2984badd8fdeb6be8f81b4e8a09",
+    "pilot-review.html": "cfa1d557ad33bd0e0b39a648fc8d7adbb0591a320fb8fa612c5cac269a8d31b6",
+    "pilot-results.md": "477bccb052294d62709af01a018a247829ac1102e9567258c1f21d5faf67c898",
+    "pilot-source-review.md": "08c15dbc843de204b4d5c7e3859b2088ebe856f9bf0147f2772409ed93ee520b",
+    "pilot-plan-notes.md": "e740424c6feee503f200fd532dac4dc35767c94081fc764d7f20193dccddc992"
+  },
+  "inference_rerun": false,
+  "data_and_runs_moved": false,
+  "annotation_status": "unchanged",
+  "previous_renderer_sha256": "5c2d94adc4b101cca27ae64ba9f7bf8bc7f39ccc966d5d29016b508824b04db8",
+  "current_renderer": "render_report.py",
+  "old_reports_removed": true,
+  "local_links_within_pilot": true,
+  "graph_and_usage_evidence_unchanged": true,
+  "report_renderer_idempotent": true,
+  "previous_report_location": "pilot-report.html",
+  "view_only_folder": "papers/SciMKG/pilot/report"
+}

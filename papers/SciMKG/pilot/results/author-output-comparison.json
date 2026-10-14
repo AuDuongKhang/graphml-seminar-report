@@ -1,0 +1,136 @@
+{
+  "date": "2026-10-11",
+  "purpose": "Đối chiếu nguồn sẵn có; không gọi LLM, không sửa nhãn hoặc dự đoán.",
+  "source_files": {
+    "data/author/Natural Science Disciplines/Biology/bx1/11第2节_细胞器之间的分工合作（第一课/11第2节_细胞器之间的分工合作（第一课_Extractionner": "f0e6ddc34932c94b87e1d02fc22e6347d10f1023bfe8dc9aabdf6c518a51344c",
+    "data/author/Natural Science Disciplines/Biology/bx1/11第2节_细胞器之间的分工合作（第一课/11第2节_细胞器之间的分工合作（第一课_Intergrationner": "38adac5f04ee6def74b065294199613c52dc397a14e2054ebc0f5cb3963c1313",
+    "data/author/Natural Science Disciplines/Biology/bx1/11第2节_细胞器之间的分工合作（第一课/11第2节_细胞器之间的分工合作（第一课_Validationner": "3e063d1a3dc59f095407397734e088577817bbb908cd156ba8b44225f9754221",
+    "data/author-gold/biology/11第2节_细胞器之间的分工合作（第一课/groundtruth.txt": "f1d0f07d75b846a5c3a4483b1a6f30b39546fd3876b85dbffeeff86fa1c22cf9",
+    "data/example/Mitochondria/Mitochondria.mp3": "a714eda9c9f420785ac43a866c1044f24a7ba44303399261e153e81928205b21",
+    "data/example/Mitochondria/image.jpg": "81f3112229d10ea52c4b350d162a4ef5133ac6e05261ec150d86c08013af9f2e",
+    "data/example/Mitochondria/text.txt": "7f863e4315f2b68f00708a4bc704b05cd99f0e00c1174e89c75fb37f7e6b47fb",
+    "data/example/Mitochondria/video.txt": "746e40c4f6279170a2f0a8bfad75d18c882583811dd15b2846a50ebb61c8b4ad",
+    "data/author-votes.json": "59e87539acdebc6a444a95f49d1e1a0fa1b968a54d9e9c38135513023f238845",
+    "runs/author-mitochondria/summary.json": "9125b426b33467d4b702f1bb050285b184813dd9a46285a058df9d305c225fe5",
+    "runs/author-mitochondria/explanations.json": "c2ee431693b4d5cc132eda25a6a81b4fe1b477dc7d07ff8881ed6ac914865f15"
+  },
+  "selected_intervals": [
+    "06:35-07:11",
+    "07:11-08:07"
+  ],
+  "label_matching": {
+    "matched": 5,
+    "provisional_labels": 6,
+    "predicted": 17,
+    "outside_provisional_labels": 12,
+    "unmatched_label_vi": "hoạt động sống",
+    "related_prediction_vi": "hoạt động sống của tế bào",
+    "semantic_equivalence_adjudicated": false
+  },
+  "votes": {
+    "normalization": "(s−1)/15",
+    "threshold": 0.7,
+    "comparison": ">",
+    "rows": [
+      {
+        "interval": "06:35-07:11",
+        "concept": "结构模式图",
+        "raw_count": 2,
+        "normalized_score": 0.06666666666666667,
+        "passes_threshold": false
+      },
+      {
+        "interval": "06:35-07:11",
+        "concept": "有氧呼吸",
+        "raw_count": 16,
+        "normalized_score": 1.0,
+        "passes_threshold": true
+      },
+      {
+        "interval": "07:11-08:07",
+        "concept": "内膜",
+        "raw_count": 9,
+        "normalized_score": 0.5333333333333333,
+        "passes_threshold": false
+      },
+      {
+        "interval": "07:11-08:07",
+        "concept": "嵴",
+        "raw_count": 8,
+        "normalized_score": 0.4666666666666667,
+        "passes_threshold": false
+      },
+      {
+        "interval": "07:11-08:07",
+        "concept": "酶",
+        "raw_count": 14,
+        "normalized_score": 0.8666666666666667,
+        "passes_threshold": true
+      },
+      {
+        "interval": "07:11-08:07",
+        "concept": "能量供应",
+        "raw_count": 14,
+        "normalized_score": 0.8666666666666667,
+        "passes_threshold": true
+      }
+    ],
+    "published_integration_selected": [
+      {
+        "interval": "07:11-08:07",
+        "concept": "能量供应"
+      }
+    ],
+    "same_output_as_recomputed": false,
+    "interpretation": "Tính lại phiếu của hai đoạn cho 3 khái niệm qua ngưỡng; tệp tích hợp công bố chỉ có cung cấp năng lượng. Chưa xác định cấu hình sinh hai tệp; không coi tệp tích hợp là chuẩn kiểm thử duy nhất."
+  },
+  "comparison_rows": [
+    {
+      "stage": "Khái niệm và bỏ phiếu",
+      "author_output": "Có ba tệp trung gian và nhãn toàn bài của đúng bài đã chọn.",
+      "checked": "5/6 nhãn tạm khớp tên; đã tính độc lập điểm phiếu.",
+      "limit": "Nhãn trích đoạn chưa đầy đủ. Phiếu tính lại giữ 3 khái niệm; tệp tích hợp công bố ghi 1."
+    },
+    {
+      "stage": "Liên kết ảnh",
+      "author_output": "Có ảnh nguồn của bài và ảnh ti thể trong Example.zip.",
+      "checked": "Ảnh tải được, đúng mã băm; liên kết tham chiếu tới ảnh tồn tại.",
+      "limit": "Chưa có nhãn chuẩn liên kết ảnh–khái niệm cho cùng trích đoạn. Ảnh mẫu không phải đáp án cho ảnh đầu vào pilot."
+    },
+    {
+      "stage": "Lời giải thích",
+      "author_output": "Có lời giải thích mẫu về ti thể trong Example.zip.",
+      "checked": "Hai bản cùng đề cập tế bào nhân thực, hai lớp màng, ATP và cách gọi nhà máy điện.",
+      "limit": "Chỉ đối chiếu nội dung của một khái niệm; mẫu tác giả không đủ xác nhận mọi lời giải thích hoặc chi tiết bổ sung."
+    },
+    {
+      "stage": "Âm thanh",
+      "author_output": "Có MP3 của ti thể trong Example.zip.",
+      "checked": "Pilot đã kiểm tra định dạng, mã băm và thời lượng WAV; tệp tham chiếu tác giả có sẵn.",
+      "limit": "Chưa chấm phát âm tiếng Trung hoặc độ khớp toàn bộ lời đọc. Tệp tham chiếu không tự trở thành nhãn chuẩn phát âm."
+    },
+    {
+      "stage": "Video",
+      "author_output": "Có URL và mốc 01:22–02:12 trong ví dụ ti thể.",
+      "checked": "Đã đọc siêu dữ liệu của ví dụ.",
+      "limit": "Không khớp mốc 06:35–08:07; chưa xác nhận đúng bài. Pilot chưa có video nguồn cho trích đoạn tác giả."
+    },
+    {
+      "stage": "Đồ thị",
+      "author_output": "Trong các tệp mẫu đã tải, chưa có đồ thị chuẩn cho cùng trích đoạn.",
+      "checked": "Đã đối chiếu nút, nhãn, cạnh JSON/RDF và tham chiếu tài nguyên.",
+      "limit": "Đây là kiểm tra nhất quán kỹ thuật, chưa phải so sánh với đồ thị đáp án của tác giả."
+    }
+  ],
+  "example": {
+    "folder": "data/example/Mitochondria",
+    "text_vi": "Mẫu tác giả mô tả ti thể là bào quan ở tế bào nhân thực, có cấu trúc hai lớp màng, tạo ATP thông qua hô hấp hiếu khí và được ví như nhà máy điện của tế bào.",
+    "translation_by": "Codex",
+    "translation_review": "pending",
+    "video_interval": "01:22-02:12",
+    "same_selected_lesson_confirmed": false,
+    "is_expert_gold": false
+  },
+  "expert_quality_review": "unassessed",
+  "user_review_policy": "Người dùng có thể nhận xét phạm vi pilot. Không yêu cầu tự chấm nội dung sinh học hay tiếng Trung; đánh giá chất lượng chưa chấm được ghi rõ, không mặc định đạt."
+}

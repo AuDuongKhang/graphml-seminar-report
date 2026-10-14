@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-11",
+  "source_url": "https://www.youtube.com/watch?v=_nmB096nlcM",
+  "original_duration_seconds": 550,
+  "selected_interval": [
+    74,
+    123
+  ],
+  "local_duration_seconds": 49.015633,
+  "bytes": 1218327,
+  "sha256": "cd779783f1c0611f4047274220fef641a8473e980a35f3e632c79b754fb9178b",
+  "codec": "H.264 + AAC",
+  "resolution": [
+    640,
+    360
+  ],
+  "tool": "yt-dlp 2026.08.19, Node, ffmpeg",
+  "full_video_downloaded": false,
+  "manual_content_review": "pending",
+  "verified_frame_source_seconds": 84,
+  "verified_frame_sha256": "af1dc387333d52270269be1c68c33f12d994e5c318010a0a571874b65894d6fe"
+}
