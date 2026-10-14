@@ -38,6 +38,8 @@ report/                 ← mã LaTeX của báo cáo
            B_intro.tex, B_related.tex, B_scimkg.tex, B_conclusion.tex (Phần B), B_tables_parked.tex (bảng Phần B tạm gỡ, không `\input`),
            04_contributions.tex, 99_appendix.tex
   figures/*.tex         ← hình TikZ (vẽ lại, không chụp hình bài báo)
+  tables/*.tex          ← bảng sinh tự động từ số đo (không sửa tay)
+  tools/make_ex_tables.py ← sinh report/tables/ex01_cost.tex từ SciMKG/runs/ (chạy lại khi chạy lại Ex01)
   refs.bib
 GraphVis-code/          ← mã gốc GraphVis (Apache-2.0). Commit đầu tiên = bản gốc chưa sửa;
                           mọi sửa đổi để tái lập xem bằng `git diff <commit đầu> -- GraphVis-code`
@@ -89,17 +91,16 @@ Trước khi nộp: `grep -rn "\\\\todo\|wandbtodo" report/` phải rỗng.
 | Phần | Trạng thái |
 |---|---|
 | Bìa, tiêu đề, tác giả | Xong (còn link GitHub/W&B trên bìa) |
-| Cấu trúc báo cáo (12/10/2026) | Hai phần độc lập, mỗi phần có giới thiệu, kiến thức nền và kết luận riêng; không còn giới thiệu/kiến thức nền/kết luận chung. Đã bỏ tóm tắt và từ khóa chung; sau tiêu đề/tác giả vào thẳng Phần A. Phần B mở ở trang mới; mỗi phần đánh số mục lại từ I (Phần A I–IX; Phần B tạm I–VII, sẽ gộp thành 5 mục: Giới thiệu, Công trình liên quan, Phương pháp, Thực nghiệm, Kết luận). Đã biên dịch XeLaTeX (13/10/2026, sau khi viết Giới thiệu, Công trình liên quan và Phương pháp của Phần B): **12 trang**, không lỗi, không tràn lề, không tham chiếu chưa giải quyết. |
+| Cấu trúc báo cáo (12/10/2026) | Hai phần độc lập, mỗi phần có giới thiệu, kiến thức nền và kết luận riêng; không còn giới thiệu/kiến thức nền/kết luận chung. Đã bỏ tóm tắt và từ khóa chung; sau tiêu đề/tác giả vào thẳng Phần A. Phần B mở ở trang mới; mỗi phần đánh số mục lại từ I (Phần A I–IX; Phần B I–V: Giới thiệu, Công trình liên quan, Phương pháp, Thực nghiệm, Kết luận). Đã biên dịch XeLaTeX (14/10/2026, sau khi viết Giới thiệu, Công trình liên quan, Phương pháp và Thực nghiệm của Phần B): **14 trang**, không lỗi, không tràn lề, không tham chiếu chưa giải quyết. |
 | A: I Giới thiệu | Đã viết đoạn giới thiệu ngắn |
-| B: I Giới thiệu (13/10/2026) | Bản nháp đầy đủ: bối cảnh, hai hạn chế (có trích dẫn KnowEdu, MOOCCubeX, Jhajj, TIVA-KG), ý tưởng và số liệu theo bài, đóng góp của báo cáo, lộ trình. Link bài và mã nằm trong danh mục tham khảo, không dùng chú thích. Lộ trình chưa có `\ref`: thêm khi tái cấu trúc Phần B thành 5 mục (Giới thiệu, Công trình liên quan, Phương pháp, Thực nghiệm, Kết luận). |
+| B: I Giới thiệu (13/10/2026) | Bản nháp đầy đủ: bối cảnh, hai hạn chế (có trích dẫn KnowEdu, MOOCCubeX, Jhajj, TIVA-KG), ý tưởng và số liệu theo bài, đóng góp của báo cáo, lộ trình. Link bài và mã nằm trong danh mục tham khảo, không dùng chú thích. Lộ trình đã có `\ref` tới bốn mục còn lại (14/10/2026). |
 | A: II Kiến thức nền | **Sườn** |
 | B: II Công trình liên quan (13/10/2026) | Bản nháp đầy đủ trong `B_related.tex` (thay `B_background.tex`): 5 mục con, mỗi mục một đoạn, bảng so sánh đồ thị đa phương thức tạm gỡ vào `B_tables_parked.tex`. Mô tả công trình lấy từ tóm tắt hoặc trang dự án, chưa đọc toàn văn. |
 | A: III–VI, VIII (GraphVis) | Bản nháp hoàn chỉnh |
 | A: VII Tái lập; VI-C thực nghiệm độ phức tạp ảnh | **Chờ chạy** (bảng `\todo`) |
 | B: III Phương pháp (13/10/2026) | Đã viết lại ngắn gọn, ưu tiên nội dung bài báo; chi tiết rút từ mã nguồn và các điểm không khớp gom ở III-F (đối chiếu commit `81f2ce2`). Hình tổng quan dùng nguyên Hình 2 của bài (cắt vector từ PDF, có ghi nguồn), khác quy tắc mục 4 "Hình phải vẽ lại": cần Khang đồng ý. Các bảng của Phần B tạm gỡ vào `report/sections/B_tables_parked.tex` (không `\input`). |
-| B: IV Kết quả công bố, VI Đánh giá phê bình | Bản nháp hoàn chỉnh; sẽ gộp vào Thực nghiệm khi tái cấu trúc |
-| B: V Tái lập | **Chờ chạy** (sẽ thay bằng Thực nghiệm Ex01/Ex02) |
-| A: IX Kết luận; B: VII Kết luận; Phân công, Phụ lục B–C | **Sườn** |
+| B: IV Thực nghiệm (14/10/2026) | Đã gộp kết quả công bố (IV-A, mốc tham chiếu), thiết lập (IV-B), Ex01 (IV-C, số liệu thật), Ex02 (IV-D), so sánh chi phí giữa các mô hình và khi mở rộng (IV-E) và thảo luận (IV-F, gồm phê bình cũ). Hai câu hỏi: (1) chi phí API, (2) chất lượng đi kèm; chi phí báo bằng lượt gọi và token, tiền chỉ quy ở IV-E theo từng mô hình. Bảng IV-C sinh bằng `report/tools/make_ex_tables.py` từ `SciMKG/runs/` (đã commit trong `report/tables/`). **Còn `\todo`:** mô hình dùng ở Ex01, quy tắc khớp nhãn, token riêng của prompt (cận dưới), toàn bộ ô Ex02 và bảng giá mô hình. Số Ex01 là của lượt 13/10/2026 (mã cũ), cần cập nhật nếu chạy lại theo protocol 3. |
+| A: IX Kết luận; B: V Kết luận; Phân công, Phụ lục B–C | **Sườn** |
 | Code tái lập | GraphVis ở `repro/graphvis/`; SciMKG phát triển trong fork `SciMKG/`. |
 | Chạy thực nghiệm trên Kaggle/Colab, dán link W&B | **Việc tiếp theo** — xem `docs/experiments.md` |
 

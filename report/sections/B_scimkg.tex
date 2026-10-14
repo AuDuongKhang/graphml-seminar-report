@@ -1,14 +1,12 @@
 % ============================================================
-% PHẦN B - PHƯƠNG PHÁP VÀ CÁC MỤC CÒN LẠI CỦA SCIMKG (bài chỉ báo cáo)
-%   Mỗi phần đánh số mục lại từ I. Đánh số TẠM của Phần B cho đến khi tái cấu trúc
-%   thành 5 mục (Giới thiệu, Công trình liên quan, Phương pháp, Thực nghiệm, Kết luận):
-%   I-II  Giới thiệu và công trình liên quan (B_intro, B_related)
-%   III   Phương pháp (mục Tổng quan đã viết xong; các mục con còn lại ở dạng cũ,
-%         sẽ viết lại thành đoạn văn từng mục một)
-%   IV    Kết quả công bố
-%   V     Tái lập (chưa có số liệu)
-%   VI    Đánh giá phê bình
-%   VII   Kết luận riêng (B_conclusion)
+% PHẦN B - PHƯƠNG PHÁP VÀ THỰC NGHIỆM CỦA SCIMKG (bài chỉ báo cáo)
+%   Mỗi phần đánh số mục lại từ I. Phần B có 5 mục:
+%   I Giới thiệu (B_intro), II Công trình liên quan (B_related),
+%   III Phương pháp và IV Thực nghiệm (file này), V Kết luận (B_conclusion)
+%   IV gồm: A kết quả công bố (mốc tham chiếu), B thiết lập, C Ex01, D Ex02 (chờ chạy),
+%   E so sánh chi phí giữa các mô hình và khi mở rộng, F thảo luận và giới hạn
+%   Bảng Phần B tạm gỡ nằm ở B_tables_parked.tex; bảng chi phí Ex01 do
+%   report/tools/make_ex_tables.py sinh (report/tables/ex01_cost.tex), không sửa tay
 % ============================================================
 
 % ------------------------------------------------------------
@@ -63,7 +61,7 @@ Mỗi LLM trong ba LLM chạy năm vòng Self-Refine~\cite{madaan2023selfrefine}
 Bước tích hợp (I) gộp các phiếu theo tinh thần Self-Consistency~\cite{wang2023selfconsistency}: ứng viên được nhiều mô hình và nhiều vòng giữ lại thì đáng tin hơn.
 Ứng viên được giữ khi điểm tổng hợp đạt ngưỡng $\alpha=0{,}7$, mà bài mô tả là tần suất ứng viên được nhận ở bước kiểm chứng; nhóm hiểu đó là tỉ lệ phiếu trên số phiếu tối đa, tức ít nhất 11 trên 15 phiếu.
 Trong ví dụ, ``mô biểu bì'' (15 phiếu), ``tế bào cơ'' (14) và ``cơ quan'' (11) được giữ, còn ``hệ thống'' và ``kính hiển vi'' (3 phiếu) bị loại.
-Theo bài, Self-Refine làm sạch danh sách nên precision tăng, còn dùng nhiều LLM giúp không bỏ sót nên recall tăng; Mục~\ref{sec:sm-results} đối chiếu cách giải thích này với số liệu ablation, và Mục~\ref{sec:sm-repro} kiểm tra lại tác động của kiểm chứng trên nhãn công bố.
+Theo bài, Self-Refine làm sạch danh sách nên precision tăng, còn dùng nhiều LLM giúp không bỏ sót nên recall tăng; Mục~\ref{sec:sm-exp-pub} đối chiếu cách giải thích này với số liệu ablation, và Mục~\ref{sec:sm-ex02} kiểm tra lại tác động của kiểm chứng trên nhãn công bố.
 
 Bước bổ sung (A) nhận tập khái niệm của I và trả về tập mở rộng cùng lời giải thích cho từng khái niệm, vì phụ đề chỉ chứa những gì giáo viên nói ra.
 Mỗi khái niệm được tra trên ConceptNet để lấy các khái niệm lân cận theo tám quan hệ (IsA, RelatedTo, HasContext, PartOf, DefinedAs, Synonym, DerivedFrom, HasPrerequisite), qua các luật biểu thức chính quy do tác giả thiết kế; LLM sau đó lọc và kiểm tra chéo để chỉ giữ khái niệm thuộc môn học.
@@ -83,10 +81,10 @@ Mỗi khái niệm và mỗi dữ liệu đa phương thức là một thực th
 Tổng cộng đồ thị có 1.356 điểm kiến thức, 34.630 khái niệm, 403.400 triple, 763 bài tập, 10.527 ảnh, 10.425 video và 34.630 tệp âm thanh; ảnh phủ 39\% khái niệm, video phủ 80\% và âm thanh phủ 100\%.
 
 \subsection{Bổ sung từ mã nguồn và điểm không khớp với bài báo}\label{sec:sm-mismatch}
-Bài báo chỉ mô tả ở mức khái quát, nên nhóm đối chiếu với mã công bố~\cite{kgbnu2026scimkgcode} tại commit 81f2ce2 của tác giả.
+Bài báo chỉ mô tả ở mức khái quát, nên nhóm đối chiếu với mã công bố~\cite{kgbnu2026scimkgcode}.
 Các điểm đáng chú ý:
 \begin{itemize}
-\item \textbf{Tiền xử lý.} Nhận dạng giọng nói làm thủ công, ngoài mã; việc gộp đoạn bằng Gemini, cắt clip và tách ảnh nằm ở các hàm và dịch vụ ngoài rời nhau, phần điều phối bị chú thích TODO, địa chỉ và khóa API để trống. Phát biểu cuối của mỗi tài liệu bị bỏ.
+\item \textbf{Tiền xử lý.} Nhận dạng giọng nói làm thủ công, ngoài mã; việc gộp đoạn bằng Gemini, cắt clip và tách ảnh nằm ở các hàm và dịch vụ ngoài rời nhau, phần điều phối chỉ còn ở dạng dòng chú thích. Phát biểu cuối của mỗi tài liệu bị bỏ.
 \item \textbf{Trích xuất (E).} Chỉ gọi DeepSeek-V3, không phải nhiều LLM như bài mô tả. Một danh sách khái niệm đã gặp dùng chung cho toàn bộ dữ liệu, nên khái niệm chỉ gắn với lần giảng đầu tiên (mốc thời gian và clip).
 \item \textbf{Kiểm chứng (V).} Prompt nhắm vào thuật ngữ mơ hồ liên ngành và dụng cụ thí nghiệm; mỗi vòng sửa luôn xuất phát từ danh sách ban đầu, nên giống lấy mẫu lặp hơn là sửa dần.
 \item \textbf{Tích hợp (I).} Hệ số chuẩn hóa bằng 1 và điểm khởi tạo là 1, nên điều kiện ngưỡng 0,7 luôn đúng và, theo cách nhóm đọc mã, mọi ứng viên đều được giữ. Đây là nhận xét về mã công bố, không phải về cách dữ liệu công bố được sinh ra.
@@ -96,61 +94,265 @@ Các điểm đáng chú ý:
 \end{itemize}
 
 % ------------------------------------------------------------
-\section{SciMKG: kết quả công bố}\label{sec:sm-results}
+\section{Thực nghiệm}\label{sec:sm-exp}
 % ------------------------------------------------------------
-\textbf{Thiết lập đánh giá.} Tập đánh giá là một đồ thị con chọn ngẫu nhiên, gồm điểm kiến thức của 100 bài học thuộc ba môn và 4.479 khái niệm. Mọi baseline dựa trên LLM đều dùng GPT-4o. Trích xuất khái niệm được đo bằng Precision, Recall, F1, ACC, MCC và AUC. Bài không nêu nhãn vàng được tạo thế nào, cũng không nói ACC và AUC được tính trên đơn vị nào. Căn chỉnh ảnh được đo bằng CLIPScore, BLIP-ITM, X-VLM-ITM, VQAScore và điểm của năm chuyên gia.
+Bài báo đo chất lượng trích xuất và căn chỉnh nhưng không nêu chi phí chạy: toàn văn không có số token, giá hay tiền nào.
+Với một đồ thị phủ hơn một nghìn điểm kiến thức, đây lại là điều người muốn áp dụng cần biết trước.
+Phần này vì vậy trả lời hai câu hỏi: (1) dựng một đồ thị tri thức chung như \SM{} tốn bao nhiêu chi phí API; (2) khoản chi đó mua được chất lượng gì?
+Với câu (1), nhóm đo bằng số lượt gọi và số token, vì tiền phụ thuộc mô hình và bảng giá thay đổi theo thời điểm; việc quy ra tiền cho từng mô hình để ở cuối phần (Mục~\ref{sec:sm-exp-scale}).
+Ex01 (Mục~\ref{sec:sm-ex01}) trả lời câu (1) cho một bài học.
+Ex02 (Mục~\ref{sec:sm-ex02}) bỏ lần lượt từng bước để trả lời cả hai câu: mỗi bước tốn bao nhiêu token và đóng góp bao nhiêu vào chất lượng.
+Mục~\ref{sec:sm-exp-scale} dùng hai kết quả đó để so sánh chi phí giữa các mô hình và ước lượng khi số bài tăng.
+Mọi số đo ở đây đến từ bộ chạy của nhóm (Mục~\ref{sec:sm-exp-setup}), không phải từ hệ thống của tác giả.
 
-\textbf{Kết quả chính và ablation.} Theo bài, phương pháp đạt F1 cao nhất (0,803; baseline tốt nhất là LinkNER với 0,734), và ACC, AUC cũng cao nhất. Các baseline thường lệch về một phía: Decomposed-QA có precision cao nhưng recall thấp, còn GPT-NER ngược lại. Ablation khớp với cơ chế ở Mục~\ref{sec:sm-evia}. Bỏ nhiều LLM (w/o MLs) làm recall giảm mạnh (0,342), vì không còn mô hình khác ``cứu'' khái niệm bị loại nhầm. Bỏ vòng tự phản hồi (w/o SF-FD) làm precision giảm mạnh (0,374), vì không còn bước làm sạch. Bỏ cả hai làm F1 chỉ còn 0,312. Khi thay ba LLM thương mại bằng bộ ba mô hình mở Qwen3/Gemma3/Phi-3, F1 tăng theo kích thước mô hình (0,678 $\rightarrow$ 0,717 $\rightarrow$ 0,739) nhưng vẫn kém bản dùng GPT-4o.
+\subsection{Kết quả công bố làm mốc tham chiếu}\label{sec:sm-exp-pub}
+Bảng~\ref{tab:sm-pub} lấy lại kết quả trích xuất khái niệm của bài trên tập đánh giá gồm 100 bài học và 4.479 khái niệm; các baseline dựa trên LLM đều dùng GPT-4o.
+Phương pháp đầy đủ đạt F1 cao nhất (0,803; baseline tốt nhất là LinkNER với 0,734).
+Các dòng ``EVIA w/o \dots'' là phần cắt bỏ: bỏ nhiều LLM (``w/o MLs'') làm recall còn 0,342, bỏ vòng tự phản hồi (``w/o SF-FD'') làm precision còn 0,374, và bỏ cả hai thì F1 chỉ còn 0,312.
+Bài còn quét số vòng lặp và ngưỡng trên chín tổ hợp; cấu hình 5 vòng, ngưỡng 0,7 cho F1 tốt nhất.
+Về căn chỉnh ảnh, bài nêu bốn điểm tự động (CLIP 0,83, BLIP-ITM 0,76, X-VLM-ITM 0,81, VQAScore 0,75) và điểm trung bình 0,73 của năm chuyên gia; căn chỉnh video và âm thanh không được đo.
 
-\textbf{Số vòng lặp và ngưỡng.} Bảng 5 của bài quét $K\in\{1,3,5\}$ và $\alpha\in\{0{,}5;0{,}7;0{,}9\}$. Ngưỡng thấp ưu tiên recall, ngưỡng cao ưu tiên precision. Tăng số vòng giúp cả hai, vì có thêm phiếu nên ước lượng tần suất ổn định hơn. Cấu hình $K=5$, $\alpha=0{,}7$ cho F1 tốt nhất.
+\begin{table}[t]
+\centering
+\caption{Trích xuất khái niệm theo bài báo (chọn lọc).}
+\label{tab:sm-pub}
+\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Phương pháp & P & R & F1 & MCC \\
+\midrule
+Decomposed-QA & 0,935 & 0,570 & 0,712 & \textbf{0,741} \\
+GPT-NER & 0,530 & \textbf{0,931} & 0,681 & 0,621 \\
+LinkNER & 0,855 & 0,644 & 0,734 & 0,732 \\
+UniversalNER & 0,873 & 0,617 & 0,718 & 0,722 \\
+\midrule
+EVIA, Qwen3-14B+Gemma3-27B+Phi-3-14B & 0,879 & 0,637 & 0,739 & 0,730 \\
+EVIA w/o MLs$^{a}$ & 0,769 & 0,342 & 0,477 & 0,509 \\
+EVIA w/o SF-FD & 0,374 & 0,589 & 0,459 & 0,428 \\
+EVIA w/o MLs + SF-FD$^{b}$ & 0,340 & 0,290 & 0,312 & 0,315 \\
+\textbf{EVIA (đầy đủ)} & \textbf{0,947} & 0,702 & \textbf{0,803} & 0,729 \\
+\bottomrule
+\end{tabular}}
+\par\smallskip
+{\footnotesize\raggedright $^{a}$Một mô hình, có vòng tự phản hồi: gần cấu hình đầy đủ của Ex02. $^{b}$Một mô hình, dùng thẳng kết quả trích xuất: gần cấu hình tắt kiểm chứng của Ex02.\par}
+\end{table}
 
-\textbf{Phân tích lỗi.} Lỗi ngữ nghĩa chiếm phần nhỏ: sai khái niệm 11\% và bỏ sót 9\%. Phần lớn là lỗi kỹ thuật: đầu ra không hợp lệ 34\%, sai định dạng 26\% và không phản hồi 10\%. Điều này hợp với cơ chế đã mô tả, vì toàn bộ chuỗi dựa vào việc tách danh sách \texttt{-xxx} từ văn bản tự do.
+Nhóm dùng các số này làm mốc về hướng, không làm mốc về giá trị.
+Bài chạy nhiều LLM thương mại trên 100 bài, còn Ex02 chạy một mô hình trên sáu bài, và bài không mô tả cách gán nhãn vàng.
+Hai dòng đánh dấu $^{a}$ và $^{b}$ trong Bảng~\ref{tab:sm-pub} có thiết lập gần Ex02 nhất: một mô hình có vòng tự phản hồi, và một mô hình dùng thẳng kết quả trích xuất.
+Theo hai dòng này, vòng tự phản hồi nâng F1 từ 0,312 lên 0,477, chủ yếu nhờ precision (từ 0,340 lên 0,769).
 
-\textbf{Căn chỉnh khái niệm--ảnh.} Điểm tự động: CLIP 0,83, BLIP-ITM 0,76, X-VLM-ITM 0,81, VQAScore 0,75. Năm chuyên gia chấm trung bình 0,73 trên thang $[0,1]$. Căn chỉnh video và âm thanh không được đánh giá định lượng.
+\subsection{Thiết lập thực nghiệm}\label{sec:sm-exp-setup}
+\textbf{Dữ liệu.}
+Nhóm lấy sáu bài từ bộ MOOC mà tác giả công bố cùng nhãn khái niệm theo từng bài, mỗi môn (sinh học, vật lý, hóa học) hai bài, tổng cộng 75 đoạn văn bản và 188 nhãn (Bảng~\ref{tab:sm-lessons}).
+Văn bản đưa vào mô hình và nhãn dùng để chấm được tách riêng; nhãn không được đọc hay gửi đi trong quy trình dựng đồ thị.
+Hai bài vật lý ban đầu bị cắt dở trong nguồn nên nhóm thay bằng bài khác trước khi chạy.
+Bài Cấu tạo hệ thần kinh dùng cho Ex01, còn Ex02 dùng cả sáu bài.
+Văn bản bài giảng bằng tiếng Trung được giữ nguyên, chỉ tên bài ghi bằng tiếng Việt.
+Bộ dữ liệu có văn bản và ảnh nhưng không có video và PDF gốc.
+Các video mà đồ thị tác giả trỏ tới đều là luồng có DRM (bảo vệ bản quyền), và một bài khớp tiêu đề chưa đủ chứng minh khớp nội dung, nên nhóm không dùng video trong Ex01.
 
-% ------------------------------------------------------------
-\section{SciMKG: tái lập thực nghiệm}\label{sec:sm-repro}
-% ------------------------------------------------------------
-\todo{Toàn bộ mục này chờ kết quả chạy. Mỗi tiểu mục gắn một link W\&B công khai.}
+\begin{table}[t]
+\centering
+\caption{Sáu bài dùng trong thực nghiệm (bộ MOOC do tác giả công bố).}
+\label{tab:sm-lessons}
+\small
+\begin{tabular}{@{}llrr@{}}
+\toprule
+Bài & Môn & Đoạn & Nhãn \\
+\midrule
+Cấu tạo hệ thần kinh & Sinh học & 14 & 30 \\
+Sinh sản của động vật lưỡng cư & Sinh học & 7 & 57 \\
+Áp suất khí quyển & Vật lý & 12 & 21 \\
+Lực đẩy & Vật lý & 14 & 19 \\
+Axit sunfuric và muối sunfat & Hóa học & 15 & 13 \\
+Protein & Hóa học & 13 & 48 \\
+\midrule
+\textbf{Tổng} & & \textbf{75} & \textbf{188} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\subsection{Thiết lập}
-\todo{Nguồn dữ liệu (Zenodo / mã nguồn \texttt{kg-bnu/SciMKG}). Nhãn vàng cho tập đánh giá: bài không công bố quy trình gán nhãn; nếu không có sẵn, nhóm tự gán trên tập con và mô tả quy trình. Mô hình: ưu tiên đúng cấu hình bài (GPT-4o, Gemini-1.5-Flash, DeepSeek-V3; MLLM GPT-4o/Gemini-1.5-Pro); nếu mô hình nào không còn được cung cấp qua API, ghi rõ và thay bằng phiên bản kế nhiệm hoặc LLM mở (Qwen3, Gemma3, Phi-3 như Bảng 4 của bài). Cách xử lý từng điểm ở Mục~\ref{sec:sm-mismatch} (chuẩn hóa điểm SC, dùng cả ba LLM ở bước E, thêm bước chấm tin cậy ảnh). Chi phí API.} Mã nguồn: \todo{link GitHub}.
+\textbf{Cấu hình và khác biệt so với bài.}
+Trong Ex01, mọi lời gọi LLM dùng một mô hình duy nhất, gọi qua công cụ dòng lệnh bằng tài khoản thuê bao, thay cho nhiều LLM của bài.
+Vì vậy trích xuất, kiểm chứng và căn chỉnh ảnh đều do cùng một mô hình làm.
+Nhóm giữ số vòng kiểm chứng bằng 5 và ngưỡng 0,7 như bài.
+\todo{chốt mô hình; nếu chạy lại Ex01 thì cập nhật Bảng~\ref{tab:sm-ex01-cost} và các số ở Mục~\ref{sec:sm-ex01}}
+Bảng~\ref{tab:sm-diff} liệt kê các khác biệt còn lại; cột ``bài báo và mã gốc'' lấy từ đối chiếu ở Mục~\ref{sec:sm-mismatch}.
 
-\subsection{Kết quả chính và ablation}
-\todo{Bảng: EVIA đầy đủ, w/o MLs, w/o SF-FD, w/o cả hai, các bộ LLM mở theo kích thước; baseline chạy lại được (Decomposed-QA, GPT-NER, \dots).} \wandbtodo
+\begin{table*}[t]
+\centering
+\caption{Khác biệt giữa bài báo, mã gốc và bộ chạy của nhóm.}
+\label{tab:sm-diff}
+\small
+\begin{tabular}{@{}p{0.19\textwidth}p{0.37\textwidth}p{0.37\textwidth}@{}}
+\toprule
+Thành phần & Bài báo và mã gốc & Bộ chạy của nhóm \\
+\midrule
+Trích xuất, kiểm chứng & Bài: nhiều LLM; mã: trích xuất chỉ gọi DeepSeek-V3 & Một mô hình duy nhất \todo{chốt} \\
+Căn chỉnh ảnh & Bài: nhiều mô hình, thêm ngưỡng tin cậy 0,8; mã: GPT-4o gọi ba lần rồi lấy hợp & Một mô hình gọi ba lần rồi lấy hợp, không có ngưỡng 0,8 \\
+Bổ sung từ ConceptNet & Bộ luật để trống & Hai nhánh: giữ trống (nhánh gốc) hoặc bộ luật do nhóm hoàn thiện (nhánh hoàn thiện) \\
+Giải thích & Mã: tra Wikipedia qua dịch Baidu & Wikipedia tiếng Trung; khi thiếu nguồn dùng giải thích dự phòng của mô hình \\
+Âm thanh & Mã: mô hình tts-1 của OpenAI & Chuyển văn bản thành tiếng cục bộ trên máy \\
+Video & Cắt clip theo mốc thời gian & Chưa chạy (thiếu video gốc) \\
+Tập khái niệm đã gặp & Mã: một danh sách dùng chung cho cả bộ dữ liệu & Đặt lại theo từng bài \\
+Tiền xử lý & Nhận dạng giọng nói thủ công, tách ảnh bằng dịch vụ ngoài & Dùng văn bản và ảnh đã công bố; chưa đo \\
+\bottomrule
+\end{tabular}
+\end{table*}
 
-\subsection{Quét số vòng lặp và ngưỡng}
-\todo{Lưới $K\times\alpha$ như Bảng 5 của bài.} \wandbtodo
+Nhánh hoàn thiện chọn đầu mút cạnh của tám quan hệ ConceptNet, một bước nhảy, tối đa 100 cạnh mỗi khái niệm, rồi lọc bằng LLM.
+Đây là cách hoàn thiện của nhóm, không phải bộ luật gốc của tác giả.
+\todo{số liệu Ex01 hiện có là của lượt chạy 13/10/2026, trước khi mã chuyển sang dùng lại hàm của tác giả (ConceptNet đọc từ bản dump 5.7.0, luật mẫu câu cho nhánh hoàn thiện); chạy lại thì cập nhật đoạn này, Bảng~\ref{tab:sm-diff} và Mục~\ref{sec:sm-ex01}}
 
-\subsection{Phân tích lỗi và căn chỉnh ảnh}
-\todo{Phân loại lỗi FE/IO/CE/CO/NR; CLIP/BLIP/X-VLM/VQAScore trên các cặp khái niệm--ảnh.} \wandbtodo
+\textbf{Cách đo chi phí.}
+Với mỗi lời gọi, nhóm ghi số token vào (tách phần dịch vụ đã lưu sẵn, thường tính giá thấp hơn), số token ra, thời gian và việc có phải gọi lại hay không.
+Kết quả lấy từ bộ nhớ đệm cục bộ không tính là lời gọi mới.
+Nhóm báo chi phí bằng lượt gọi và token, không bằng tiền; Mục~\ref{sec:sm-exp-scale} quy token đã đo ra tiền cho từng mô hình.
+Lời gọi mà công cụ không báo số token được đếm và nêu riêng, không coi là bằng 0.
+Tiền xử lý chưa đo; chi phí chuyển văn bản thành tiếng (chạy cục bộ) và chi phí máy tính cũng không được tính.
 
-% ------------------------------------------------------------
-\section{SciMKG: đánh giá phê bình}\label{sec:sm-critique}
-% ------------------------------------------------------------
-\textbf{Ưu điểm.}
-\begin{itemize}
-\item Đây là EKG đầu tiên có đủ bốn phương thức và được dựng gần như tự động, không cần huấn luyện mô hình.
-\item Cơ chế nhiều LLM kết hợp Self-Refine và bỏ phiếu đơn giản, dễ thay mô hình, và được ablation chứng minh: mỗi thành phần chủ yếu cải thiện một trong hai chỉ số precision và recall.
-\item Dữ liệu, bộ công cụ (gói \texttt{scimkg}), bản RDF và trang demo đều được công bố.
-\end{itemize}
+\textbf{Cách đo chất lượng.}
+Ex02 chấm trên đầu ra của bước Tích hợp, trước bước Bổ sung.
+Với mỗi bài, nhóm gộp khái niệm của mọi đoạn, loại trùng, rồi tính precision, recall và F1 so với nhãn của đúng bài đó.
+Kết quả báo theo từng bài và trung bình cộng trên sáu bài.
+Vì phép chấm đặt trước bước Bổ sung, nó đánh giá chuỗi trích xuất, kiểm chứng và tích hợp; bổ sung và căn chỉnh ảnh chưa có nhãn chuẩn nên chỉ được ghi chi phí và số lượng.
+\todo{quy tắc khớp nhãn: chuyển chữ Hán phồn thể sang giản thể rồi so khớp chính xác, hay khớp gần đúng; chốt trước khi chạy Ex02}
 
-\textbf{Điểm chưa nhất quán trong số liệu.}
-\begin{itemize}
-\item Phần tóm tắt và kết luận nói phương pháp vượt mọi baseline, nhưng MCC của nó (0,729) thấp hơn Decomposed-QA (0,741) và LinkNER (0,732). MCC lại là chỉ số ít bị ảnh hưởng bởi mất cân bằng lớp.
-\item Mọi phương pháp, kể cả cấu hình yếu nhất, đều có ACC từ 0,88 đến 0,99. Điều này gợi ý số mẫu âm áp đảo, nên ACC gần như không phân biệt được các phương pháp. Bài không nói AUC được tính từ điểm số nào khi đầu ra là một tập khái niệm.
-\item Văn bản ghi F1 của bộ LLM mở lớn nhất là 0,741 và chênh lệch $\Delta F_1=0{,}062$, trong khi bảng cho 0,739 và chênh lệch 0,064.
-\item Các tỉ lệ trong biểu đồ phân loại lỗi chỉ cộng lại được 90\%.
-\item Chú thích Bảng 4 ghi ``P-27B = Phi-3-medium'', trong khi Phi-3-medium có khoảng 14 tỷ tham số.
-\item Môi trường ghi Python 3.7 cùng PyTorch 2.4, trong khi PyTorch 2.4 cần Python $\ge$ 3.8.
-\end{itemize}
+\subsection{Ex01: chi phí một bài học}\label{sec:sm-ex01}
+Ex01 chạy trọn bài Cấu tạo hệ thần kinh (14 đoạn, 27 ảnh, không có video và PDF gốc) từ văn bản đến đồ thị.
+Vì bước Bổ sung trong mã gốc có bộ luật để trống, nhóm chạy hai nhánh dùng chung kết quả của trích xuất, kiểm chứng và tích hợp.
+Nhánh gốc giữ nguyên hành vi của mã; nhánh hoàn thiện thêm khái niệm từ ConceptNet theo bộ luật của nhóm.
+Chi phí mỗi nhánh chỉ gồm phần phát sinh riêng của nó, nên khi cộng hai nhánh thì ba bước dùng chung chỉ được tính một lần.
 
-\textbf{Giới hạn của đánh giá và của đồ thị.}
-\begin{itemize}
-\item Bài không mô tả quy trình gán nhãn vàng cho 4.479 khái niệm và không báo độ đồng thuận giữa năm chuyên gia.
-\item Căn chỉnh video chỉ dựa trên mốc thời gian và không được đánh giá. Âm thanh là TTS của lời giải thích nên không mang thêm thông tin.
-\item CLIP score 0,83 cao bất thường nếu là cosine thô (thường quanh 0,2--0,35), nhưng bài không nêu cách chuẩn hóa.
-\item Theo cách sinh bộ ba ở Mục~\ref{sec:sm-store}, \emph{không có cạnh nào nối trực tiếp hai khái niệm}. \texttt{related to} chỉ nối khái niệm với điểm kiến thức. Khoảng 82\% bộ ba là liên kết khái niệm--dữ liệu cùng chiều nghịch đảo của chúng, nên con số 403.400 phần lớn phản ánh lượng dữ liệu gắn kèm chứ không phản ánh tri thức quan hệ. Quan hệ tiên quyết, ``là một loại'' hay ``là một phần'' giữa các khái niệm, vốn được dùng khi bổ sung từ ConceptNet, không được giữ lại trong đồ thị.
-\item Vì mỗi khái niệm chỉ gắn với lần xuất hiện đầu tiên, các lần giảng sau, có thể sâu hơn, không được liên kết.
-\item Kết quả phụ thuộc vào các API thương mại tại một thời điểm cụ thể (2025), nên khó tái lập chính xác về sau.
-\end{itemize}
+% Bảng sinh tự động từ số đo bằng report/tools/make_ex_tables.py; không sửa tay.
+\begin{table*}[t]
+\centering
+\caption{Chi phí Ex01 theo bước, cộng phần phát sinh của hai nhánh. Chưa gồm tiền xử lý, ghép và cắt video (chưa đo) và 9 lượt không có số token.}
+\label{tab:sm-ex01-cost}
+\small
+\input{tables/ex01_cost}
+\end{table*}
+
+Tổng cộng, dựng bài này cần 436 lượt gọi (trong đó 8 lần thử lại), 5.837.546 token vào, trong đó 1.878.144 token là phần dịch vụ đã lưu sẵn, và 39.332 token ra, trong khoảng 82 phút.
+Nhánh gốc dùng 281 lượt gọi và 3.701.728 token vào; nhánh hoàn thiện thêm 155 lượt và 2.135.818 token vào, bằng khoảng 58\% nhánh gốc.
+Có 9 lượt không có số token, gồm 4 lượt ở kiểm chứng, 3 ở căn chỉnh ảnh, 1 ở trích xuất và 1 ở giải thích, nên các tổng trên là phần đã biết.
+Về đầu ra, cả hai nhánh có 55 khái niệm sau tích hợp.
+Nhánh gốc không thêm khái niệm, có 58 giải thích và tệp âm thanh, đồ thị 203 nút và 443 cạnh.
+Nhánh hoàn thiện thêm 40 nhãn, có 99 giải thích và tệp âm thanh, đồ thị 319 nút và 623 cạnh.
+Chất lượng của các đầu ra này chưa được chấm.
+
+Bảng~\ref{tab:sm-ex01-cost} cho ba nhận xét.
+\begin{enumerate}
+\item Chi phí tập trung vào ba bước: căn chỉnh ảnh (khoảng 39\% tổng token), kiểm chứng (28\%) và tạo giải thích (24\%) chiếm gần 90\%. Kiểm chứng gọi mô hình 124 lần cho 14 đoạn, gấp khoảng 8 lần trích xuất (15 lần), phù hợp với việc mỗi đoạn được xử lý lặp nhiều vòng. Tích hợp và xuất đồ thị chạy bằng mã nên không phát sinh lượt gọi LLM.
+\item Bổ sung từ ConceptNet tốn thêm khoảng 58\% token của nhánh gốc, nhưng 40 nhãn thêm vào chưa phải 40 khái niệm mới. Sau khi chuyển chữ phồn thể sang giản thể, 17 trong 40 nhãn trùng với khái niệm đã có.
+\item Token vào chiếm 99,3\% tổng token và gần như không đổi giữa các lượt, khoảng 13.300 đến 13.900 token mỗi lượt có số liệu, trong khi mỗi lời giải thích chỉ trả về khoảng 66 token. Điều này gợi ý phần lớn token vào là ngữ cảnh cố định mà công cụ dòng lệnh gắn vào mỗi lượt, không phải nội dung của bước. Vì vậy các số token ở đây nhiều khả năng cao hơn một chương trình gọi API tối giản. \todo{đếm lại riêng token của prompt và phản hồi đã lưu, ghi như cận dưới}
+\end{enumerate}
+
+Số đo lệch theo hai hướng nên nhóm chưa kết luận hướng nào lớn hơn.
+Lượt không có số token, tiền xử lý và video làm số thấp đi, còn ngữ cảnh cố định của công cụ làm số cao lên.
+Toàn bộ số đo, prompt và phản hồi của Ex01 xem tại báo cáo công khai:
+\wandb{https://wandb.ai/nhinbm-hcmus/SciMKG/reports/Ex01-Token--VmlldzoxODEwMzc1NA==}
+
+\subsection{Ex02: hiệu quả của từng bước}\label{sec:sm-ex02}
+Ex01 cho biết một bài học tốn bao nhiêu; Ex02 hỏi khoản đó mua được gì.
+Nhóm chạy từng bài trong sáu bài ở ba cấu hình, tổng cộng 18 lượt.
+Cấu hình đầy đủ gồm trích xuất, kiểm chứng 5 vòng và tích hợp, rồi bổ sung.
+Cấu hình tắt kiểm chứng dùng thẳng ứng viên của bước trích xuất.
+Cấu hình tắt bổ sung bỏ ConceptNet và Wikipedia, và ghi rõ cờ nào đã tắt.
+Dữ liệu, mô hình và tham số ở các bước chung giữ như nhau.
+Vì phép chấm đặt trước bước Bổ sung, cấu hình tắt bổ sung có cùng precision, recall và F1 với cấu hình đầy đủ; cấu hình này chỉ cho biết bước Bổ sung tốn bao nhiêu token và thêm bao nhiêu khái niệm.
+
+Ở Mục~\ref{sec:sm-mismatch}, nhóm đọc mã công bố và thấy bước tích hợp dường như giữ mọi ứng viên.
+Nếu cách đọc đó đúng, bước này không loại ứng viên nào theo điểm, nên kiểm chứng khó nâng precision bằng cách lọc như bài mô tả.
+Ex02 kiểm tra điều đó trực tiếp trên nhãn công bố, và nhóm báo kết quả theo cả hai chiều.
+
+\begin{table*}[t]
+\centering
+\caption{Ex02: precision (P), recall (R), F1 và số token (triệu) theo cấu hình, từng bài và trung bình.}
+\label{tab:sm-ex02}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrrrrrrrr@{}}
+\toprule
+ & \multicolumn{4}{c}{Đầy đủ} & \multicolumn{4}{c}{Tắt kiểm chứng} & Tắt bổ sung \\
+\cmidrule(lr){2-5}\cmidrule(lr){6-9}\cmidrule(l){10-10}
+Bài & P & R & F1 & Token & P & R & F1 & Token & Token \\
+\midrule
+Cấu tạo hệ thần kinh & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
+Sinh sản của động vật lưỡng cư & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
+Áp suất khí quyển & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
+Lực đẩy & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
+Axit sunfuric và muối sunfat & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
+Protein & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
+\midrule
+\textbf{Trung bình} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\todo{đọc Bảng~\ref{tab:sm-ex02}: kiểm chứng làm precision và recall đổi bao nhiêu, tốn thêm bao nhiêu token, và hướng này có khớp 0,312 sang 0,477 của bài không}
+Giá trị tuyệt đối sẽ khác bài, vì nhóm dùng một mô hình, sáu bài và nhãn theo bài, nên nhóm chỉ so hướng thay đổi.
+Hai phần không đo được là chất lượng của khái niệm bổ sung và của căn chỉnh ảnh, video, vì mẫu đã kiểm tra chưa có nhãn chuẩn tương ứng.
+Đầu ra Tích hợp và đồ thị do tác giả sinh là kết quả tham chiếu, không tự trở thành nhãn chuẩn.
+\wandbtodo
+
+\subsection{So sánh chi phí giữa các mô hình và khi mở rộng}\label{sec:sm-exp-scale}
+Số token ở Ex01 và Ex02 không gắn với giá của nhà cung cấp nào, nên nhóm quy ra tiền ở bước cuối này, theo từng mô hình.
+Với một mô hình có giá nhập, giá nhập đã lưu sẵn và giá xuất (tính cho một triệu token), chi phí bằng token vào chưa lưu sẵn nhân giá nhập, cộng token vào đã lưu sẵn nhân giá nhập đã lưu sẵn, cộng token ra nhân giá xuất.
+Ex01 cung cấp ba lượng cho phép tính này, cộng hai nhánh: 3.959.402 token vào chưa lưu sẵn, 1.878.144 token vào đã lưu sẵn và 39.332 token ra.
+Bảng~\ref{tab:sm-price} áp ba lượng đó cho từng mô hình, với giá tra từ trang giá chính thức và ghi ngày tra.
+Các mô hình dùng trong bài báo xếp trước, rồi tới các mô hình hiện hành do nhóm chọn.
+
+\begin{table}[t]
+\centering
+\caption{Chi phí quy từ token đo được, theo mô hình (USD cho một triệu token).}
+\label{tab:sm-price}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Mô hình & Giá nhập & \begin{tabular}[c]{@{}c@{}}Giá nhập\\đã lưu sẵn\end{tabular} & Giá xuất & Một bài (Ex01) & \begin{tabular}[c]{@{}c@{}}Toàn đồ thị\\(ước lượng)\end{tabular} \\
+\midrule
+GPT-4o & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
+DeepSeek-V3 & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
+Gemini-1.5-Flash & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\todo{thêm mô hình nhỏ và mô hình lớn hiện hành, và mô hình dùng ở Ex01 sau khi chốt}
+Phép quy đổi này giả định mọi mô hình nhận cùng lượng token.
+Thực tế bộ tách từ khác nhau cho số token hơi khác, và một mô hình yếu hơn có thể cần thêm vòng gọi lại.
+Token vào của Ex01 còn gồm ngữ cảnh cố định của công cụ dòng lệnh (Mục~\ref{sec:sm-ex01}), nên cột ``Một bài'' nhiều khả năng cao hơn chi phí của một chương trình gọi API tối giản.
+
+Để ước lượng cho cả đồ thị, nhóm tính số token theo từng bước bằng số đơn vị nhân với số token mỗi đơn vị, rồi quy ra tiền như Bảng~\ref{tab:sm-price}.
+Đơn vị của trích xuất và kiểm chứng là đoạn văn bản, của căn chỉnh ảnh là ảnh, của giải thích và bổ sung là khái niệm.
+Số đơn vị lấy từ thống kê của bài: 1.356 điểm kiến thức, 34.630 khái niệm và 10.527 ảnh (Mục~\ref{sec:sm-store}).
+Ba điều làm ước lượng lệch: độ dài bài và số ảnh khác nhau (Ex01 có 27 ảnh, năm bài còn lại có từ 1 đến 20), khái niệm lặp lại giữa các bài có thể làm số khái niệm thật cần giải thích ít hơn số lần xuất hiện, và kết quả lưu sẵn có thể tái sử dụng.
+\todo{số đoạn của toàn bộ dữ liệu: đếm từ gói công bố; số token mỗi đơn vị: tính sau Ex02}
+Mẫu hiện chỉ một bài và sáu bài, nên kết quả là khoảng ước lượng cho cấu hình đã đo, chưa phải chi phí của toàn bộ đồ thị.
+
+\subsection{Thảo luận và giới hạn}\label{sec:sm-exp-discuss}
+\textbf{Giới hạn của số đo.}
+Mẫu nhỏ (một bài rồi sáu bài) và chỉ một mô hình, nên chưa nói được chi phí thay đổi ra sao với mô hình khác ngoài phép quy đổi ở Bảng~\ref{tab:sm-price}.
+Số tiền ở bảng đó phụ thuộc giá tại ngày tra và giả định mọi mô hình nhận cùng lượng token.
+Về chất lượng, hơn một nửa giải thích (33/58 ở nhánh gốc, 57/99 ở nhánh hoàn thiện) không có văn bản nguồn dùng được và phải dùng giải thích dự phòng của mô hình.
+Con số này gắn với việc nhóm thay Wikipedia tiếng Trung cho cấu hình tra cứu của mã gốc, nên không quy cho thiết kế của bài.
+Chất lượng nội dung các giải thích chưa được chấm.
+
+\textbf{Điểm cần thận trọng trong số liệu công bố.}
+Bài nói phương pháp vượt mọi baseline, nhưng MCC của nó (0,729) thấp hơn Decomposed-QA (0,741) và LinkNER (0,732).
+Mọi phương pháp, kể cả yếu nhất, đều có ACC từ 0,88 đến 0,99, nên ACC gần như không phân biệt được các phương pháp.
+Bài cũng không mô tả quy trình gán nhãn vàng cho 4.479 khái niệm, không nói AUC tính trên điểm số nào và không báo độ đồng thuận giữa năm chuyên gia.
+Điểm CLIP 0,83 cao bất thường nếu là cosine thô (thường từ 0,2 đến 0,35), nhưng bài không nêu cách chuẩn hóa.
+
+\textbf{Giới hạn của đồ thị.}
+Theo cách sinh triple ở Mục~\ref{sec:sm-store}, \emph{không có cạnh nào nối trực tiếp hai khái niệm}.
+Khoảng 82\% triple là liên kết khái niệm-dữ liệu cùng chiều nghịch đảo của chúng, nên con số 403.400 phản ánh lượng dữ liệu đính kèm hơn là tri thức quan hệ.
+Quan hệ giữa các khái niệm lấy từ ConceptNet khi bổ sung không được giữ lại trong đồ thị.
+Căn chỉnh video chỉ dựa trên mốc thời gian và không được đánh giá; âm thanh là bản đọc của lời giải thích nên không thêm thông tin.
+Cuối cùng, kết quả phụ thuộc các API thương mại tại một thời điểm, nên khó tái lập chính xác về sau.
