@@ -243,9 +243,9 @@ Chất lượng của các đầu ra này chưa được chấm.
 
 Bảng~\ref{tab:sm-ex01-cost} cho ba nhận xét.
 \begin{enumerate}
-\item Chi phí tập trung vào ba bước: kiểm chứng (khoảng 35\% tổng token), tạo giải thích (31\%) và căn chỉnh ảnh (25\%) chiếm gần 92\%. Kiểm chứng gọi mô hình 120 lần cho 14 đoạn, gấp khoảng 8,6 lần số lượt trích xuất, phù hợp với việc mỗi đoạn được xử lý lặp nhiều vòng. Tích hợp và xuất đồ thị chạy bằng mã nên không phát sinh lượt gọi LLM.
+\item Chi phí tập trung vào ba bước: kiểm chứng (khoảng 35\% tổng token), tạo giải thích (31\%) và căn chỉnh ảnh (25\%) chiếm khoảng 91\%. Kiểm chứng gọi mô hình 120 lần cho 14 đoạn, gấp khoảng 8,6 lần số lượt trích xuất, phù hợp với việc mỗi đoạn được xử lý lặp nhiều vòng. Tích hợp và xuất đồ thị chạy bằng mã nên không phát sinh lượt gọi LLM.
 \item Bước bổ sung từ ConceptNet chỉ chiếm 4,6\% tổng token (16 lượt), nhưng thêm 64 khái niệm, nhiều hơn số khái niệm sau kiểm chứng (38). Đây là số khái niệm được thêm vào, chưa phải số khái niệm đúng; chất lượng chưa được chấm.
-\item Token vào chiếm 99,7\% tổng token. Mỗi lượt có số liệu nhận khoảng 12.600 đến 13.200 token vào, trong khi mỗi lời giải thích chỉ trả về khoảng 41 token. Điều này gợi ý phần lớn token vào là ngữ cảnh cố định mà công cụ dòng lệnh gắn vào mỗi lượt, không phải nội dung của bước. Vì vậy các số token ở đây nhiều khả năng cao hơn một chương trình gọi API tối giản. \todo{đếm lại riêng token của prompt và phản hồi đã lưu, ghi như cận dưới}
+\item Token vào chiếm 99,7\% tổng token. Mỗi lượt có số liệu nhận khoảng 12.560 đến 13.230 token vào, trong khi mỗi lời giải thích chỉ trả về khoảng 41 token. Điều này gợi ý phần lớn token vào là ngữ cảnh cố định mà công cụ dòng lệnh gắn vào mỗi lượt, không phải nội dung của bước. Vì vậy các số token ở đây nhiều khả năng cao hơn một chương trình gọi API tối giản. \todo{đếm lại riêng token của prompt và phản hồi đã lưu, ghi như cận dưới}
 \end{enumerate}
 
 Số đo lệch theo hai hướng nên nhóm chưa kết luận hướng nào lớn hơn.
