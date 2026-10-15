@@ -9,30 +9,32 @@
 Mục này điểm từng hướng và nêu \SM{} khác ở chỗ nào.
 
 \subsection{Đồ thị tri thức giáo dục}
-KnowEdu~\cite{chen2018knowedu} rút khái niệm bằng neural sequence labeling huấn luyện trên dữ liệu sư phạm, rồi khai phá luật kết hợp xác suất trên dữ liệu đánh giá của người học để tìm quan hệ sư phạm giữa các khái niệm, như quan hệ tiên quyết.
+KnowEdu~\cite{chen2018knowedu} rút khái niệm bằng mạng nơ-ron gán nhãn chuỗi (neural sequence labeling) huấn luyện trên dữ liệu sư phạm, rồi khai phá luật kết hợp xác suất trên dữ liệu đánh giá của người học để tìm quan hệ sư phạm giữa các khái niệm, như quan hệ tiên quyết.
 MOOCCubeX~\cite{yu2021mooccubex} khai thác khái niệm mịn cho các khóa MOOC bằng giám sát yếu: vẫn huấn luyện mô hình nhưng giảm nhu cầu gán nhãn tay.
-Các công trình gần đây dùng LLM thay cho bước huấn luyện đó: Jhajj và cộng sự~\cite{jhajj2024gptekg} cho GPT-4 đọc học liệu để tạo và bổ sung EKG, LLM4EduKG~\cite{sun2024llm4edukg} dùng khung prompt có cấu trúc để rút và đánh giá triple từ văn bản thô, và SAC-KG~\cite{chen2024sackg} dựng đồ thị theo miền bằng vòng Generator, Verifier, Pruner.
+Các công trình gần đây dùng LLM thay cho bước huấn luyện đó: Jhajj và cộng sự~\cite{jhajj2024gptekg} cho GPT-4 đọc học liệu để tạo và bổ sung EKG, LLM4EduKG~\cite{sun2024llm4edukg} dùng khung prompt có cấu trúc để rút và đánh giá bộ ba từ văn bản thô, và SAC-KG~\cite{chen2024sackg} dựng đồ thị theo miền bằng vòng Generator, Verifier, Pruner.
 \SM{} theo hướng LLM này, thêm bước kiểm chứng bằng nhiều LLM kèm bỏ phiếu và gắn ảnh, video, âm thanh vào khái niệm.
-Hai điểm cần nói rõ: chỉ phần rút khái niệm là không cần huấn luyện (khung điểm kiến thức vẫn lấy từ chuẩn chương trình và đề cương MOOC), và khác với KnowEdu, đồ thị của \SM{} không có quan hệ giữa hai khái niệm (Mục~\ref{sec:sm-store}).
+Có hai giới hạn cần nói rõ.
+Thứ nhất, việc thay huấn luyện bằng prompt chỉ áp dụng cho khâu rút khái niệm và gắn tài nguyên; khung điểm kiến thức vẫn do con người soạn, lấy từ chuẩn chương trình và đề cương MOOC.
+Thứ hai, khác với KnowEdu, đồ thị của \SM{} không có quan hệ giữa hai khái niệm (Mục~\ref{sec:sm-store}).
 
 \subsection{Đồ thị tri thức đa phương thức}
-TIVA-KG~\cite{wang2023tivakg} gắn ảnh, video và âm thanh vào một đồ thị thường thức, và gắn vào cả triple (triplet grounding) thay vì từng thực thể.
+TIVA-KG~\cite{wang2023tivakg} gắn ảnh, video và âm thanh vào một đồ thị thường thức, và gắn vào cả bộ ba (triplet grounding) thay vì từng thực thể.
 UKnow~\cite{gong2024uknow} là giao thức và bộ dữ liệu đồ thị đa phương thức dựng từ tin tức, phục vụ suy luận thường thức và tiền huấn luyện ảnh--ngôn ngữ.
-Trong giáo dục, MEduKG~\cite{li2022medukg} fine-tune BERT trên từ vựng giáo dục để nhận dạng thực thể và đưa lời giảng của giáo viên vào đồ thị.
-Theo bài \SM{}, TIVA-KG phải căn chỉnh thủ công; \SM{} gắn phương thức vào khái niệm chứ không vào triple, và tự động hóa việc gắn bằng MLLM, mốc thời gian và TTS.
+Trong giáo dục, MEduKG~\cite{li2022medukg} tinh chỉnh BERT trên từ vựng giáo dục để nhận dạng thực thể và đưa lời giảng của giáo viên vào đồ thị.
+Theo bài \SM{}, TIVA-KG phải căn chỉnh thủ công; \SM{} gắn phương thức vào khái niệm chứ không vào bộ ba, và tự động hóa việc gắn bằng MLLM, mốc thời gian và TTS.
 
 \subsection{Rút khái niệm bằng LLM}
 Bài toán gần nhất là nhận dạng thực thể có tên (NER).
 GPT-NER~\cite{wang2023gptner} đưa NER về bài toán sinh văn bản.
-UniversalNER~\cite{zhou2023universalner} distill tri thức của LLM sang mô hình nhỏ để nhận dạng thực thể tùy ý.
-LinkNER~\cite{zhang2024linkner} nối một mô hình NER cục bộ đã fine-tune với LLM dựa trên độ bất định.
+UniversalNER~\cite{zhou2023universalner} chưng cất (distillation) tri thức của LLM sang mô hình nhỏ để nhận dạng thực thể tùy ý.
+LinkNER~\cite{zhang2024linkner} nối một mô hình NER cục bộ đã được tinh chỉnh với LLM dựa trên độ bất định.
 Xie và cộng sự~\cite{xie2023decomposedqa} hỏi LLM từng loại thực thể một (decomposed-QA), cho mô hình phân tích cú pháp trước khi gán nhãn, và dùng bỏ phiếu hai giai đoạn dựa trên Self-Consistency.
 Đây cũng là các baseline mà bài \SM{} so sánh.
 Chúng gán nhãn theo loại thực thể cho trước, còn rút khái niệm giáo dục là chọn cụm danh từ thuộc một môn học, nên môn học trở thành điều kiện trong prompt của \SM{}.
 Nhận xét của nhóm: prompt trích xuất của \SM{} (gán nhãn cú pháp rồi lọc cụm danh từ theo môn) và cách bỏ phiếu của nó gần với việc phân tích cú pháp trước khi gán nhãn và bỏ phiếu nhiều giai đoạn của Xie và cộng sự, dù bài \SM{} không nói rõ mối liên hệ này.
 Hướng kết hợp LLM với đồ thị tri thức nói chung được Pan và cộng sự hệ thống hóa~\cite{pan2024unifying}.
 
-\subsection{Self-refine và voting ở inference time}
+\subsection{Tự sửa và bỏ phiếu lúc suy luận}
 Một lần sinh của LLM có thể sai hoặc thiếu ổn định, và có hai cách sửa mà không cần dữ liệu huấn luyện thêm.
 Self-Refine~\cite{madaan2023selfrefine} cho chính mô hình nhận xét đầu ra của mình rồi sửa theo nhận xét đó, lặp nhiều vòng.
 Self-Consistency~\cite{wang2023selfconsistency} lấy nhiều lần sinh rồi chọn kết quả được nhiều lần sinh nhất trí, tức bỏ phiếu.

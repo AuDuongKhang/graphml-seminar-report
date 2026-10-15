@@ -1,17 +1,17 @@
 % ============================================================
 % PHẦN B - KẾT LUẬN SCIMKG
 % ============================================================
-\section{SciMKG: kết luận}\label{sec:sm-conclusion}
+\section{Kết luận}\label{sec:sm-conclusion}
 \SM{} dựng đồ thị đa phương thức bằng cách gọi các LLM và MLLM có sẵn qua prompt, không huấn luyện mô hình nào.
 Nhóm đo chi phí của một bài học, kiểm tra kiểm chứng đổi được gì về chất lượng, và thử một tác vụ hạ nguồn là tìm đúng đoạn bài giảng.
 
 Trên bài Cấu tạo hệ thần kinh, gpt-6-luna dùng 335 lượt gọi, và chi phí một bài nằm trong khoảng 0,027 đến 0,19 USD tùy cách đếm token.
-Cấu hình của bài báo tốn ít nhất khoảng 0,44 USD cho cùng bài ở cận dưới, chưa kể lượt V thứ ba.
-Trên sáu bài, kiểm chứng không làm tăng F1 (0,392 với 0 vòng, 0,373 với 5 vòng) trong khi chi phí tăng khoảng bốn lần.
-Trong tác vụ tìm đoạn, gắn mọi đoạn có nhắc đến khái niệm tốt hơn cách của bài báo, và cấu hình không kiểm chứng tìm đúng đoạn tốt hơn cấu hình đầy đủ nhờ độ phủ cao hơn; chỉ mục theo khái niệm vượt xa mốc ngẫu nhiên nhưng vẫn thấp hơn BM25.
-Nhóm không lặp lại được các con số của bài báo, vì chạy một mô hình thay cho nhiều mô hình và trên sáu bài thay cho 100 bài; kết quả chỉ dùng để xem hướng thay đổi.
+Trên sáu bài, chưa thấy kiểm chứng làm tăng F1 (0,392 với 0 vòng, 0,373 với 5 vòng), trong khi chi phí tăng khoảng bốn lần.
+Trong tác vụ tìm đoạn, gắn mọi đoạn có nhắc đến khái niệm tốt hơn cách của bài báo, và cấu hình không kiểm chứng tìm đúng đoạn tốt hơn cấu hình đầy đủ, đi cùng độ phủ cao hơn; chỉ mục theo khái niệm vượt xa mốc ngẫu nhiên nhưng vẫn thấp hơn BM25.
+Vì chạy một mô hình thay cho nhiều mô hình và trên sáu bài thay cho 100 bài, nhóm không đối chiếu được giá trị tuyệt đối với bài báo; kết quả chỉ dùng để xem hướng thay đổi.
 
-Các điểm chưa nhất quán giữa bài báo và mã nguồn gồm: điều kiện tích hợp luôn đúng khi đọc mã, trích xuất chỉ gọi một mô hình trong khi bài nói nhiều LLM, khái niệm chỉ gắn với lần giảng đầu tiên, và không có cạnh trực tiếp giữa các khái niệm.
+Các điểm chưa nhất quán giữa bài báo và mã nguồn gồm: điều kiện tích hợp luôn đúng khi đọc mã, trích xuất chỉ gọi một mô hình trong khi bài nói nhiều LLM, và khái niệm chỉ gắn với lần giảng đầu tiên.
+Riêng việc đồ thị không có cạnh trực tiếp giữa các khái niệm là đặc điểm của thiết kế, không phải chỗ bài và mã khác nhau.
 Nhóm đã sửa điều kiện tích hợp trong bộ chạy và ghi rõ các chỗ khác.
 Giới hạn của nghiên cứu là một mô hình ở mức suy luận thấp, sáu bài, một lần chạy cho mỗi ô, và chất lượng của phần bổ sung, ảnh, giải thích, âm thanh và câu viết lại chưa được chấm.
 Hướng phát triển gồm lặp lại các lượt chạy để có khoảng dao động, thử thêm mô hình cho kiểm chứng như bài báo, có người chấm mẫu ảnh và giải thích, đưa quan hệ giữa các khái niệm vào tác vụ truy hồi, và đánh giá căn chỉnh video và âm thanh bằng nhãn riêng.
