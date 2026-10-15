@@ -54,12 +54,12 @@ Cập nhật cấu trúc 12/10/2026: bỏ tóm tắt và từ khóa chung; sau t
 ## 5. Quyết định cho lần chạy thử SciMKG của Nhi (10/10/2026)
 
 - Mục tiêu: kiểm tra tính đúng đắn của mã theo khung xây dựng SciMKG và thăm dò khả thi trên một bài tiếng Việt; chưa phải tái lập toàn bộ kết quả bài báo.
-- Không dùng mã PR #1 cho lần chạy thử. Đọc bài và đối chiếu mã gốc tại commit `81f2ce230c2aac2f433e2c86a01ac221c7567405`; triển khai độc lập ở `papers/SciMKG/pilot/`.
+- Không dùng mã PR #1 cho lần chạy thử. Đọc bài và đối chiếu mã gốc tại commit `81f2ce230c2aac2f433e2c86a01ac221c7567405`; triển khai độc lập ở (đã gỡ khỏi repo, xem commit `bc2af4e`).
 - Kiểm tra **một mẫu nhỏ của tác giả trước**, ưu tiên `Example.zip`; không chạy toàn bộ tập. Chỉ sau đó thử bài tiếng Việt.
 - Dùng Codex CLI với đăng nhập thuê bao ChatGPT để thăm dò; không tự chuyển sang API trả phí. Một mô hình và TTS cục bộ là các điều chỉnh phải ghi rõ; token/thời gian không đồng nghĩa với chi phí API thực đo.
-- Toàn bộ tệp pilot nằm trong `papers/SciMKG/pilot/`. Báo cáo hợp nhất tiếng Việt: `papers/SciMKG/pilot/report/pilot-report.html` (kế hoạch, duyệt đầu ra, kết quả, đối chiếu mã, nguồn bằng chứng). Kết quả giả lập không thay cho đánh giá bài học; chấm nội dung và W&B vẫn cần hoàn tất.
+- Toàn bộ tệp pilot đã gỡ khỏi repo, xem commit `bc2af4e`. Báo cáo hợp nhất tiếng Việt: (đã gỡ khỏi repo, xem commit `bc2af4e`) (kế hoạch, duyệt đầu ra, kết quả, đối chiếu mã, nguồn bằng chứng). Kết quả giả lập không thay cho đánh giá bài học; chấm nội dung và W&B vẫn cần hoàn tất.
 
-Cập nhật 11/10/2026: người dùng giao thực hiện các mục và sẽ duyệt cuối. Đã chạy trên hai trích đoạn nhỏ đúng thứ tự; chưa chạy toàn bài. Nhãn phạm vi tác giả và nhãn Việt đều cần người duyệt, số chấm hiện là tạm. Clip Việt 49 giây đã lấy riêng và kiểm tra tệp/mốc thời gian; cần người duyệt nội dung, video tác giả vẫn thiếu. Hình Việt từ lý thuyết cùng bài, không phải ảnh chụp video. ConceptNet API lỗi nên dùng cạnh trên trang tra cứu và dịch nhãn có ghi nguồn. W&B mới ngoại tuyến vì chưa có cấu hình tài khoản/dự án công khai; phần duyệt cục bộ ở `papers/SciMKG/pilot/report/pilot-report.html#review`.
+Cập nhật 11/10/2026: người dùng giao thực hiện các mục và sẽ duyệt cuối. Đã chạy trên hai trích đoạn nhỏ đúng thứ tự; chưa chạy toàn bài. Nhãn phạm vi tác giả và nhãn Việt đều cần người duyệt, số chấm hiện là tạm. Clip Việt 49 giây đã lấy riêng và kiểm tra tệp/mốc thời gian; cần người duyệt nội dung, video tác giả vẫn thiếu. Hình Việt từ lý thuyết cùng bài, không phải ảnh chụp video. ConceptNet API lỗi nên dùng cạnh trên trang tra cứu và dịch nhãn có ghi nguồn. W&B mới ngoại tuyến vì chưa có cấu hình tài khoản/dự án công khai; phần duyệt cục bộ ở (đã gỡ khỏi repo, xem commit `bc2af4e`).
 
 Cập nhật phần duyệt 11/10/2026: Nhi không biết tiếng Trung. Mẫu tác giả có bản dịch tiếng Việt để đọc và xem liên kết ảnh; nội dung/ngữ âm gốc chưa được người biết tiếng Trung duyệt. Bản dịch chỉ là lớp trình bày, không sửa nhãn, dự đoán hoặc số chấm. Phần bài Việt vẫn duyệt nội dung tiếng Việt gốc.
 

@@ -7,7 +7,6 @@ GraphViS.pdf
 /papers/*
 !/papers/SciMKG/
 /papers/SciMKG/*
-!/papers/SciMKG/pilot/
 
 # --- LaTeX build ---
 report/*.aux
