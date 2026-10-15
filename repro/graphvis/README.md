@@ -11,7 +11,7 @@ Hướng dẫn chạy. Kết quả nằm trong báo cáo và trên W&B; khác bi
 | RAM | ≥ 12 GB (dựng ConceptNet chiếm ~0,6 GB) |
 | Đĩa | ~15 GB cache mô hình (HF Hub) + < 2 GB dữ liệu ở `lite` + trong lúc train ~4 GB/checkpoint (bị xóa khi xong giai đoạn) + ~0,7 GB/adapter. Kaggle: bật *Persistence → Files only*; nên dùng `hub_repo` để lưu adapter |
 | Phần mềm | Python ≥ 3.10, Graphviz (`apt-get install graphviz`), `pip install -r requirements.txt` |
-| Tài khoản | W&B (`WANDB_API_KEY`); tùy chọn HF Hub (`HF_TOKEN`) để lưu adapter |
+| Tài khoản | W&B (`WANDB_API_KEY`); tùy chọn HF Hub (`HF_TOKEN`) để lưu adapter; `GITHUB_TOKEN` (fine-grained, *Contents: Read-only*) nếu repo còn private |
 
 ## Cách chạy nhanh nhất
 

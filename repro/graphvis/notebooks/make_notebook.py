@@ -38,7 +38,8 @@ giai đoạn đã huấn luyện xong được bỏ qua, giai đoạn dở dang 
 
 **Trước khi chạy:** Kaggle → *Settings*: bật Internet, chọn GPU (T4 x2 hoặc P100), và bật
 *Persistence → Files only* (nếu không, `/kaggle/working` mất khi hết phiên). Thêm *Secret* `WANDB_API_KEY`
-(và `HF_TOKEN` nếu dùng `HUB_REPO`). Colab → *Runtime type* GPU; thêm secret cùng tên trong mục 🔑.
+(và `HF_TOKEN` nếu dùng `HUB_REPO`; `GITHUB_TOKEN` nếu repo còn private — fine-grained token, chỉ quyền
+*Contents: Read-only* trên repo này). Colab → *Runtime type* GPU; thêm secret cùng tên trong mục 🔑.
 Khuyến nghị đặt `HUB_REPO`: adapter của mỗi giai đoạn được đẩy lên HF Hub và tự tải lại ở phiên sau / máy khác.
 """)
 
@@ -76,22 +77,6 @@ if WANDB_ENTITY:
     os.environ["WANDB_ENTITY"] = WANDB_ENTITY
 if HUB_REPO:
     os.environ["GRAPHML_HUB_REPO"] = HUB_REPO      # eval tự tải adapter còn thiếu từ HF Hub
-REPO = f"{BASE}/repo"
-if not os.path.exists(REPO):
-    subprocess.run(["git", "clone", "-b", BRANCH, REPO_URL, REPO], check=True)
-else:
-    subprocess.run(["git", "-C", REPO, "pull"], check=True)
-GV = f"{REPO}/repro/graphvis"
-OUT = os.environ["GRAPHML_OUT"] + "/graphvis"
-print("BASE =", BASE)
-""")
-
-code("""
-!apt-get -qq install -y graphviz > /dev/null
-!pip install -q -r {GV}/requirements.txt
-""")
-
-code("""
 def secret(name):
     try:
         if ON_KAGGLE:
@@ -104,6 +89,32 @@ def secret(name):
         return os.environ.get(name)
     return os.environ.get(name)
 
+def git(*args):
+    # repo private: dùng secret GITHUB_TOKEN qua header HTTP, không ghi token vào URL hay .git/config
+    cmd = ["git"]
+    token = secret("GITHUB_TOKEN")
+    if token:
+        import base64
+        basic = base64.b64encode(f"x-access-token:{token}".encode()).decode()
+        cmd += ["-c", f"http.extraheader=AUTHORIZATION: basic {basic}"]
+    subprocess.run(cmd + list(args), check=True)
+
+REPO = f"{BASE}/repo"
+if not os.path.exists(REPO):
+    git("clone", "--depth", "1", "-b", BRANCH, REPO_URL, REPO)
+else:
+    git("-C", REPO, "pull")
+GV = f"{REPO}/repro/graphvis"
+OUT = os.environ["GRAPHML_OUT"] + "/graphvis"
+print("BASE =", BASE)
+""")
+
+code("""
+!apt-get -qq install -y graphviz > /dev/null
+!pip install -q -r {GV}/requirements.txt
+""")
+
+code("""
 os.environ["WANDB_API_KEY"] = secret("WANDB_API_KEY") or ""
 if HUB_REPO:
     os.environ["HF_TOKEN"] = secret("HF_TOKEN") or ""
