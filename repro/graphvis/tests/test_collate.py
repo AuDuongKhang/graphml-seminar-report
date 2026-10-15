@@ -46,6 +46,7 @@ def test_model_forward_backward_on_gpu(tmp_path):
     from gv.model.load import load_model_and_processor
 
     model, proc = load_model_and_processor(quant="4bit", dtype="fp16", lora={"r": 128, "alpha": 256})
+    assert model.training       # eval() tắt gradient checkpointing -> hết VRAM trên T4 15 GB
     img = tmp_path / "x.png"
     Image.new("RGB", (300, 120), "white").save(img)
     batch = Collator(proc)([{"image": str(img), "prompt": "How many nodes?", "answer": "There are 2 nodes."},

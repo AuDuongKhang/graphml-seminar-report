@@ -101,4 +101,6 @@ def load_model_and_processor(model_id: str = MODEL_ID, image_mode: str = "pad", 
         for p in model.parameters():
             if p.requires_grad and p.dtype != torch.float32:
                 p.data = p.data.float()
+        # from_pretrained trả về eval(); HF chỉ dùng gradient checkpointing khi module ở train()
+        model.train()
     return model, processor
