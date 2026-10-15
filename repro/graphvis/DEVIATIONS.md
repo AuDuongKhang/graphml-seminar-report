@@ -19,4 +19,4 @@
 | 15 | 4×A6000 (song song dữ liệu) | Huấn luyện trên **1 GPU** kể cả khi Kaggle có 2×T4 (bnb 4-bit + PEFT không chạy được dưới `nn.DataParallel`); batch toàn cục vẫn là 4 | Ổn định |
 | 16 | Adapter lưu fp32 | Adapter `final/` lưu fp16 (~0,7 GB), checkpoint trung gian bị xóa sau khi xong giai đoạn | Giới hạn đĩa Kaggle 20 GB / Drive 15 GB |
 | 17 | Bảng 4: đọc ảnh trên ảnh test CSQA | `lite`: 600 câu (~100 ảnh × 6 tác vụ), sinh tối đa 384 token — danh sách bộ ba rất dài (đồ thị > ~40 cạnh) có thể bị cắt, làm điểm liệt kê thấp hơn thực tế | Thời gian GPU |
-
+| 18 | Thực nghiệm độ phân giải (thiết kế của nhóm, không có trong bài) | `lite`: mỗi điểm (chế độ ảnh × kích thước) đánh giá trên 300 câu đầu của CSQA dev thay vì đủ 1.221 câu | Vừa một lượt chạy Kaggle ≤ 12 giờ |
