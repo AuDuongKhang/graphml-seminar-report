@@ -47,6 +47,13 @@ Thứ tự và phụ thuộc giữa các thực nghiệm: xem bảng đầu note
 | D_v | 200 câu | 2.000 câu | toàn bộ |
 | Đánh giá CSQA dev / OBQA test | 100 câu | đủ | đủ |
 
+## Chạy theo lượt trên Kaggle (Save Version)
+
+Toàn bộ thực nghiệm cần nhiều hơn giới hạn 12 giờ của một lượt chạy Kaggle, nên notebook chia thành 9 lượt
+(bảng `BATCHES` trong ô CẤU HÌNH). Mỗi lượt: đặt `BATCH = <số lượt>` → *Save Version → Save & Run All* → đóng trình duyệt.
+Ô không thuộc lượt tự bỏ qua; lệnh lỗi làm dừng cả lượt. Chạy các lượt theo thứ tự 1 → 9 (lượt sau dùng adapter của lượt trước,
+lấy từ `/kaggle/working` khi bật *Persistence* hoặc từ HF Hub khi đặt `HUB_REPO`). `BATCH = 0` chạy tất cả (chỉ cho phiên tương tác).
+
 ## Chạy lại sau khi phiên bị ngắt
 
 `train --dry_run` ghi vào `<exp_id>-dryrun/`, không ảnh hưởng run thật.

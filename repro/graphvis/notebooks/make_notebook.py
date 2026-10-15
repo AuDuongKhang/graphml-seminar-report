@@ -21,6 +21,8 @@ md("""
 Chạy **từ trên xuống**. Mỗi ô thực nghiệm có thể chạy lại sau khi phiên bị ngắt: dữ liệu đã dựng và
 giai đoạn đã huấn luyện xong được bỏ qua, giai đoạn dở dang resume từ checkpoint.
 
+Chạy theo lượt: đặt `BATCH` (1–9) trong ô CẤU HÌNH, xem bảng `BATCHES`.
+
 | Ô | Thực nghiệm | Mục báo cáo |
 |---|---|---|
 | G0 | dựng dữ liệu (đồ thị con, ảnh, D_g, D_v) | VII-A |
@@ -52,7 +54,22 @@ WANDB_ENTITY = ""       # để trống = tài khoản mặc định
 HUB_REPO = ""           # vd "your-hf-name/graphvis-adapters" để lưu adapter lên HF Hub (chuyển giữa Kaggle/Colab)
 REPO_URL = "https://github.com/AuDuongKhang/graphml-seminar-report.git"
 BRANCH = "main"
-G6_MAX = {"tiny": 60, "lite": 600, "full": None}[SCALE]   # số câu đọc ảnh (6 câu/ảnh); 600 ~ 100 ảnh
+# ---- Chạy theo lượt (Save Version → Save & Run All, mỗi lượt < 12 giờ GPU) ----
+BATCH = 1               # 1..9; 0 = chạy tất cả (chỉ dùng trong phiên tương tác)
+BATCHES = {
+    1: ["smoke", "G0", "G1a"],   # kiểm tra nhanh, dựng dữ liệu, mô hình gốc (~3 giờ)
+    2: ["G1b", "G6"],            # GraphVis CSQA + đọc ảnh (~8 giờ)
+    3: ["G2", "C3"],             # VQA + đối chứng không ảnh (~7 giờ)
+    4: ["G4joint", "G3", "G5"],  # joint, ScienceQA joint, KAPING (~8 giờ)
+    5: ["G4graph"],              # cấu trúc trước OCR (~7 giờ)
+    6: ["G4ocr"],                # OCR trước cấu trúc (~7 giờ)
+    7: ["G7"],                   # ảnh 50x50 (~7 giờ)
+    8: ["G1c"],                  # GraphVis OBQA (~4 giờ)
+    9: ["C1", "C2"],             # theo số nút, theo độ phân giải (~4 giờ)
+}
+# end BATCHES
+G6_MAX = {"tiny": 60, "lite": 600, "full": None}[SCALE]
+C2_MAX = {"tiny": 50, "lite": 300, "full": None}[SCALE]   # số câu CSQA dev cho mỗi điểm của C2   # số câu đọc ảnh (6 câu/ảnh); 600 ~ 100 ảnh
 VQA_MAX = {"tiny": {"scienceqa": 50, "mmbench": 20, "pope": 50},
            "lite": {"scienceqa": None, "mmbench": 400, "pope": 500},
            "full": {"scienceqa": None, "mmbench": None, "pope": None}}[SCALE]
@@ -126,98 +143,164 @@ def adapter(exp, stage):
 %cd {GV}
 """)
 
-md("## Kiểm tra nhanh (chạy 1 lần): test CPU + test GPU + dry-run huấn luyện")
+md("""
+## Chạy theo lượt
+
+Đặt `BATCH` trong ô CẤU HÌNH rồi *Save Version → Save & Run All* (chạy nền, đóng trình duyệt được). Mỗi lượt
+chỉ chạy các ô thuộc lượt đó; các ô khác tự bỏ qua. Lệnh lỗi sẽ dừng cả lượt (xem log của version).
+Lượt bị cắt giữa chừng (giới hạn 12 giờ): chạy lại đúng `BATCH` đó, phần đã xong được dùng lại.
+""")
 code("""
-!cd {REPO}/repro && python -m pytest -q
-!cd {REPO}/repro && python -m pytest -q -m gpu graphvis/tests/test_collate.py -p no:cacheprovider
-!python -m gv.cli build-data --dataset csqa --split train --scale tiny --tag smoke --no_wandb
-!python -m gv.cli train --config configs/G1_csqa_curriculum.yaml --dry_run {S} data_tag=smoke
+def sh(cmd):
+    get_ipython().system(cmd)
+    if get_ipython().user_ns.get("_exit_code", 0) != 0:
+        raise RuntimeError(f"Lệnh thất bại, dừng lượt này: {cmd}")
+
+def gv(args):
+    sh(f"cd {GV} && python -m gv.cli {args}")
+
+def want(eid):
+    run = BATCH == 0 or eid in BATCHES[BATCH]
+    print(("▶ chạy " if run else "· bỏ qua ") + eid)
+    return run
+""")
+
+md("## Kiểm tra nhanh: test CPU + test GPU + dry-run huấn luyện")
+code("""
+if want("smoke"):
+    sh(f"cd {REPO}/repro && python -m pytest -q")
+    sh(f"cd {REPO}/repro && python -m pytest -q -m gpu graphvis/tests/test_collate.py -p no:cacheprovider")
+    gv("build-data --dataset csqa --split train --scale tiny --tag smoke --no_wandb")
+    gv(f"train --config configs/G1_csqa_curriculum.yaml --dry_run {S} data_tag=smoke")
 """)
 
 md("## G0 — Dựng dữ liệu")
 code("""
-for ds, sp in [("csqa", "train"), ("csqa", "dev"), ("obqa", "train"), ("obqa", "test")]:
-    !python -m gv.cli build-data --dataset {ds} --split {sp} --scale {SCALE}
+if want("G0"):
+    for ds, sp in [("csqa", "train"), ("csqa", "dev"), ("obqa", "train"), ("obqa", "test")]:
+        gv(f"build-data --dataset {ds} --split {sp} --scale {SCALE}")
 """)
 
 md("## G1a — Mô hình gốc (không tinh chỉnh): text / image / KAPING")
 code("""
-for ds, sp in [("csqa", "dev"), ("obqa", "test")]:
-    for mode in ["text", "image", "kaping"]:
-        !python -m gv.cli eval-mcqa --dataset {ds} --split {sp} --mode {mode} --exp_id G1a-base-{ds}-{mode} --group G1 {M}
+if want("G1a"):
+    for ds, sp in [("csqa", "dev"), ("obqa", "test")]:
+        for mode in ["text", "image", "kaping"]:
+            gv(f"eval-mcqa --dataset {ds} --split {sp} --mode {mode} --exp_id G1a-base-{ds}-{mode} --group G1 {M}")
 """)
 
 md("## G1b — GraphVis curriculum trên CSQA (mô hình chính)")
 code("""
-!python -m gv.cli train --config configs/G1_csqa_curriculum.yaml {S}
-!python -m gv.cli eval-mcqa --dataset csqa --split dev --mode image --adapter {adapter('G1-csqa-curriculum','stage2_qa')} --exp_id G1b-graphvis-csqa-image --group G1 {M}
-""")
-
-md("## G1c — GraphVis curriculum trên OpenBookQA")
-code("""
-!python -m gv.cli train --config configs/G1_obqa_curriculum.yaml {S}
-!python -m gv.cli eval-mcqa --dataset obqa --split test --mode image --adapter {adapter('G1-obqa-curriculum','stage2_qa')} --exp_id G1c-graphvis-obqa-image --group G1 {M}
+if want("G1b"):
+    gv(f"train --config configs/G1_csqa_curriculum.yaml {S}")
+    gv(f"eval-mcqa --dataset csqa --split dev --mode image --adapter {adapter('G1-csqa-curriculum','stage2_qa')} "
+       f"--exp_id G1b-graphvis-csqa-image --group G1 {M}")
 """)
 
 md("## G6 — Đọc ảnh đồ thị: mô hình gốc vs sau giai đoạn 1")
 code("""
-GM = f"--max_eval {G6_MAX}" if G6_MAX else ""
-!python -m gv.cli eval-graph-reading --exp_id G6-base --group G6 --batch_size 4 {GM} {M}
-!python -m gv.cli eval-graph-reading --adapter {adapter('G1-csqa-curriculum','stage1_graph_reading')} --exp_id G6-after-stage1 --group G6 --batch_size 4 {GM} {M}
+if want("G6"):
+    GM = f"--max_eval {G6_MAX}" if G6_MAX else ""
+    gv(f"eval-graph-reading --exp_id G6-base --group G6 --batch_size 4 {GM} {M}")
+    gv(f"eval-graph-reading --adapter {adapter('G1-csqa-curriculum','stage1_graph_reading')} "
+       f"--exp_id G6-after-stage1 --group G6 --batch_size 4 {GM} {M}")
 """)
 
 md("## G2 — VQA zero-shot: mô hình gốc vs GraphVis (CSQA)")
 code("""
-for name, ad in [("base", "none"), ("graphvis", adapter('G1-csqa-curriculum','stage2_qa'))]:
-    for b in ["scienceqa", "mmbench", "pope"]:
-        mx = f"--max_eval {VQA_MAX[b]}" if VQA_MAX[b] else ""
-        !python -m gv.cli eval-vqa --benchmark {b} --adapter {ad} --exp_id G2-{name}-{b} --group G2 {mx} {M}
-""")
-
-md("## G4 — Ablation thứ tự huấn luyện (Fig 7)")
-code("""
-for cfg, exp, stage in [("G4_joint", "G4-csqa-joint", "joint"),
-                        ("G4_graph_first", "G4-csqa-graph-first", "stage2_qa"),
-                        ("G4_ocr_first", "G4-csqa-ocr-first", "stage2_qa")]:
-    !python -m gv.cli train --config configs/{cfg}.yaml {S}
-    !python -m gv.cli eval-mcqa --dataset csqa --split dev --mode image --adapter {adapter(exp, stage)} --exp_id {exp}-eval --group G4 {M}
-""")
-
-md("## G3 — ScienceQA cho bản joint (Table 6)")
-code("""
-!python -m gv.cli eval-vqa --benchmark scienceqa --adapter {adapter('G4-csqa-joint','joint')} --exp_id G3-joint-scienceqa --group G3 {M}
-""")
-
-md("## G5 — Kết hợp KAPING (Table 3)")
-code("""
-for name, ad in [("base", "none"), ("joint", adapter('G4-csqa-joint','joint')),
-                 ("curriculum", adapter('G1-csqa-curriculum','stage2_qa'))]:
-    !python -m gv.cli eval-mcqa --dataset csqa --split dev --mode image+kaping --adapter {ad} --exp_id G5-{name}-kaping --group G5 {M}
-""")
-
-md("## G7 — Ảnh đồ thị 50×50 (Fig 9)")
-code("""
-for sp in ["train", "dev"]:
-    !python -m gv.cli build-data --dataset csqa --split {sp} --scale {SCALE} --image_size 50 --tag lowres50
-!python -m gv.cli train --config configs/G7_lowres.yaml {S}
-!python -m gv.cli eval-mcqa --dataset csqa --split dev --mode image --data_tag lowres50 --adapter {adapter('G7-csqa-lowres50','stage2_qa')} --exp_id G7-lowres50-eval --group G7 {M}
+if want("G2"):
+    for name, ad in [("base", "none"), ("graphvis", adapter('G1-csqa-curriculum','stage2_qa'))]:
+        for b in ["scienceqa", "mmbench", "pope"]:
+            mx = f"--max_eval {VQA_MAX[b]}" if VQA_MAX[b] else ""
+            gv(f"eval-vqa --benchmark {b} --adapter {ad} --exp_id G2-{name}-{b} --group G2 {mx} {M}")
 """)
 
 md("## C3 — Đối chứng: tinh chỉnh không ảnh")
 code("""
-!python -m gv.cli train --config configs/C3_text_only.yaml {S}
-!python -m gv.cli eval-mcqa --dataset csqa --split dev --mode text --adapter {adapter('C3-csqa-text-only','text_qa')} --exp_id C3-text-only-eval --group C3 {M}
+if want("C3"):
+    gv(f"train --config configs/C3_text_only.yaml {S}")
+    gv(f"eval-mcqa --dataset csqa --split dev --mode text --adapter {adapter('C3-csqa-text-only','text_qa')} "
+       f"--exp_id C3-text-only-eval --group C3 {M}")
+""")
+
+md("## G4 — Ablation thứ tự huấn luyện (Fig 7): joint")
+code("""
+if want("G4joint"):
+    gv(f"train --config configs/G4_joint.yaml {S}")
+    gv(f"eval-mcqa --dataset csqa --split dev --mode image --adapter {adapter('G4-csqa-joint','joint')} "
+       f"--exp_id G4-csqa-joint-eval --group G4 {M}")
+""")
+
+md("## G3 — ScienceQA cho bản joint (Table 6)")
+code("""
+if want("G3"):
+    gv(f"eval-vqa --benchmark scienceqa --adapter {adapter('G4-csqa-joint','joint')} --exp_id G3-joint-scienceqa --group G3 {M}")
+""")
+
+md("## G5 — Kết hợp KAPING (Table 3)")
+code("""
+if want("G5"):
+    for name, ad in [("base", "none"), ("joint", adapter('G4-csqa-joint','joint')),
+                     ("curriculum", adapter('G1-csqa-curriculum','stage2_qa'))]:
+        gv(f"eval-mcqa --dataset csqa --split dev --mode image+kaping --adapter {ad} --exp_id G5-{name}-kaping --group G5 {M}")
+""")
+
+md("## G4 — Ablation thứ tự huấn luyện (Fig 7): cấu trúc trước, OCR sau")
+code("""
+if want("G4graph"):
+    gv(f"train --config configs/G4_graph_first.yaml {S}")
+    gv(f"eval-mcqa --dataset csqa --split dev --mode image --adapter {adapter('G4-csqa-graph-first','stage2_qa')} "
+       f"--exp_id G4-csqa-graph-first-eval --group G4 {M}")
+""")
+
+md("## G4 — Ablation thứ tự huấn luyện (Fig 7): OCR trước, cấu trúc sau")
+code("""
+if want("G4ocr"):
+    gv(f"train --config configs/G4_ocr_first.yaml {S}")
+    gv(f"eval-mcqa --dataset csqa --split dev --mode image --adapter {adapter('G4-csqa-ocr-first','stage2_qa')} "
+       f"--exp_id G4-csqa-ocr-first-eval --group G4 {M}")
+""")
+
+md("## G7 — Ảnh đồ thị 50×50 (Fig 9)")
+code("""
+if want("G7"):
+    for sp in ["train", "dev"]:
+        gv(f"build-data --dataset csqa --split {sp} --scale {SCALE} --image_size 50 --tag lowres50")
+    gv(f"train --config configs/G7_lowres.yaml {S}")
+    gv(f"eval-mcqa --dataset csqa --split dev --mode image --data_tag lowres50 "
+       f"--adapter {adapter('G7-csqa-lowres50','stage2_qa')} --exp_id G7-lowres50-eval --group G7 {M}")
+""")
+
+md("## G1c — GraphVis curriculum trên OpenBookQA")
+code("""
+if want("G1c"):
+    gv(f"train --config configs/G1_obqa_curriculum.yaml {S}")
+    gv(f"eval-mcqa --dataset obqa --split test --mode image --adapter {adapter('G1-obqa-curriculum','stage2_qa')} "
+       f"--exp_id G1c-graphvis-obqa-image --group G1 {M}")
 """)
 
 md("## C1 — Độ chính xác theo số nút (dùng lại dự đoán đã lưu)")
 code("""
-!python -m gv.cli c1-report --eval_exp_ids G1a-base-csqa-text G1a-base-csqa-image G1b-graphvis-csqa-image C3-text-only-eval G7-lowres50-eval
+if want("C1"):
+    gv("c1-report --eval_exp_ids G1a-base-csqa-text G1a-base-csqa-image G1b-graphvis-csqa-image "
+       "C3-text-only-eval G7-lowres50-eval")
 """)
 
 md("## C2 — Độ chính xác theo độ phân giải ảnh")
 code("""
-!python -m gv.cli resolution-sweep --exp_prefix C2-base {M}
-!python -m gv.cli resolution-sweep --adapter {adapter('G1-csqa-curriculum','stage2_qa')} --exp_prefix C2-graphvis {M}
+if want("C2"):
+    CM = f"--max_eval {C2_MAX}" if C2_MAX else ""
+    gv(f"resolution-sweep --exp_prefix C2-base {CM} {M}")
+    gv(f"resolution-sweep --adapter {adapter('G1-csqa-curriculum','stage2_qa')} --exp_prefix C2-graphvis {CM} {M}")
+""")
+
+md("## Tổng kết lượt")
+code("""
+print("Lượt", BATCH, "xong:", BATCHES.get(BATCH, "tất cả"))
+for root, dirs, files in os.walk(OUT):
+    if os.path.basename(root) == "final":
+        print("adapter:", os.path.relpath(root, OUT))
+print("eval:", sorted(os.listdir(f"{OUT}/eval")) if os.path.isdir(f"{OUT}/eval") else [])
 """)
 
 nb = {"cells": CELLS, "metadata": {"accelerator": "GPU", "kernelspec": {"name": "python3", "display_name": "Python 3"},
