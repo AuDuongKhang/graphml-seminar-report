@@ -14,7 +14,7 @@
 \todo{Cấu trúc LLaVA: bộ mã hóa ảnh CLIP ViT-L/14 $f_v$, bộ chiếu $f_p$, LLM; ảnh được biến thành chuỗi token thị giác ghép trước token văn bản; LLaVA-1.6 (LLaVA-NeXT) dùng AnyRes khi suy luận. Hình nhỏ vẽ luồng ảnh $\rightarrow$ token.}
 
 \subsection{LoRA}
-\todo{$W=W_0+\frac{\alpha}{r}BA$, $B\in\mathbb{R}^{d\times r}$, $A\in\mathbb{R}^{r\times k}$, $r\ll\min(d,k)$; chỉ cập nhật $A,B$; QLoRA (lượng tử hóa 4-bit $W_0$) — phương án nhóm dùng khi tái lập trên Colab nếu bộ nhớ không đủ.}
+\todo{$W=W_0+\frac{\alpha}{r}BA$, $B\in\mathbb{R}^{d\times r}$, $A\in\mathbb{R}^{r\times k}$, $r\ll\min(d,k)$; chỉ cập nhật $A,B$; QLoRA (lượng tử hóa 4-bit $W_0$), là phương án nhóm dùng khi tái lập trên Colab nếu bộ nhớ không đủ.}
 
 \subsection{Học theo giáo trình (curriculum learning)}
 \todo{Ý tưởng của Bengio và cộng sự: sắp xếp dữ liệu/tác vụ từ dễ đến khó; trong GraphVis ``giáo trình'' ở mức tác vụ (đọc hình $\rightarrow$ trả lời câu hỏi), không phải mức mẫu.}

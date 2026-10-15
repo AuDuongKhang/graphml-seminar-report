@@ -31,7 +31,7 @@ Gọi $\mathcal{G}=(\mathcal{V},\mathcal{E})$ là đồ thị tri thức, $\math
 \GV{} không đề xuất $f$ mới. Bài dùng lại cách truy hồi các đường đi tối đa $k$ bước nối các khái niệm trong $\mathcal{V}_\mathbf{x}$ của MHGRN~\cite{feng2020mhgrn}, với $k=2$. Đóng góp của bài nằm ở cách chọn $g$.
 
 \subsection{Hai hướng chọn $g$ trước đây và đánh đổi giữa chúng}
-\textbf{Tuyến tính hóa (linearize).} Viết đồ thị con thành danh sách bộ ba $(u,r,v)$ rồi chèn vào prompt; KAPING~\cite{baek2023kaping} là ví dụ tiêu biểu. Cách này đơn giản và không phải sửa mô hình. Tuy nhiên, cấu trúc đồ thị bị duỗi thành một chuỗi: muốn biết nút nào là trung tâm, mô hình phải tự ghép lại từ nhiều bộ ba rời rạc. Ngữ cảnh cũng dài thêm. Trên LLaVA-1.6, KAPING làm độ chính xác CSQA giảm từ 70,5\% xuống 67,7\%.
+\textbf{Tuyến tính hóa (linearize).} Viết đồ thị con thành danh sách bộ ba $(h,r,t)$ (đầu, quan hệ, đuôi) rồi chèn vào prompt; KAPING~\cite{baek2023kaping} là ví dụ tiêu biểu. Cách này đơn giản và không phải sửa mô hình. Tuy nhiên, cấu trúc đồ thị bị duỗi thành một chuỗi: muốn biết nút nào là trung tâm, mô hình phải tự ghép lại từ nhiều bộ ba rời rạc. Ngữ cảnh cũng dài thêm. Trên LLaVA-1.6, KAPING làm độ chính xác CSQA giảm từ 70,5\% xuống 67,7\%.
 
 \textbf{Dựa trên GNN.} Mã hóa đồ thị con bằng một GNN rồi chiếu vector biểu diễn sang không gian token của LLM, như QA-GNN~\cite{yasunaga2021qagnn}, GreaseLM~\cite{zhang2022greaselm} và GNP~\cite{tian2024gnp}. Cấu trúc được giữ lại, nhưng LLM không hiểu sẵn loại tín hiệu này. Cần huấn luyện thêm bộ mã hóa và bộ chiếu cho từng tác vụ, và kết quả khó chuyển sang tác vụ khác.
 
@@ -50,16 +50,16 @@ Hình~\ref{fig:gv-pipeline} tóm tắt toàn bộ quy trình. Quy trình có hai
 \end{figure*}
 
 \subsection{Truy hồi và trực quan hóa đồ thị con}
-Với mỗi câu hỏi, các khái niệm trong câu hỏi và trong từng lựa chọn được khớp với nút ConceptNet. Sau đó hệ thống lấy mọi đường đi dài tối đa hai cạnh nối chúng. 42 loại quan hệ gốc được gộp còn 17 loại (ví dụ \texttt{at location}, \texttt{used for}, \texttt{is a}). Đồ thị con được vẽ bằng Graphviz~\cite{gansner2000graphviz}, một công cụ bố trí đồ thị theo luật, không có tham số học. Ảnh thu được có nút là nhãn khái niệm và cạnh có hướng mang nhãn quan hệ. Trên CSQA, phần lớn đồ thị con có khoảng 10--30 nút, nhưng phân bố có đuôi dài tới khoảng 80 nút và 160 cạnh (Hình~4--5 trong~\cite{deng2024graphvis}). Đặc điểm này quan trọng cho Mục~\ref{sec:gv-complexity}.
+Với mỗi câu hỏi, các khái niệm trong câu hỏi và trong từng lựa chọn được khớp với nút ConceptNet. Sau đó hệ thống lấy mọi đường đi dài tối đa hai cạnh nối chúng. 42 loại quan hệ gốc được gộp còn 17 loại (ví dụ \texttt{at location}, \texttt{used for}, \texttt{is a}). Đồ thị con được vẽ bằng Graphviz~\cite{gansner2000graphviz}, một công cụ bố trí đồ thị theo luật, không có tham số học. Ảnh thu được có nút là nhãn khái niệm và cạnh có hướng mang nhãn quan hệ. Trên CSQA, theo ước lượng từ biểu đồ (Hình~4--5 trong~\cite{deng2024graphvis}), phần lớn đồ thị con có khoảng 10--30 nút, nhưng phân bố có đuôi dài tới khoảng 80 nút và 160 cạnh. Đặc điểm này quan trọng cho Mục~\ref{sec:gv-complexity}.
 
 \subsection{Ảnh đồ thị đi vào LVLM như thế nào}
-Mô hình gốc là LLaVA-v1.6-Mistral-7B~\cite{liu2024llavanext}, gồm ba khối: bộ mã hóa ảnh $f_v$ (CLIP ViT-L/14, 336\,px~\cite{radford2021clip}), bộ chiếu $f_p$ (MLP hai lớp với GELU) và LLM Mistral-7B~\cite{jiang2023mistral}. Ảnh $e$ được biến thành chuỗi token thị giác $\mathbf{v}=f_p(f_v(e))=[v_1,\dots,v_k]$ cùng số chiều với token chữ, rồi được ghép trước câu hỏi. Xác suất sinh đáp án có dạng
+Mô hình gốc là LLaVA-v1.6-Mistral-7B~\cite{liu2024llavanext}, gồm ba khối: bộ mã hóa ảnh $f_v$ (CLIP ViT-L/14, 336\,px~\cite{radford2021clip}), bộ chiếu $f_p$ (MLP hai lớp với GELU) và LLM Mistral-7B~\cite{jiang2023mistral}. Ảnh $e$ được biến thành chuỗi token thị giác $\mathbf{v}=f_p(f_v(e))=[v_1,\dots,v_n]$ cùng số chiều với token chữ, rồi được ghép trước câu hỏi. Xác suất sinh đáp án có dạng
 \begin{equation}
 p_\theta(\mathbf{y}\mid\mathbf{v},\mathbf{x})=\prod_{j=1}^{m}p_\theta(y_j\mid\mathbf{v},\mathbf{x},\mathbf{y}_{<j}).\label{eq:gv-lvlm}
 \end{equation}
 Như vậy $g(\mathcal{G}_\mathbf{x})=f_p(f_v(\textsc{Graphviz}(\mathcal{G}_\mathbf{x})))$. Hàm $g$ là ghép của một bước vẽ cố định với hai khối mạng có sẵn trong LVLM.
 
-\subsection{Giai đoạn 1 --- học đọc ảnh đồ thị}
+\subsection{Giai đoạn 1: học đọc ảnh đồ thị}
 Khi chưa tinh chỉnh, LLaVA gần như không đọc được ảnh đồ thị. Với yêu cầu liệt kê bộ ba, mô hình trả lời đúng khuôn dạng nhưng nội dung sai hẳn, chẳng hạn ``(node1, node2, node3)''. Độ chính xác khớp tuyệt đối chỉ đạt 0,6\% (Bảng~\ref{tab:gv-reading}). Vì vậy bài tạo tập $\Dg$ gồm sáu tác vụ. Đáp án của mọi tác vụ được tính trực tiếp từ $\mathcal{G}_\mathbf{x}$ nên không cần gán nhãn thủ công:
 \begin{itemize}
 \item \emph{Nhóm OCR}: (1) liệt kê tên mọi nút; (2) liệt kê mọi bộ ba (đầu, quan hệ, đuôi).
@@ -67,7 +67,7 @@ Khi chưa tinh chỉnh, LLaVA gần như không đọc được ảnh đồ th�
 \end{itemize}
 Mỗi tác vụ có năm mẫu câu hỏi diễn đạt khác nhau, và mỗi mẫu dữ liệu chọn ngẫu nhiên một mẫu câu để tăng độ đa dạng. Mỗi ảnh sinh ra một mẫu cho mỗi tác vụ, tức $M=6$ mẫu $(v,p_j,a_j)$.
 
-\subsection{Giai đoạn 2 --- học trả lời câu hỏi có ảnh hỗ trợ}
+\subsection{Giai đoạn 2: học trả lời câu hỏi có ảnh hỗ trợ}
 Tập $\Dv$ ghép ảnh $v$ với câu hỏi QA gốc theo khuôn:
 \begin{quote}\small\ttfamily
 <ảnh> The image represents a knowledge graph relevant to the question, which may or may not be useful. Question: <câu hỏi gốc>
@@ -132,7 +132,7 @@ Mistral-7B & đóng băng + LoRA ($r{=}128$) & $\approx$336\,M \\
 % ------------------------------------------------------------
 Phần này tóm tắt số liệu \emph{do tác giả công bố}. Kết quả tái lập của nhóm nằm ở Mục~\ref{sec:gv-repro}.
 
-\textbf{QA văn bản (chiều KG$\rightarrow$LLM).} Bảng~\ref{tab:gv-main} cho thấy trên cùng LLaVA-1.6-7B, \GV{} tăng độ chính xác CSQA thêm 12,3 điểm và OBQA thêm 9,9 điểm, trung bình 11,1 điểm. Trong khi đó, chèn bộ ba văn bản theo KAPING lại làm cả hai giảm. Các dòng ``LM'' và ``LLM'' khác backbone và khác thiết lập huấn luyện, và số liệu được chép từ các bài gốc. Vì vậy việc \GV{} vượt KSL trên GPT-3.5 (+3,2 điểm CSQA) hay GNP trên FLAN-T5-11B (+5,7 điểm OBQA) chỉ nên xem là đối chiếu tham khảo, không phải so sánh có kiểm soát.
+\textbf{QA văn bản (chiều KG$\rightarrow$LLM).} Bảng~\ref{tab:gv-main} cho thấy trên cùng LLaVA-1.6-7B, \GV{} tăng độ chính xác CSQA thêm 12,3 điểm và OBQA thêm 9,9 điểm, trung bình 11,1 điểm. Trong khi đó, chèn bộ ba văn bản theo KAPING lại làm cả hai giảm. Bốn dòng đầu của bảng khác mô hình nền và khác thiết lập huấn luyện, và số liệu được chép từ các bài gốc. Vì vậy việc \GV{} vượt KSL trên GPT-3.5 (+3,2 điểm CSQA) hay GNP trên FLAN-T5-11B (+5,7 điểm OBQA) chỉ nên xem là đối chiếu tham khảo, không phải so sánh có kiểm soát.
 
 \begin{table}[t]
 \centering
@@ -155,7 +155,7 @@ KAPING & LLaVA-1.6-Mistral-7B & 67,7 & 71,2 \\
 \end{tabular}
 \end{table}
 
-\textbf{VQA (chiều ngược lại).} Mô hình không được tinh chỉnh trên dữ liệu huấn luyện của các benchmark VQA đích, nhưng vẫn cải thiện trên chúng (Bảng~\ref{tab:gv-vqa}). ScienceQA-IMG tăng 4,32 điểm và MMBench tăng 2,66 điểm. Trên POPE, cả độ chính xác lẫn F1 đều tăng ở ba thiết lập, trung bình khoảng 1,09 điểm, tức hiện tượng ảo giác vật thể giảm nhẹ. Theo tác giả, nguyên nhân là ScienceQA và MMBench có nhiều ảnh dạng sơ đồ (chẳng hạn lưới thức ăn) giống ảnh đồ thị tổng hợp. Đây là cách giải thích của tác giả, chưa được kiểm chứng riêng.
+\textbf{VQA (chiều ngược lại).} Mô hình không được tinh chỉnh trên dữ liệu huấn luyện của các benchmark VQA đích, nhưng vẫn cải thiện trên chúng (Bảng~\ref{tab:gv-vqa}). ScienceQA-IMG tăng 4,32 điểm và MMBench tăng 2,66 điểm. Trên POPE, F1 tăng ở cả ba thiết lập (trung bình 1,26 điểm theo Bảng~\ref{tab:gv-vqa}), và theo bài độ chính xác cũng tăng, tức hiện tượng ảo giác vật thể giảm nhẹ. \todo{Bài ghi mức tăng trung bình 1,09 điểm; con số này không khớp trung bình F1 ở bảng, cần đối chiếu lại với bài xem nó tính trên đại lượng nào.} Theo tác giả, nguyên nhân là ScienceQA và MMBench có nhiều ảnh dạng sơ đồ (chẳng hạn lưới thức ăn) giống ảnh đồ thị tổng hợp. Đây là cách giải thích của tác giả, chưa được kiểm chứng riêng.
 
 \begin{table}[t]
 \centering
@@ -174,7 +174,7 @@ Gốc & 68,86 & 63,75 & 87,65 & 86,53 & 85,37 \\
 \end{tabular}}
 \end{table}
 
-\textbf{Ablation.} Bảng~\ref{tab:gv-ablation} so sánh các cách sắp xếp tác vụ trên CSQA. Trộn mọi dữ liệu và huấn luyện một lần (\emph{joint}) đạt 78,05\%. Tách thành hai giai đoạn (\emph{curriculum}) đạt 82,56\%, cao hơn 4,51 điểm. Chia nhỏ giai đoạn~1 hầu như không thay đổi kết quả: học OCR trước rồi cấu trúc sau đạt 82,80\% (+0,24), làm ngược lại đạt 81,00\% (\textminus1,56). Bài không báo cáo độ dao động giữa các lần chạy, nên chênh lệch dưới 1 điểm chưa đủ cơ sở để kết luận. Nếu ghép thêm bộ ba văn bản kiểu KAPING, mô hình gốc giảm 2,87 điểm và bản curriculum giảm 0,82 điểm, nhưng bản joint lại tăng 0,66 điểm. Như vậy tác dụng của KAPING phụ thuộc vào mô hình sau tinh chỉnh. Bảng 6 của bài cho thấy curriculum cũng tốt hơn joint trên ScienceQA (73,18 so với 71,94).
+\textbf{Ablation.} Bảng~\ref{tab:gv-ablation} so sánh các cách sắp xếp tác vụ trên CSQA. Trộn mọi dữ liệu và huấn luyện một lần (\emph{joint}) đạt 78,05\%. Tách thành hai giai đoạn (\emph{curriculum}) đạt 82,56\%, cao hơn 4,51 điểm. Chia nhỏ giai đoạn~1 không cho lợi ích rõ ràng: học OCR trước rồi cấu trúc sau đạt 82,80\% (+0,24), làm ngược lại đạt 81,00\% (\textminus1,56). Bài không báo cáo độ dao động giữa các lần chạy, nên chưa thể phân biệt mức +0,24 với nhiễu, và cũng chưa thể kết luận thứ tự ngược lại thực sự kém hơn. Nếu ghép thêm bộ ba văn bản kiểu KAPING, mô hình gốc giảm 2,87 điểm và bản curriculum giảm 0,82 điểm, nhưng bản joint lại tăng 0,66 điểm. Như vậy tác dụng của KAPING phụ thuộc vào mô hình sau tinh chỉnh. Bảng 6 của bài cho thấy curriculum cũng tốt hơn joint trên ScienceQA (73,18 so với 71,94).
 
 \begin{table}[t]
 \centering
@@ -195,7 +195,7 @@ Curriculum, OCR trước cấu trúc & \textbf{82,80} & -- \\
 \end{tabular}}
 \end{table}
 
-\textbf{Khả năng đọc ảnh đồ thị.} Bảng~\ref{tab:gv-reading} đo sáu tác vụ của giai đoạn~1 trên ảnh tạo từ tập kiểm tra CSQA, chấm theo khớp tuyệt đối. Sau một epoch, mọi tác vụ đều tăng khoảng 8--12 điểm, nhưng giá trị tuyệt đối vẫn thấp: đếm nút 27,5\% và liệt kê bộ ba 8,2\%. QA tăng mạnh trong khi đọc hình vẫn yếu. Điểm này dẫn tới câu hỏi ở mục tiếp theo.
+\textbf{Khả năng đọc ảnh đồ thị.} Bảng~\ref{tab:gv-reading} đo sáu tác vụ của giai đoạn~1 trên ảnh tạo từ tập kiểm tra CSQA, chấm theo khớp tuyệt đối. Sau một epoch, mọi tác vụ đều tăng, từ 6,5 điểm (số cạnh) đến 11,7 điểm (bậc của nút), nhưng giá trị tuyệt đối vẫn thấp: đếm nút 27,5\% và liệt kê bộ ba 8,2\%. QA tăng mạnh trong khi đọc hình vẫn yếu. Điểm này dẫn tới câu hỏi ở mục tiếp theo.
 
 \begin{table}[t]
 \centering
@@ -222,7 +222,7 @@ Vì ConceptNet quá lớn, \GV{} phải cắt một đồ thị con cho mỗi c�
 \subsection{Bài báo cho biết gì}
 \begin{enumerate}
 \item \emph{Không có ngưỡng định lượng.} Bài chỉ giới hạn đồ thị con ở 2 bước nhảy ``để ảnh không quá phức tạp với mô hình thị giác'' và xếp kích thước đồ thị con vào phần hạn chế. Bài không báo cáo độ chính xác theo số nút, số cạnh hay kích thước ảnh.
-\item \emph{Phân bố kích thước.} Đồ thị con trên CSQA tập trung ở khoảng 10--30 nút và 10--40 cạnh, nhưng có đuôi tới khoảng 80 nút và 160 cạnh. Một bộ phận đáng kể của dữ liệu vì vậy là ảnh rất dày.
+\item \emph{Phân bố kích thước.} Theo ước lượng từ biểu đồ, đồ thị con trên CSQA tập trung ở khoảng 10--30 nút và 10--40 cạnh, nhưng có đuôi tới khoảng 80 nút và 160 cạnh. Một bộ phận đáng kể của dữ liệu vì vậy là ảnh rất dày.
 \item \emph{Độ phân giải thấp.} Phụ lục thử ảnh $50\times50$\,px. Đọc từ Hình~9 của bài, độ chính xác CSQA chỉ còn khoảng 77--78\%, thấp hơn mức 82--83\% với ảnh đầy đủ nhưng \emph{vẫn cao hơn mô hình gốc khoảng 7 điểm}. Bài không ghi số chính xác, nên các con số này do nhóm ước lượng từ biểu đồ.
 \item \emph{Đọc hình còn rất yếu} ngay cả sau giai đoạn~1 (Bảng~\ref{tab:gv-reading}).
 \end{enumerate}
@@ -232,14 +232,14 @@ Vì ConceptNet quá lớn, \GV{} phải cắt một đồ thị con cho mỗi c�
 
 \textbf{Giới hạn đếm của LVLM.} Ba trong sáu tác vụ là đếm hoặc tính bậc. Các LVLM nói chung đếm kém khi số đối tượng vượt quá khoảng chục. Ngoài ra, cạnh trong Graphviz là đường cong có thể cắt nhau, nên càng nhiều cạnh thì càng khó lần theo.
 
-\textbf{Mô hình vẫn trả lời đúng khi không đọc được ảnh.} Ở $50\times50$\,px, nhãn nút chắc chắn không đọc được, nhưng QA vẫn tăng đáng kể so với mô hình gốc. Kết hợp với Bảng~\ref{tab:gv-reading}, nhóm đặt giả thuyết rằng một phần lớn mức tăng của \GV{} đến từ việc tinh chỉnh trên chính tập QA (giai đoạn~2), chứ không hoàn toàn đến từ việc đọc nội dung ảnh. Bài không có thí nghiệm đối chứng ``tinh chỉnh trên CSQA nhưng không có ảnh''. Vì vậy câu ``ảnh lớn tới mức nào thì mô hình sai'' cần được tách làm hai: (i) tới mức nào thì mô hình \emph{không đọc được ảnh} (đo bằng sáu tác vụ của $\Dg$), và (ii) tới mức nào thì \emph{ảnh không còn giúp trả lời} (đo bằng độ chính xác QA so với đối chứng không ảnh).
+\textbf{Mô hình vẫn trả lời đúng khi không đọc được ảnh.} Ở $50\times50$\,px, nhãn nút gần như chắc chắn không đọc được, nhưng QA vẫn tăng đáng kể so với mô hình gốc. Kết hợp với Bảng~\ref{tab:gv-reading}, nhóm đặt giả thuyết rằng một phần lớn mức tăng của \GV{} đến từ việc tinh chỉnh trên chính tập QA (giai đoạn~2), chứ không hoàn toàn đến từ việc đọc nội dung ảnh. Bài không có thí nghiệm đối chứng ``tinh chỉnh trên CSQA nhưng không có ảnh''. Vì vậy câu ``ảnh lớn tới mức nào thì mô hình sai'' cần được tách làm hai: (i) tới mức nào thì mô hình \emph{không đọc được ảnh} (đo bằng sáu tác vụ của $\Dg$), và (ii) tới mức nào thì \emph{ảnh không còn giúp trả lời} (đo bằng độ chính xác QA so với đối chứng không ảnh).
 
 \subsection{Thực nghiệm bổ sung của nhóm}
 \todo{Điền kết quả sau khi chạy. Thiết kế:}
 \begin{itemize}
-\item \emph{E-C1 --- theo kích thước đồ thị:} chia tập kiểm tra CSQA theo số nút ($\le$10, 11--20, 21--40, $>$40) và số cạnh. Với mỗi nhóm, báo cáo độ chính xác sáu tác vụ đọc hình và độ chính xác QA của: LVLM gốc, \GV{}, và đối chứng tinh chỉnh không ảnh.
-\item \emph{E-C2 --- theo độ phân giải:} thu ảnh về cạnh dài 50, 112, 224, 336, 672\,px (và thử AnyRes của LLaVA-1.6), giữ nguyên mô hình.
-\item \emph{E-C3 --- đối chứng không ảnh:} tinh chỉnh LLaVA-1.6 trên CSQA chỉ với văn bản, cùng siêu tham số.
+\item \emph{E-C1, theo kích thước đồ thị:} chia tập kiểm tra CSQA theo số nút ($\le$10, 11--20, 21--40, $>$40) và số cạnh. Với mỗi nhóm, báo cáo độ chính xác sáu tác vụ đọc hình và độ chính xác QA của: LVLM gốc, \GV{}, và đối chứng tinh chỉnh không ảnh.
+\item \emph{E-C2, theo độ phân giải:} thu ảnh về cạnh dài 50, 112, 224, 336, 672\,px (và thử AnyRes của LLaVA-1.6), giữ nguyên mô hình.
+\item \emph{E-C3, đối chứng không ảnh:} tinh chỉnh LLaVA-1.6 trên CSQA chỉ với văn bản, cùng siêu tham số.
 \end{itemize}
 Đầu ra dự kiến là biểu đồ độ chính xác theo số nút và theo độ phân giải. Từ đó nhóm chỉ ra ngưỡng mà độ chính xác đọc hình về gần mức mô hình gốc và ngưỡng mà QA của \GV{} không còn hơn đối chứng không ảnh. \wandbtodo
 
@@ -252,7 +252,7 @@ Vì ConceptNet quá lớn, \GV{} phải cắt một đồ thị con cho mỗi c�
 \todo{Phần cứng Colab (loại GPU, VRAM); thư viện; cách dựng lại các phần thiếu (vẽ Graphviz, sinh $\Dv$, script hai giai đoạn, script đánh giá sáu tác vụ); lựa chọn với từng điểm không khớp ở Mục~\ref{sec:gv-training}(d) (tốc độ học, batch, \texttt{pad}, CLIP-336); có dùng QLoRA 4-bit hay không và lý do; số mẫu huấn luyện và kiểm tra; seed.} Mã nguồn: \todo{link GitHub}.
 
 \subsection{Kết quả chính}
-\todo{Bảng: CSQA/OBQA cho LVLM gốc, KAPING, \GV{} --- cột ``bài báo'' và cột ``tái lập''.} \wandbtodo
+\todo{Bảng: CSQA/OBQA cho LVLM gốc, KAPING, \GV{}, với cột ``bài báo'' và cột ``tái lập''.} \wandbtodo
 
 \subsection{Chuyển giao sang VQA}
 \todo{ScienceQA-IMG, MMBench, POPE (3 thiết lập); kèm ScienceQA joint vs curriculum (Bảng 6 của bài).} \wandbtodo
@@ -274,7 +274,7 @@ Vì ConceptNet quá lớn, \GV{} phải cắt một đồ thị con cho mỗi c�
 \item Ý tưởng đơn giản: không thêm mô-đun mới mà tận dụng đường xử lý ảnh sẵn có của LVLM để đưa cấu trúc đồ thị vào mô hình.
 \item Dữ liệu giai đoạn~1 được sinh tự động từ đồ thị nên không tốn công gán nhãn và có thể mở rộng tới mọi tập QA có KG đi kèm.
 \item Phương pháp có lợi theo cả hai chiều: tăng QA văn bản và chuyển giao được sang VQA dạng sơ đồ.
-\item Ablation cho thấy thứ tự tác vụ có ảnh hưởng thực sự (curriculum hơn joint 4,51 điểm).
+\item Ablation cho thấy tách hai giai đoạn cho kết quả cao hơn trộn dữ liệu (hơn 4,51 điểm trên CSQA và 1,24 điểm trên ScienceQA), dù bài không báo cáo độ dao động giữa các lần chạy.
 \end{itemize}
 
 \textbf{Hạn chế về thực nghiệm.}

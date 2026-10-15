@@ -1,0 +1,73 @@
+% Dữ liệu vào và ra của bốn bước EVIA trên một đoạn phụ đề (2 cột, ~17,8 cm).
+% Cấu trúc theo mã nguồn: timestamp, entities_set (tập khái niệm ứng viên), sc_score (điểm phiếu).
+% Giá trị là ví dụ minh họa do nhóm dựng, nội dung tiếng Trung được dịch sang tiếng Việt.
+\providecommand{\jind}[1]{\hspace*{#1em}}
+\providecommand{\cl}[1]{{\ttfamily\fontsize{7.2}{8.4}\selectfont #1}}
+% \evcard{x trái}{nội dung}: khung thẻ rộng 4,15 cm; chữ neo ở góc trên trái để mọi thẻ bắt đầu cùng độ cao
+\providecommand{\evcard}[2]{%
+  \draw[draw=orange!70!black, fill=orange!5, rounded corners=2pt] (#1,-0.4) rectangle ++(4.15,-4.5);
+  \node[anchor=north west, text width=38mm, align=left, inner sep=3pt, font=\scriptsize] at (#1,-0.4) {#2};}
+\begin{tikzpicture}[
+  font=\footnotesize, >={Stealth[length=1.7mm]},
+  hd/.style={draw=orange!70!black, fill=orange!25, rounded corners=2pt, minimum width=41.5mm,
+             minimum height=6mm, font=\footnotesize\bfseries, inner sep=2pt},
+]
+% ---------- tiêu đề các thẻ
+\node[hd] (he) at (2.075,0)  {(E) Trích xuất};
+\node[hd] (hv) at (6.525,0)  {(V) Kiểm chứng};
+\node[hd] (hi) at (10.975,0) {(I) Tích hợp};
+\node[hd] (ha) at (15.425,0) {(A) Bổ sung};
+\draw[->, thick, black!70] (he) -- (hv);
+\draw[->, thick, black!70] (hv) -- (hi);
+\draw[->, thick, black!70] (hi) -- (ha);
+
+% ---------- E
+\evcard{0}{%
+  \textbf{Vào}\\
+  \cl{\{"timestamp": "07:52-10:24",}\\
+  \cl{\jind{1}"text": "Mô biểu bì phủ bề..."\}}\\[2pt]
+  \textbf{Ra (LLM trả về)}\\
+  \cl{-mô biểu bì}\\
+  \cl{-tế bào cơ}\\
+  \cl{-hệ thống}\\
+  \cl{-kính hiển vi}\\
+  \cl{-cơ quan}\\[2pt]
+  \textbf{Ra (sau khi tách)}\\
+  \cl{\{"timestamp": "07:52-10:24",}\\
+  \cl{\jind{1}"entities\_set": ["mô biểu bì",}\\
+  \cl{\jind{2}"tế bào cơ", "hệ thống",}\\
+  \cl{\jind{2}"kính hiển vi", "cơ quan"]\}}}
+
+% ---------- V
+\evcard{4.45}{%
+  \textbf{Vào}: bản ghi của E\\[2pt]
+  \textbf{Ra}\\
+  \cl{\{"timestamp": "07:52-10:24",}\\
+  \cl{\jind{1}"entities\_set": [...],}\\
+  \cl{\jind{1}"sc\_score":}\\
+  \cl{\jind{2}[15, 14, 3, 3, 11]\}}\\[3pt]
+  \textit{Dấu ... là giữ nguyên như bước trước. Điểm phiếu cùng thứ tự với khái niệm; mỗi lần ứng viên còn lại sau bước sửa được cộng 1 phiếu, tối đa 3 LLM $\times$ 5 vòng $=$ 15.}}
+
+% ---------- I
+\evcard{8.9}{%
+  \textbf{Vào}: bản ghi của V\\[2pt]
+  \textit{Giữ ứng viên khi điểm phiếu đạt ngưỡng $0{,}7 \times 15$, tức ít nhất 11 phiếu.}\\[3pt]
+  \textbf{Ra}\\
+  \cl{\{"timestamp": "07:52-10:24",}\\
+  \cl{\jind{1}"entities\_set": ["mô biểu bì",}\\
+  \cl{\jind{2}"tế bào cơ", "cơ quan"]\}}\\[3pt]
+  \textit{``hệ thống'' và ``kính hiển vi'' chỉ có 3 phiếu nên bị loại.}}
+
+% ---------- A
+\evcard{13.35}{%
+  \textbf{Vào}: tập khái niệm của I\\[2pt]
+  \textbf{Ra}\\
+  \cl{\{"entities\_set": ["mô biểu bì",}\\
+  \cl{\jind{1}"tế bào cơ", "cơ quan",}\\
+  \cl{\jind{1}"mô liên kết"],}\\
+  \cl{"explanation": \{}\\
+  \cl{\jind{1}"mô biểu bì": "Lớp tế bào}\\
+  \cl{\jind{2}phủ bề mặt cơ thể và lót}\\
+  \cl{\jind{2}các cơ quan rỗng."\}\}}\\[3pt]
+  \textit{``mô liên kết'' là khái niệm mới từ ConceptNet; mỗi khái niệm có một câu giải thích không quá 20 từ.}}
+\end{tikzpicture}

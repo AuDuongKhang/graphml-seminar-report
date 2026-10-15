@@ -3,6 +3,8 @@
 % ============================================================
 \section{GraphVis: giới thiệu}\label{sec:gv-intro}
 
-\GV{}~\cite{deng2024graphvis} bổ sung tri thức thường thức cho mô hình ngôn ngữ--thị giác lớn (LVLM) khi trả lời câu hỏi. Phương pháp truy hồi đồ thị con từ ConceptNet, vẽ thành ảnh và tinh chỉnh mô hình qua hai giai đoạn: học đọc ảnh đồ thị, rồi học trả lời câu hỏi với ảnh hỗ trợ.
+Mô hình ngôn ngữ lớn trả lời tốt nhiều câu hỏi thường thức, nhưng có thể sai khi thiếu tri thức, và việc cập nhật tri thức bằng huấn luyện lại rất tốn kém. Một hướng khắc phục là truy hồi một đồ thị con liên quan từ đồ thị tri thức rồi đưa vào mô hình lúc suy luận. Cách đưa vào quyết định mô hình khai thác được bao nhiêu: viết đồ thị thành chuỗi bộ ba làm mất bố cục, còn mã hóa bằng mạng nơ-ron đồ thị thì giữ được cấu trúc nhưng cần huấn luyện thêm bộ mã hóa riêng (Mục~\ref{sec:gv-problem}).
 
-Phần A trình bày kiến thức nền, bài toán, phương pháp và kết quả công bố; đối chiếu cơ chế huấn luyện với mã nguồn; phân tích giới hạn ảnh đồ thị và kế hoạch tái lập. Đánh giá phê bình và kết luận dành riêng cho \GV{}.
+\GV{}~\cite{deng2024graphvis} đề xuất vẽ đồ thị con từ ConceptNet~\cite{speer2017conceptnet} thành ảnh để mô hình ngôn ngữ--thị giác lớn (LVLM) LLaVA-1.6 đọc bằng đường xử lý ảnh sẵn có. Mô hình được tinh chỉnh qua hai giai đoạn: học đọc ảnh đồ thị, rồi học trả lời câu hỏi với ảnh hỗ trợ. Theo bài, độ chính xác tăng từ 70,5\% lên 82,8\% trên CommonsenseQA và từ 75,6\% lên 85,5\% trên OpenBookQA (Mục~\ref{sec:gv-results}).
+
+Phần A trình bày kiến thức nền (Mục~\ref{sec:gv-background}), bài toán và động cơ (Mục~\ref{sec:gv-problem}), phương pháp cùng chi tiết huấn luyện đối chiếu với mã nguồn công bố (Mục~\ref{sec:gv-method}) và kết quả công bố (Mục~\ref{sec:gv-results}). Phần A cũng đặt ra câu hỏi mà bài để ngỏ, là ảnh đồ thị lớn đến mức nào thì mô hình không còn đọc được (Mục~\ref{sec:gv-complexity}). Cuối cùng là kế hoạch tái lập (Mục~\ref{sec:gv-repro}), đánh giá phê bình (Mục~\ref{sec:gv-critique}) và kết luận riêng cho \GV{} (Mục~\ref{sec:gv-conclusion}).
