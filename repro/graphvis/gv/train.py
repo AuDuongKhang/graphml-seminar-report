@@ -8,6 +8,7 @@ import gc
 import random
 from pathlib import Path
 
+from .data import hub
 from .data.build import read_rows
 from .data.tasks import GRAPH_TASKS, OCR_TASKS
 
@@ -107,6 +108,8 @@ def _upload(folder: Path, hub_repo: str, path_in_repo: str):
 
 
 def run_stages(cfg: dict, dry_run: bool = False) -> Path:
+    if cfg.get("hub_repo") and not dry_run:
+        hub.ensure_repo(cfg["hub_repo"])      # adapter chỉ được đẩy lên sau nhiều giờ train: kiểm tra quyền trước
     import torch
     from transformers import Trainer, TrainingArguments
 

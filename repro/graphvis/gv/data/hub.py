@@ -22,6 +22,25 @@ def _api(api):
     return api
 
 
+def ensure_repo(hub_repo: str, api=None) -> None:
+    """Tạo (hoặc xác nhận) repo private trước khi làm việc tốn thời gian: sai namespace hay token thiếu quyền
+    Write thì lỗi ngay, không phải sau khi dựng dữ liệu/huấn luyện xong."""
+    from huggingface_hub.utils import HfHubHTTPError, RepositoryNotFoundError
+
+    api = _api(api)
+    try:
+        api.repo_info(hub_repo)                     # đã có (vd tạo tay, token chỉ cấp quyền repo đó): không tạo lại
+        return
+    except RepositoryNotFoundError:
+        pass
+    try:
+        api.create_repo(hub_repo, private=True, exist_ok=True)
+    except HfHubHTTPError as e:
+        raise RuntimeError(f"Không ghi được vào HF Hub repo {hub_repo!r}. HUB_REPO phải là <tên người dùng HF>/<tên repo> "
+                           f"(tên người dùng xem ở huggingface.co/settings/profile) và HF_TOKEN cần quyền Write "
+                           f"vào repo của namespace đó. Lỗi gốc: {e}") from e
+
+
 def pack(src: Path, tar_path: Path) -> None:
     src = Path(src)
     with tarfile.open(tar_path, "w") as t:          # PNG đã nén sẵn, không nén lại
@@ -53,7 +72,7 @@ def pull(hub_repo: str, path_in_repo: str, dst: Path, api=None) -> bool:
 
 def push(hub_repo: str, path_in_repo: str, src: Path, api=None) -> None:
     api = _api(api)
-    api.create_repo(hub_repo, private=True, exist_ok=True)
+    ensure_repo(hub_repo, api=api)
     if api.file_exists(hub_repo, path_in_repo):
         return
     src = Path(src)

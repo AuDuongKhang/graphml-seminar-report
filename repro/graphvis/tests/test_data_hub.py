@@ -25,6 +25,11 @@ class _Api:
     def create_repo(self, repo_id, private, exist_ok):
         self.repos.append((repo_id, private))
 
+    def repo_info(self, repo_id):
+        from huggingface_hub.utils import RepositoryNotFoundError
+        if repo_id not in [r for r, _ in self.repos]:
+            raise RepositoryNotFoundError(repo_id)
+
     def file_exists(self, repo_id, filename):
         return filename in self.files
 
@@ -84,7 +89,51 @@ def test_build_data_uses_hub_copy_without_rebuilding(tmp_path, monkeypatch):
         return True
 
     monkeypatch.setattr(pipeline.hub, "pull", fake_pull)
+    monkeypatch.setattr(pipeline.hub, "ensure_repo", lambda repo, api=None: None)
     monkeypatch.setattr(pipeline.dl, "download_qagnn", lambda *a: (_ for _ in ()).throw(AssertionError("rebuilt")))
     out = pipeline.build_data("csqa", "train", "lite", use_wandb=False, hub_repo="me/repo")
     assert calls == [("me/repo", "data/lite/csqa/train.tar")]
     assert (out / "stats.json").exists()
+
+
+class _Forbidden(_Api):
+    def create_repo(self, repo_id, private, exist_ok):
+        from huggingface_hub.utils import HfHubHTTPError
+        raise HfHubHTTPError("403 Forbidden: You don't have the rights to create a model under the namespace")
+
+
+def test_ensure_repo_explains_namespace_and_token(tmp_path):
+    import pytest
+    with pytest.raises(RuntimeError, match="AuDuongKhang/graphvis-adapters.*HF_TOKEN"):
+        hub.ensure_repo("AuDuongKhang/graphvis-adapters", api=_Forbidden())
+
+
+def test_build_data_checks_hub_access_before_rebuilding(tmp_path, monkeypatch):
+    """Log lượt 2: dựng lại 5 phút rồi mới lỗi 403 lúc đẩy lên Hub. Phải dừng trước khi tải/dựng."""
+    import pytest
+
+    from gv import pipeline
+
+    monkeypatch.setattr(pipeline, "data_root", lambda: tmp_path)
+    monkeypatch.setattr(pipeline.hub, "ensure_repo", lambda repo, api=None: (_ for _ in ()).throw(RuntimeError("403")))
+    monkeypatch.setattr(pipeline.dl, "download_qagnn", lambda *a: (_ for _ in ()).throw(AssertionError("rebuilt")))
+    with pytest.raises(RuntimeError, match="403"):
+        pipeline.build_data("csqa", "train", "lite", use_wandb=False, hub_repo="wrong/repo")
+
+
+def test_training_checks_hub_access_before_loading_anything(monkeypatch):
+    """Upload adapter chạy sau nhiều giờ train: sai HUB_REPO/quyền phải lỗi ngay từ đầu."""
+    import pytest
+
+    from gv import train
+
+    monkeypatch.setattr(train.hub, "ensure_repo", lambda repo, api=None: (_ for _ in ()).throw(RuntimeError("403")))
+    with pytest.raises(RuntimeError, match="403"):
+        train.run_stages({"exp_id": "x", "hub_repo": "wrong/repo", "stages": []})
+
+
+def test_ensure_repo_does_not_recreate_existing_repo():
+    """Token fine-grained chỉ cấp quyền cho một repo có sẵn có thể không được gọi API tạo repo."""
+    api = _Forbidden()
+    api.repos.append(("duongkhang2100/graphvis-adapters", True))
+    hub.ensure_repo("duongkhang2100/graphvis-adapters", api=api)
