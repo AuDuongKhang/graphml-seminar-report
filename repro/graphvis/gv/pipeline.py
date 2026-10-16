@@ -48,6 +48,8 @@ def build_data(dataset: str, split: str, scale: str = "lite", image_size: int | 
                tag: str = "", max_nodes: int = 80, use_wandb: bool = True, hub_repo: str | None = None) -> Path:
     out = split_dir(dataset, split, tag)
     remote = hub.archive_path(scale, dataset, out.name) if hub_repo else None
+    if remote:
+        hub.ensure_repo(hub_repo)                    # sai HUB_REPO/quyền: dừng ngay, trước khi dựng ~10 phút
     if remote and not (out / hub.DONE).exists() and hub.pull(hub_repo, remote, out):
         return out                                   # bản đã dựng ở lượt trước, không truy hồi/vẽ lại
     paths = dl.download_qagnn(data_root() / "qagnn")

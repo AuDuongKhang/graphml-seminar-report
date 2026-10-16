@@ -60,3 +60,62 @@ def test_all_configs_are_valid():
         assert cfg["exp_id"] and cfg["dataset"] in ("csqa", "obqa")
         plan_stages(cfg)
         assert set(SOURCES) >= {s for st in cfg["stages"] for s in st["data"]}
+
+
+# ---------------- Bộ nhớ T4 (log lượt 2: hết VRAM ở bước 8/895 của G1b) ----------------
+def test_qlora_uses_paged_8bit_adamw(monkeypatch):
+    """Trạng thái AdamW fp32 của 336M tham số LoRA tốn ~2,7 GB; bản 8-bit phân trang còn ~0,7 GB."""
+    import sys
+    import types
+
+    from gv.train import make_optimizer
+
+    made = {}
+    bnb = types.ModuleType("bitsandbytes")
+    bnb.optim = types.SimpleNamespace(PagedAdamW8bit=lambda groups: made.setdefault("groups", groups))
+    monkeypatch.setitem(sys.modules, "bitsandbytes", bnb)
+    groups = [{"params": [], "lr": 1e-4, "weight_decay": 0.0}]
+    make_optimizer(groups, "paged_adamw_8bit")
+    assert made["groups"] is groups
+
+
+def test_make_optimizer_plain_adamw_and_unknown():
+    import torch
+
+    from gv.train import default_optim, make_optimizer
+
+    p = torch.nn.Parameter(torch.zeros(2))
+    assert isinstance(make_optimizer([{"params": [p], "lr": 1e-4}], "adamw"), torch.optim.AdamW)
+    with pytest.raises(ValueError):
+        make_optimizer([], "sgd")
+    assert default_optim({"quant": "4bit"}) == "paged_adamw_8bit"
+    assert default_optim({"quant": "none"}) == "adamw"           # LoRA bf16 trên A100: AdamW như bài
+    assert default_optim({"quant": "4bit", "optim": "adamw"}) == "adamw"
+
+
+def test_failed_training_marks_wandb_run_failed():
+    """Hết VRAM giữa chừng mà W&B vẫn ghi 'finished' -> dễ tưởng giai đoạn đã xong."""
+    from gv.train import train_or_mark_failed
+
+    class Trainer:
+        def train(self, resume_from_checkpoint=None):
+            raise RuntimeError("CUDA out of memory")
+
+    class Run:
+        exit_code = None
+
+        def finish(self, exit_code=None):
+            self.exit_code = exit_code
+
+    run = Run()
+    with pytest.raises(RuntimeError, match="out of memory"):
+        train_or_mark_failed(Trainer(), run, resume=False)
+    assert run.exit_code == 1
+
+
+def test_cli_enables_expandable_cuda_segments():
+    """Log lượt 2: ~730 MiB bị giữ nhưng không dùng được (phân mảnh) lúc hết VRAM."""
+    import os
+
+    import gv.cli  # noqa: F401
+    assert "expandable_segments:True" in os.environ.get("PYTORCH_CUDA_ALLOC_CONF", "")
