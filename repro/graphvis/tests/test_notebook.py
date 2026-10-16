@@ -64,3 +64,23 @@ def test_commands_stop_the_batch_on_failure():
     helpers = next(c for c in _cells() if "def gv(" in c)
     assert "_exit_code" in helpers and "raise" in helpers
     assert not any(line.lstrip().startswith("!python -m gv.cli") for c in _cells() for line in c.splitlines())
+
+
+# ---------------- /kaggle/working trống ở mỗi lần Save Version ----------------
+def test_batches_without_g0_rebuild_data_without_logging_to_wandb():
+    g0 = next(c for c in _cells() if c.strip().startswith('if want("G0")'))
+    head, _, rest = g0.partition("\nelse:")
+    assert rest, "lượt không có G0 phải dựng lại dữ liệu (lệnh train/eval không tự dựng)"
+    assert "build-data" in rest and "--no_wandb" in rest
+    assert "--no_wandb" not in head                     # lượt 1 vẫn ghi run G0 lên W&B
+
+
+def test_later_batches_require_hub_repo_for_adapters():
+    setup = next(c for c in _cells() if '"clone"' in c)
+    assert "HUB_REPO" in setup and "BATCH" in setup and "raise" in setup
+
+
+def test_existing_clone_is_switched_to_the_configured_branch():
+    setup = next(c for c in _cells() if '"clone"' in c)
+    assert '"pull"' not in setup                        # pull giữ nhánh cũ khi đổi BRANCH
+    assert '"fetch"' in setup and '"checkout"' in setup and "FETCH_HEAD" in setup

@@ -1,5 +1,6 @@
 """CLI GraphVis. Chạy từ thư mục repro/graphvis: python -m gv.cli <lệnh> ...  (xem README.md)."""
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -16,10 +17,12 @@ def _add_build_data(sub):
     p.add_argument("--tag", default="", help="hậu tố thư mục, vd lowres50")
     p.add_argument("--max_nodes", type=int, default=80)
     p.add_argument("--no_wandb", action="store_true")
+    p.add_argument("--hub_repo", default=os.environ.get("GRAPHML_HUB_REPO") or None,
+                   help="repo HF Hub lưu bản dữ liệu đã dựng (mặc định GRAPHML_HUB_REPO); có sẵn thì tải về thay vì dựng lại")
 
     def run(a):
         from gv.pipeline import build_data
-        out = build_data(a.dataset, a.split, a.scale, a.image_size, a.tag, a.max_nodes, not a.no_wandb)
+        out = build_data(a.dataset, a.split, a.scale, a.image_size, a.tag, a.max_nodes, not a.no_wandb, a.hub_repo)
         print(f"data -> {out}")
 
     p.set_defaults(func=run)
