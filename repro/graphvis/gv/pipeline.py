@@ -5,6 +5,7 @@ from pathlib import Path
 from repro.common.paths import data_root
 
 from .data import download as dl
+from .data import hub
 from .data.build import build_dataset
 from .data.retrieve import SubGraph, build_question_graph, load_cpnet_csv
 
@@ -44,9 +45,12 @@ def split_dir(dataset: str, split: str, tag: str = "") -> Path:
 
 
 def build_data(dataset: str, split: str, scale: str = "lite", image_size: int | None = None,
-               tag: str = "", max_nodes: int = 80, use_wandb: bool = True) -> Path:
-    paths = dl.download_qagnn(data_root() / "qagnn")
+               tag: str = "", max_nodes: int = 80, use_wandb: bool = True, hub_repo: str | None = None) -> Path:
     out = split_dir(dataset, split, tag)
+    remote = hub.archive_path(scale, dataset, out.name) if hub_repo else None
+    if remote and not (out / hub.DONE).exists() and hub.pull(hub_repo, remote, out):
+        return out                                   # bản đã dựng ở lượt trước, không truy hồi/vẽ lại
+    paths = dl.download_qagnn(data_root() / "qagnn")
     out.mkdir(parents=True, exist_ok=True)
     gpath = out / "graphs.jsonl"
     items = dl.load_qa(paths, dataset, split)
@@ -69,6 +73,8 @@ def build_data(dataset: str, split: str, scale: str = "lite", image_size: int | 
     (out / "stats.json").write_text(json.dumps(stats, indent=2))
     if use_wandb:
         _log_data_run(dataset, split, tag, scale, image_size, graphs, img, stats, out)
+    if remote:
+        hub.push(hub_repo, remote, out)
     return out
 
 

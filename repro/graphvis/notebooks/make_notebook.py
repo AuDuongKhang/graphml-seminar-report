@@ -39,10 +39,12 @@ Chạy theo lượt: đặt `BATCH` (1–9) trong ô CẤU HÌNH, xem bảng `BA
 | C2 | độ chính xác theo độ phân giải | VI-C |
 
 **Trước khi chạy:** Kaggle → *Settings*: bật Internet, chọn GPU (T4 x2 hoặc P100), và bật
-*Persistence → Files only* (nếu không, `/kaggle/working` mất khi hết phiên). Thêm *Secret* `WANDB_API_KEY`
-(và `HF_TOKEN` nếu dùng `HUB_REPO`; `GITHUB_TOKEN` nếu repo còn private — fine-grained token, chỉ quyền
-*Contents: Read-only* trên repo này). Colab → *Runtime type* GPU; thêm secret cùng tên trong mục 🔑.
-Khuyến nghị đặt `HUB_REPO`: adapter của mỗi giai đoạn được đẩy lên HF Hub và tự tải lại ở phiên sau / máy khác.
+*Persistence → Files only*. Thêm *Secret* `WANDB_API_KEY`, `HF_TOKEN` (quyền Write) và `GITHUB_TOKEN` nếu
+repo còn private (fine-grained token, chỉ quyền *Contents: Read-only* trên repo này). Colab → *Runtime type* GPU;
+thêm secret cùng tên trong mục 🔑.
+Mỗi lần *Save Version* trên Kaggle bắt đầu với `/kaggle/working` trống, nên lượt 2–9 **bắt buộc** đặt `HUB_REPO`:
+dữ liệu G0 (mỗi split một file .tar) và adapter của từng giai đoạn được đẩy lên repo private đó và tự tải lại
+ở lượt sau; dự đoán cũ cho C1 được đọc lại từ W&B.
 """)
 
 code("""
@@ -116,11 +118,17 @@ def git(*args):
         cmd += ["-c", f"http.extraheader=AUTHORIZATION: basic {basic}"]
     subprocess.run(cmd + list(args), check=True)
 
+if ON_KAGGLE and BATCH >= 2 and not HUB_REPO:
+    # /kaggle/working trống ở mỗi lần Save Version: adapter của lượt trước chỉ còn trên HF Hub
+    raise RuntimeError("Lượt 2-9 cần HUB_REPO (và secret HF_TOKEN quyền Write) để lưu/tải adapter giữa các lượt")
+
 REPO = f"{BASE}/repo"
 if not os.path.exists(REPO):
     git("clone", "--depth", "1", "-b", BRANCH, REPO_URL, REPO)
 else:
-    git("-C", REPO, "pull")
+    # repo còn từ phiên trước (Drive trên Colab): chuyển sang bản mới nhất của BRANCH đang cấu hình
+    git("-C", REPO, "fetch", "--depth", "1", "origin", BRANCH)
+    git("-C", REPO, "checkout", "-f", "-B", BRANCH, "FETCH_HEAD")
 GV = f"{REPO}/repro/graphvis"
 OUT = os.environ["GRAPHML_OUT"] + "/graphvis"
 print("BASE =", BASE)
@@ -163,6 +171,8 @@ def want(eid):
     run = BATCH == 0 or eid in BATCHES[BATCH]
     print(("▶ chạy " if run else "· bỏ qua ") + eid)
     return run
+
+G0_SPLITS = [("csqa", "train"), ("csqa", "dev"), ("obqa", "train"), ("obqa", "test")]
 """)
 
 md("## Kiểm tra nhanh: test CPU + test GPU + dry-run huấn luyện")
@@ -177,8 +187,13 @@ if want("smoke"):
 md("## G0 — Dựng dữ liệu")
 code("""
 if want("G0"):
-    for ds, sp in [("csqa", "train"), ("csqa", "dev"), ("obqa", "train"), ("obqa", "test")]:
+    for ds, sp in G0_SPLITS:
         gv(f"build-data --dataset {ds} --split {sp} --scale {SCALE}")
+else:
+    # lượt sau: /kaggle/working đã trống -> tải bản đã dựng từ HUB_REPO (~1 phút); Hub chưa có thì dựng lại
+    # (seed cố định nên giống hệt lượt 1, ~10 phút) rồi đẩy lên. Không tạo thêm run W&B G0.
+    for ds, sp in G0_SPLITS:
+        gv(f"build-data --dataset {ds} --split {sp} --scale {SCALE} --no_wandb")
 """)
 
 md("## G1a — Mô hình gốc (không tinh chỉnh): text / image / KAPING")

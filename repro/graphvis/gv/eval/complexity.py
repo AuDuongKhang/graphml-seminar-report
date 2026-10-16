@@ -19,6 +19,30 @@ def combine_bins(preds_by_exp: dict) -> list:
     return table
 
 
+def load_predictions(exp_id: str, base, api=None) -> list:
+    """predictions.jsonl của một lần eval-mcqa; thiếu file (lượt Kaggle sau, /kaggle/working đã trống) thì đọc
+    bảng `predictions` của run W&B cùng tên, lấy run hoàn tất gần nhất."""
+    import os
+    from pathlib import Path
+
+    f = Path(base) / exp_id / "predictions.jsonl"
+    if f.exists():
+        return [json.loads(l) for l in open(f, encoding="utf-8")]
+    if api is None:
+        import wandb
+        api = wandb.Api()
+    from repro.common.tracking import DEFAULT_PROJECT
+    path = f"{os.environ.get('WANDB_ENTITY') or api.default_entity}/{os.environ.get('WANDB_PROJECT', DEFAULT_PROJECT)}"
+    runs = [r for r in api.runs(path, filters={"display_name": exp_id}) if r.state == "finished"]
+    if not runs:
+        raise FileNotFoundError(f"{exp_id}: không có {f} và không có run W&B hoàn tất trong {path}")
+    run = max(runs, key=lambda r: r.created_at)
+    art = next(a for a in run.logged_artifacts() if a.type == "run_table" and "-predictions" in a.name)
+    table = art.get("predictions")
+    rows = [dict(zip(table.columns, d)) for d in table.data]
+    return [{"id": r["id"], "n_nodes": r["n_nodes"], "gold": r["gold"], "pred": r["pred_letter"]} for r in rows]
+
+
 def c1_report(eval_exp_ids: list, exp_id: str = "C1-accuracy-by-nodes") -> list:
     """Gộp predictions.jsonl của các lần eval-mcqa (vd base-image, GraphVis, C3 text-only) thành một bảng W&B."""
     import wandb
@@ -27,7 +51,8 @@ def c1_report(eval_exp_ids: list, exp_id: str = "C1-accuracy-by-nodes") -> list:
     from repro.common.tracking import init_wandb
 
     base = out_root() / "graphvis" / "eval"
-    preds = {e: [json.loads(l) for l in open(base / e / "predictions.jsonl", encoding="utf-8")] for e in eval_exp_ids}
+    api = None if all((base / e / "predictions.jsonl").exists() for e in eval_exp_ids) else wandb.Api()
+    preds = {e: load_predictions(e, base, api=api) for e in eval_exp_ids}
     table = combine_bins(preds)
     run = init_wandb(exp_id, {"sources": eval_exp_ids}, base / exp_id, group="C1")
     t = wandb.Table(columns=["model", "n_nodes_bin", "accuracy", "count"], data=table)

@@ -28,7 +28,7 @@ python -m gv.cli --help
 
 | Lệnh | Việc |
 |---|---|
-| `build-data --dataset csqa --split train --scale lite` | G0: tải dữ liệu QA-GNN (~60 MB), truy hồi đồ thị con, vẽ ảnh, sinh `dg/dv/text.jsonl` |
+| `build-data --dataset csqa --split train --scale lite [--hub_repo <repo>]` | G0: tải dữ liệu QA-GNN (~60 MB), truy hồi đồ thị con, vẽ ảnh, sinh `dg/dv/text.jsonl`; có `--hub_repo` (hoặc `GRAPHML_HUB_REPO`) thì lấy/lưu bản đã dựng trên HF Hub |
 | `train --config configs/<file>.yaml [--set k=v ...] [--dry_run]` | huấn luyện các giai đoạn trong config |
 | `eval-mcqa --dataset csqa --split dev --mode {text,image,kaping,image+kaping} --adapter <dir> --exp_id <tên>` | độ chính xác CSQA/OBQA |
 | `eval-graph-reading --adapter <dir> --exp_id <tên>` | 6 tác vụ đọc ảnh đồ thị |
@@ -51,8 +51,13 @@ Thứ tự và phụ thuộc giữa các thực nghiệm: xem bảng đầu note
 
 Toàn bộ thực nghiệm cần nhiều hơn giới hạn 12 giờ của một lượt chạy Kaggle, nên notebook chia thành 9 lượt
 (bảng `BATCHES` trong ô CẤU HÌNH). Mỗi lượt: đặt `BATCH = <số lượt>` → *Save Version → Save & Run All* → đóng trình duyệt.
-Ô không thuộc lượt tự bỏ qua; lệnh lỗi làm dừng cả lượt. Chạy các lượt theo thứ tự 1 → 9 (lượt sau dùng adapter của lượt trước,
-lấy từ `/kaggle/working` khi bật *Persistence* hoặc từ HF Hub khi đặt `HUB_REPO`). `BATCH = 0` chạy tất cả (chỉ cho phiên tương tác).
+Ô không thuộc lượt tự bỏ qua; lệnh lỗi làm dừng cả lượt. Chạy các lượt theo thứ tự 1 → 9. `BATCH = 0` chạy tất cả (chỉ cho phiên tương tác).
+
+Mỗi lần *Save Version* bắt đầu với `/kaggle/working` trống, nên lượt 2–9 **bắt buộc** đặt `HUB_REPO` (secret `HF_TOKEN` quyền Write):
+- dữ liệu G0: `build-data` đẩy mỗi split thành `data/<scale>/<dataset>/<split>.tar` lên repo đó; lượt sau tải về thay vì dựng lại
+  (lần đầu thiếu bản trên Hub thì dựng lại, seed cố định nên giống hệt);
+- adapter: `<exp>/<stage>/` trên cùng repo, tự tải khi train/eval cần;
+- dự đoán cho C1: thiếu `predictions.jsonl` thì đọc bảng `predictions` của run W&B cùng tên.
 
 ## Chạy lại sau khi phiên bị ngắt
 
