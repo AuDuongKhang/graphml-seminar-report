@@ -77,6 +77,31 @@ def single_gpu_guard(args, quant: str) -> None:
         args._n_gpu = 1
 
 
+def default_optim(cfg: dict) -> str:
+    """QLoRA trên T4 15 GB: AdamW 8-bit phân trang (như bài QLoRA). Trạng thái AdamW fp32 của 336M tham số LoRA
+    chiếm ~2,7 GB và làm G1b hết VRAM ở lượt 2; bản 8-bit còn ~0,7 GB và tự đẩy sang RAM khi thiếu."""
+    return cfg.get("optim") or ("paged_adamw_8bit" if cfg.get("quant", "4bit") == "4bit" else "adamw")
+
+
+def make_optimizer(groups: list, name: str):
+    if name == "adamw":
+        import torch
+        return torch.optim.AdamW(groups)
+    if name == "paged_adamw_8bit":
+        import bitsandbytes as bnb
+        return bnb.optim.PagedAdamW8bit(groups)
+    raise ValueError(f"optim không hỗ trợ: {name}")
+
+
+def train_or_mark_failed(trainer, run, resume: bool) -> None:
+    """Lỗi giữa chừng (vd hết VRAM): đóng run W&B với exit_code=1 để hiện 'failed' thay vì 'finished'."""
+    try:
+        trainer.train(resume_from_checkpoint=True if resume else None)
+    except BaseException:
+        run.finish(exit_code=1)
+        raise
+
+
 def prune_checkpoints(stage_dir: Path) -> None:
     """Sau khi đã lưu final/, xóa checkpoint-* (mỗi cái ~4 GB do trạng thái Adam) để không tràn đĩa Kaggle/Drive."""
     import shutil
@@ -152,13 +177,13 @@ def run_stages(cfg: dict, dry_run: bool = False) -> Path:
             run_name=f"{exp}/{st['name']}", remove_unused_columns=False, label_names=["labels"],
             dataloader_num_workers=2, seed=cfg.get("seed", 42), gradient_checkpointing=False)
         single_gpu_guard(args, cfg.get("quant", "4bit"))
-        opt = torch.optim.AdamW(param_groups(model.named_parameters(), cfg.get("lr", 2e-5),
-                                             cfg.get("projector_lr", 2e-5)))
+        opt = make_optimizer(param_groups(model.named_parameters(), cfg.get("lr", 2e-5), cfg.get("projector_lr", 2e-5)),
+                             default_optim(cfg))
         trainer = Trainer(model=model, args=args, train_dataset=_Rows(rows),
                           data_collator=Collator(proc, cfg.get("max_len", 2048), cfg.get("image_mode", "pad")),
                           optimizers=(opt, None))
         resume = any(sdir.glob("checkpoint-*"))
-        trainer.train(resume_from_checkpoint=True if resume else None)
+        train_or_mark_failed(trainer, run, resume)
         model.save_pretrained(str(final))
         halve_adapter_file(final)                       # fp16: ~0,7 GB thay vì ~1,4 GB
         prune_checkpoints(sdir)

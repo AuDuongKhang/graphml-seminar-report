@@ -20,3 +20,4 @@
 | 16 | Adapter lưu fp32 | Adapter `final/` lưu fp16 (~0,7 GB), checkpoint trung gian bị xóa sau khi xong giai đoạn | Giới hạn đĩa Kaggle 20 GB / Drive 15 GB |
 | 17 | Bảng 4: đọc ảnh trên ảnh test CSQA | `lite`: 600 câu (~100 ảnh × 6 tác vụ), sinh tối đa 384 token — danh sách bộ ba rất dài (đồ thị > ~40 cạnh) có thể bị cắt, làm điểm liệt kê thấp hơn thực tế | Thời gian GPU |
 | 18 | Thực nghiệm độ phân giải (thiết kế của nhóm, không có trong bài) | `lite`: mỗi điểm (chế độ ảnh × kích thước) đánh giá trên 300 câu đầu của CSQA dev thay vì đủ 1.221 câu | Vừa một lượt chạy Kaggle ≤ 12 giờ |
+| 19 | AdamW | QLoRA (`quant=4bit`): AdamW 8-bit phân trang của bitsandbytes (`PagedAdamW8bit`), cùng lr, không weight decay; `quant=none` vẫn dùng AdamW | Trạng thái AdamW fp32 của ~336M tham số LoRA chiếm ~2,7 GB, làm G1b hết VRAM trên T4 15 GB (lượt 2); bản 8-bit còn ~0,7 GB |

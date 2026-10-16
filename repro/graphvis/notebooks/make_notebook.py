@@ -59,15 +59,16 @@ BRANCH = "main"
 # ---- Chạy theo lượt (Save Version → Save & Run All, mỗi lượt < 12 giờ GPU) ----
 BATCH = 1               # 1..9; 0 = chạy tất cả (chỉ dùng trong phiên tương tác)
 BATCHES = {
-    1: ["smoke", "G0", "G1a"],   # kiểm tra nhanh, dựng dữ liệu, mô hình gốc (~3 giờ)
-    2: ["G1b", "G6"],            # GraphVis CSQA + đọc ảnh (~8 giờ)
-    3: ["G2", "C3"],             # VQA + đối chứng không ảnh (~7 giờ)
-    4: ["G4joint", "G3", "G5"],  # joint, ScienceQA joint, KAPING (~8 giờ)
-    5: ["G4graph"],              # cấu trúc trước OCR (~7 giờ)
-    6: ["G4ocr"],                # OCR trước cấu trúc (~7 giờ)
-    7: ["G7"],                   # ảnh 50x50 (~7 giờ)
-    8: ["G1c"],                  # GraphVis OBQA (~4 giờ)
-    9: ["C1", "C2"],             # theo số nút, theo độ phân giải (~4 giờ)
+    # Đo ở lượt 2: huấn luyện có ảnh ~25 s/bước (4 mẫu) trên T4 -> D_g 3.580 mẫu ~6 giờ, D_v 2.000 mẫu ~3 giờ
+    1: ["smoke", "G0", "G1a"],          # kiểm tra nhanh, dựng dữ liệu, mô hình gốc (đo: ~1,3 giờ)
+    2: ["G1b"],                         # GraphVis CSQA (~10 giờ)
+    3: ["G6", "G2", "C3"],              # đọc ảnh, VQA, đối chứng không ảnh (~8 giờ)
+    4: ["G4joint"],                     # joint (~10 giờ)
+    5: ["G4graph"],                     # cấu trúc trước OCR (~10 giờ)
+    6: ["G4ocr"],                       # OCR trước cấu trúc (~10 giờ)
+    7: ["G7"],                          # ảnh 50x50 (~10 giờ)
+    8: ["G1c"],                         # GraphVis OBQA (~10 giờ)
+    9: ["G3", "G5", "C1", "C2"],        # ScienceQA joint, KAPING, theo số nút, theo độ phân giải (~7 giờ)
 }
 # end BATCHES
 G6_MAX = {"tiny": 60, "lite": 600, "full": None}[SCALE]

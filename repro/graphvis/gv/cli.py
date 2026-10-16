@@ -4,6 +4,8 @@ import os
 import sys
 from pathlib import Path
 
+# phải đặt trước khi import torch: giảm phân mảnh VRAM khi độ dài chuỗi thay đổi giữa các mẫu (T4 15 GB)
+os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
 # cho phép `import repro.common...` khi chạy từ repro/graphvis
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
