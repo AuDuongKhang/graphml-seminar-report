@@ -252,7 +252,29 @@ Vì ConceptNet quá lớn, \GV{} phải cắt một đồ thị con cho mỗi c�
 \todo{Phần cứng Colab (loại GPU, VRAM); thư viện; cách dựng lại các phần thiếu (vẽ Graphviz, sinh $\Dv$, script hai giai đoạn, script đánh giá sáu tác vụ); lựa chọn với từng điểm không khớp ở Mục~\ref{sec:gv-training}(d) (tốc độ học, batch, \texttt{pad}, CLIP-336); có dùng QLoRA 4-bit hay không và lý do; số mẫu huấn luyện và kiểm tra; seed.} Mã nguồn: \todo{link GitHub}.
 
 \subsection{Kết quả chính}
-\todo{Bảng: CSQA/OBQA cho LVLM gốc, KAPING, \GV{}, với cột ``bài báo'' và cột ``tái lập''.} \wandbtodo
+Bảng~\ref{tab:gv-repro-main} đặt kết quả của nhóm cạnh số liệu công bố, đánh giá trên toàn bộ CSQA dev (1.221 câu) và OBQA test (500 câu). Với mô hình gốc chưa tinh chỉnh, chế độ chỉ có văn bản lệch số của bài không quá 0,5 điểm trên cả hai tập, nên nhóm xem đây là mốc so sánh đáng tin cho các dòng phía dưới. Bài không nói rõ dòng ``LVLM gốc'' có kèm ảnh hay không, nên nhóm đo cả hai. Khi đưa thêm ảnh đồ thị, mô hình gốc lại kém hơn chỉ dùng văn bản: giảm 2,9 điểm trên CSQA và 9,6 điểm trên OBQA. Như vậy, khi chưa được dạy đọc ảnh đồ thị, mô hình bị ảnh làm nhiễu chứ không khai thác được nó. KAPING do nhóm tự cài lại (MPNet, 10 bộ ba) cũng làm độ chính xác giảm so với chỉ văn bản. Trên CSQA mức giảm gần với bài (2,5 so với 2,8 điểm), còn trên OBQA thì lớn hơn (7,2 so với 4,4 điểm).
+
+\begin{table}[t]
+\centering
+\caption{Tái lập kết quả QA thường thức (độ chính xác, \%)}
+\label{tab:gv-repro-main}
+\small
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+& \multicolumn{2}{c}{CSQA dev} & \multicolumn{2}{c}{OBQA test} \\
+\cmidrule(lr){2-3}\cmidrule(l){4-5}
+Cấu hình & Bài báo & Tái lập & Bài báo & Tái lập \\
+\midrule
+LVLM gốc, chỉ văn bản & 70,5 & 70,9 & 75,6 & 75,4 \\
+LVLM gốc, kèm ảnh đồ thị & -- & 68,1 & -- & 65,8 \\
+KAPING & 67,7 & 68,4 & 71,2 & 68,2 \\
+\GV{} & 82,8 & \todo{G1b} & 85,5 & \todo{G1c} \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\todo{Nhận xét dòng \GV{} sau khi có G1b, G1c.} \wandbtodo
 
 \subsection{Chuyển giao sang VQA}
 \todo{ScienceQA-IMG, MMBench, POPE (3 thiết lập); kèm ScienceQA joint vs curriculum (Bảng 6 của bài).} \wandbtodo
