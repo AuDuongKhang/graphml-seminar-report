@@ -269,12 +269,12 @@ Cấu hình & Bài báo & Tái lập & Bài báo & Tái lập \\
 LVLM gốc, chỉ văn bản & 70,5 & 70,9 & 75,6 & 75,4 \\
 LVLM gốc, kèm ảnh đồ thị & -- & 68,1 & -- & 65,8 \\
 KAPING & 67,7 & 68,4 & 71,2 & 68,2 \\
-\GV{} & 82,8 & \todo{G1b} & 85,5 & \todo{G1c} \\
+\GV{} & 82,8 & 81,2 & 85,5 & \todo{G1c} \\
 \bottomrule
 \end{tabular}}
 \end{table}
 
-\todo{Nhận xét dòng \GV{} sau khi có G1b, G1c.} \wandbtodo
+Sau hai giai đoạn huấn luyện, \GV{} đạt 81,2\% trên CSQA dev. Con số này cao hơn mô hình gốc chỉ dùng văn bản 10,2 điểm và cao hơn mô hình gốc kèm ảnh 13,1 điểm, nhưng vẫn thấp hơn số của bài 1,6 điểm (bài báo tăng 12,3 điểm). Thiết lập của nhóm khác bài ở nhiều điểm cùng lúc: lượng tử hóa 4-bit, bộ tối ưu 8-bit, và chỉ dùng một phần tập huấn luyện ($\Dg$ dựng từ 600 ảnh, $\Dv$ gồm 2.000 trên 9.741 câu). Vì vậy nhóm chưa tách được phần chênh lệch do từng yếu tố. Dù vậy, chiều và độ lớn của mức tăng vẫn khớp với kết luận chính của bài. \todo{Dòng OBQA sau khi có G1c.} \wandbtodo
 
 \subsection{Chuyển giao sang VQA}
 \todo{ScienceQA-IMG, MMBench, POPE (3 thiết lập); kèm ScienceQA joint vs curriculum (Bảng 6 của bài).} \wandbtodo
