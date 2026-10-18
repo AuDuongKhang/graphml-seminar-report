@@ -1,5 +1,5 @@
 % ============================================================
-% PHỤ LỤC (~0,5–1 trang)
+% PHỤ LỤC
 % ============================================================
 \section{Siêu tham số tinh chỉnh GraphVis}\label{app:gv-hparams}
 \begin{table}[h]
@@ -11,23 +11,42 @@
 \toprule
 Tham số & Bài báo & Script & Nhóm dùng \\
 \midrule
-LoRA $r$ / $\alpha$ / đích & 128 / 256 / all & 128 / 256 / all & \todo{} \\
-Tốc độ học (LoRA) & $10^{-7}$ & $2{\times}10^{-5}$ & \todo{} \\
-Tốc độ học (bộ chiếu) & $2{\times}10^{-5}$ & $2{\times}10^{-5}$ & \todo{} \\
-Batch toàn cục & 4 & 16$\times$2 GPU & \todo{} \\
-Epoch mỗi giai đoạn & 1 & 1 & \todo{} \\
-Bộ tối ưu / lịch & AdamW / cosine & AdamW / cosine & \todo{} \\
-Warmup / weight decay & 0,03 / 0 & 0,03 / 0 & \todo{} \\
-Độ dài tối đa & 2048 & 2048 & \todo{} \\
-Tỉ lệ ảnh & pad & (mặc định: square) & \todo{} \\
-Bộ mã hóa ảnh & CLIP-L/14-336 & CLIP-L/14 (224) & \todo{} \\
-Độ chính xác số & -- & bf16, ZeRO-2 & \todo{} \\
+LoRA $r$ / $\alpha$ / đích & 128 / 256 / all & 128 / 256 / all & 128 / 256 / mọi lớp tuyến tính LLM \\
+Tốc độ học (LoRA) & $10^{-7}$ & $2{\times}10^{-5}$ & $2{\times}10^{-5}$ \\
+Tốc độ học (bộ chiếu) & $2{\times}10^{-5}$ & $2{\times}10^{-5}$ & $2{\times}10^{-5}$ (học toàn bộ) \\
+Batch toàn cục & 4 & 16$\times$2 GPU & 4 (1 $\times$ tích lũy 4), 1 GPU \\
+Epoch mỗi giai đoạn & 1 & 1 & 1 \\
+Bộ tối ưu / lịch & AdamW / cosine & AdamW / cosine & AdamW 8-bit phân trang / cosine \\
+Warmup / weight decay & 0,03 / 0 & 0,03 / 0 & 0,03 / 0 \\
+Độ dài tối đa & 2048 & 2048 & 2048 \\
+Tỉ lệ ảnh & pad & (mặc định: square) & pad, AnyRes chỉ 1 ô 336 \\
+Bộ mã hóa ảnh & CLIP-L/14-336 & CLIP-L/14 (224) & CLIP-L/14-336 \\
+Độ chính xác số & -- & bf16, ZeRO-2 & NF4 4-bit, tính fp16, LoRA fp32 \\
 \bottomrule
 \end{tabular}}
 \end{table}
 
 \section{Prompt dùng trong tái lập}\label{app:prompts}
-\todo{Năm mẫu câu cho mỗi tác vụ đọc hình (rút gọn); khuôn prompt giai đoạn~2; prompt EVIA của SciMKG mà nhóm dùng.}
+\textbf{GraphVis, giai đoạn~1.} Mỗi tác vụ có năm mẫu câu hỏi diễn đạt khác nhau, lấy theo Phụ lục~A của bài. Mỗi mẫu dữ liệu chọn ngẫu nhiên một mẫu câu, còn đáp án luôn theo một khuôn cố định. Dưới đây là một mẫu câu đại diện ($\rightarrow$ khuôn đáp án) của mỗi tác vụ, giữ nguyên tiếng Anh như khi huấn luyện. Các con số trong đáp án là ví dụ minh họa, không phải số liệu bài.
+\begin{itemize}\footnotesize
+\item Tên nút: \texttt{List all nodes of the graph shown in the image.} $\rightarrow$ \texttt{The image depicts the following nodes: a, b, ...}
+\item Bậc nút: \texttt{What is the degree of the node labeled "\{node\}"?} $\rightarrow$ \texttt{The degree of the node "x" is 3.}
+\item Bậc lớn nhất: \texttt{Provide the name and degree of the node with the most connections in the graph.} $\rightarrow$ \texttt{One node with the highest degree is "x" with a degree of 5.}
+\item Số nút: \texttt{How many nodes are there in the graph?} $\rightarrow$ \texttt{There are 21 nodes in the graph.}
+\item Số cạnh: \texttt{How many edges are there in the graph?} $\rightarrow$ \texttt{There are 26 edges in the graph.}
+\item Bộ ba: \texttt{List all the triples in the graph.} $\rightarrow$ \texttt{The triples in the graph are listed as: (h, r, t), ...}
+\end{itemize}
+
+\textbf{GraphVis, giai đoạn~2 và đánh giá.} Câu hỏi có ảnh đồ thị dùng khuôn: \texttt{The image represents a knowledge graph relevant to the question, which may or may not be useful. Question: \{question\} \{options\} Answer with the option's letter from the given choices directly.} Mô hình gốc ở chế độ chỉ văn bản và đối chứng không ảnh dùng cùng khuôn nhưng bỏ câu đầu nói về ảnh. KAPING chèn 10 bộ ba gần câu hỏi nhất vào trước chữ \texttt{Question:}.
+
+\textbf{SciMKG, các bước EVIA.} Nhóm dùng nguyên prompt trong mã của tác giả (\texttt{ExtractMultimodalConcepts/NER.py} và \texttt{MultimodalAlignment/ImageAligment.py}, commit \texttt{81f2ce2}). Prompt viết bằng tiếng Anh, yêu cầu đầu ra là khái niệm tiếng Trung. Phần dưới tóm tắt nội dung từng prompt bằng tiếng Việt:
+\begin{itemize}
+\item \emph{Trích xuất từ văn bản (E).} Với mỗi đoạn phụ đề, mô hình phải tự phân tích (không in ra) để tìm mọi danh từ và cụm danh từ, giữ lại những khái niệm thuộc môn học \texttt{\{subject\}}, rồi chỉ in danh sách khái niệm, mỗi dòng một mục dạng \texttt{-xxx}, không tiêu đề hay giải thích.
+\item \emph{Trích xuất từ ảnh (cũng thuộc bước E).} Mô hình đóng vai người phân tích ảnh của môn học. Nó chọn trong danh sách khái niệm đã có những khái niệm xuất hiện hoặc liên quan chặt tới ảnh (C4), rồi phân tích ba mức: chữ trong ảnh (C1), từng vùng (C2) và toàn cục (C3). Sau đó gộp các mức theo thứ tự ưu tiên C4 $>$ C3 $>$ C2 $>$ C1, chỉ bỏ các mục trùng hệt nhau, và in danh sách hoặc \texttt{none}.
+\item \emph{Phản hồi trong kiểm chứng (V).} Với danh sách ứng viên, mô hình không được sửa hay tách thuật ngữ. Nó chỉ ra những thuật ngữ mơ hồ liên ngành (có nghĩa khác ở ngành khác) và giải thích mỗi thuật ngữ bằng một câu, theo đúng định dạng \texttt{"thuật ngữ" : "lý do"}.
+\item \emph{Lọc lại trong kiểm chứng (V).} Dựa vào phản hồi trên (được ghi chú là có thể sai), mô hình bỏ các thuật ngữ không thuộc môn học. Sau đó nó lọc tiếp những thứ chỉ là dụng cụ hay thiết bị thí nghiệm chứ không phải khái niệm của môn, loại mục trùng, giữ nguyên thứ tự và in danh sách Markdown.
+\end{itemize}
+Bước tích hợp (I) không dùng prompt: các danh sách được gộp bằng bỏ phiếu theo số mô hình và số vòng (Mục~\ref{sec:sm-evia}).
 
 \section{Danh sách liên kết}\label{app:links}
 \todo{GitHub; các báo cáo W\&B công khai theo từng mục VI-C và VII-B đến VII-E của Phần A, và IV-C đến IV-E (Ex01 đến Ex03) của Phần B.}

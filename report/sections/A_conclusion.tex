@@ -1,8 +1,11 @@
 % ============================================================
-% PHẦN A — KẾT LUẬN GRAPHVIS — SƯỜN
+% PHẦN A — KẾT LUẬN GRAPHVIS
 % ============================================================
 \section{GraphVis: kết luận}\label{sec:gv-conclusion}
-\todo{Kết luận từ kết quả tái lập GraphVis: cơ chế, mức độ tái lập, giới hạn ảnh đồ thị, vai trò của ảnh qua đối chứng không ảnh và hướng phát triển.}
-% Tóm tắt ảnh đồ thị con và hai giai đoạn SFT với LoRA.
-% Phân tích giới hạn kích thước/độ phân giải và đối chứng tinh chỉnh không ảnh.
-% Hướng phát triển: chia ảnh, AnyRes, bố cục, nguồn KG và mô hình nền.
+\GV{} đưa tri thức từ ConceptNet vào một mô hình ngôn ngữ--thị giác bằng cách vẽ đồ thị con thành ảnh, thay vì viết thành chuỗi bộ ba hay ghép thêm một mạng nơ-ron đồ thị. Mô hình được tinh chỉnh LoRA qua hai giai đoạn: học đọc ảnh đồ thị, rồi học trả lời câu hỏi có ảnh hỗ trợ. Cách làm này đơn giản và không phải sửa kiến trúc mô hình.
+
+Kết quả tái lập trên một GPU T4 với QLoRA và một phần dữ liệu cho thấy ba điều. Thứ nhất, mức tăng chính trên CSQA tái lập được về chiều và gần về độ lớn: 81,2\% so với 70,9\% của mô hình gốc (bài: 82,8 so với 70,5\%). Thứ hai, đối chứng do nhóm thêm vào, cùng siêu tham số nhưng bỏ ảnh, đạt 80,6\%, không khác \GV{} có ý nghĩa thống kê. Kết hợp với việc mô hình gốc trả lời kém đi khi được cho xem ảnh, nhóm cho rằng trong thiết lập này phần lớn mức tăng đến từ việc tinh chỉnh trên tập QA, không phải từ việc đọc ảnh. Thứ ba, mức chuyển giao sang VQA mà bài công bố không tái lập được: MMBench giảm rõ, mô hình còn nghiêng về một vị trí đáp án, và POPE cũng giảm.
+
+Về độ phức tạp của ảnh, số đo cho thấy ảnh Graphviz thường nằm ngang với tỉ lệ khoảng 2:1, và chữ còn trung vị 4,7\,px sau khi thu về 336\,px (chỉ 2,4\,px với đồ thị trên 40 nút). Khả năng đọc hình giảm theo cùng xu hướng: sau giai đoạn~1, độ chính xác đếm cạnh giảm từ 33\% ở đồ thị nhỏ về 0\% ở đồ thị trên 40 nút. Vì vậy, nếu muốn ảnh thực sự mang thông tin, cần giải quyết ngân sách điểm ảnh trước khi tăng thêm dữ liệu.
+
+\textbf{Hướng phát triển.} (i) Giữ chữ đọc được: vẽ bố cục gần vuông, giới hạn số nút theo cỡ chữ đích, hoặc chia đồ thị lớn thành nhiều ô AnyRes thay vì thu nhỏ cả ảnh. (ii) Luôn báo cáo kèm đối chứng không ảnh và kiểm định ghép cặp, để tách đóng góp của ảnh khỏi đóng góp của việc tinh chỉnh trên tập QA. (iii) Trộn thêm dữ liệu VQA thông thường khi huấn luyện, hoặc dùng adapter nhỏ hơn, để hạn chế việc mất năng lực thị giác chung. (iv) Thử các nguồn KG và mô hình nền khác để xem kết luận có còn đúng không. \todo{Cập nhật đoạn này sau khi có G1c (OBQA), G4 (thứ tự giai đoạn), G5 (KAPING), G7 (ảnh $50\times50$) và C2 (độ phân giải).}

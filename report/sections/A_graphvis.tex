@@ -268,10 +268,23 @@ $>$40 & 91 & 68,1 & 73,6 & 81,3 & 79,1 \\
 % ------------------------------------------------------------
 \section{GraphVis: tái lập thực nghiệm}\label{sec:gv-repro}
 % ------------------------------------------------------------
-\todo{Toàn bộ mục này chờ kết quả chạy. Mỗi tiểu mục gắn một link W\&B công khai riêng.}
-
 \subsection{Thiết lập}
-\todo{Phần cứng Colab (loại GPU, VRAM); thư viện; cách dựng lại các phần thiếu (vẽ Graphviz, sinh $\Dv$, script hai giai đoạn, script đánh giá sáu tác vụ); lựa chọn với từng điểm không khớp ở Mục~\ref{sec:gv-training}(d) (tốc độ học, batch, \texttt{pad}, CLIP-336); có dùng QLoRA 4-bit hay không và lý do; số mẫu huấn luyện và kiểm tra; seed.} Mã nguồn: \todo{link GitHub}.
+\textbf{Phần cứng và môi trường.} Mọi thực nghiệm chạy trên Kaggle Notebooks với GPU NVIDIA T4 16\,GB (dùng được khoảng 14,6\,GiB). Kaggle cấp hai T4, nhưng nhóm chỉ dùng một, vì mô hình lượng tử hóa 4-bit kèm LoRA không chạy được khi thư viện chia batch sang hai GPU. Mỗi phiên chạy nền bị giới hạn 12 giờ, nên toàn bộ thực nghiệm được chia thành chín lượt. Dữ liệu đã dựng và adapter của từng giai đoạn được lưu lên một kho Hugging Face riêng tư để lượt sau dùng lại, còn mọi số đo được ghi lên W\&B. Mô hình là bản \texttt{llava-hf/llava-v1.6-mistral-7b-hf}, chạy bằng các thư viện \texttt{transformers}, \texttt{peft} và \texttt{bitsandbytes}.
+
+\textbf{Phần nhóm tự dựng lại.} Mã công bố của tác giả không chạy được nguyên trạng và thiếu nhiều thành phần (Mục~\ref{sec:gv-training}(d)), nên nhóm viết lại các phần sau:
+\begin{itemize}
+\item \emph{Truy hồi đồ thị con.} Dùng tệp gắn khái niệm và ConceptNet đã tiền xử lý của QA-GNN~\cite{yasunaga2021qagnn}. Giữ các đường đi tối đa hai bước giữa khái niệm câu hỏi và khái niệm đáp án, bỏ các nút có bậc trên 500, mỗi cặp (khái niệm câu hỏi, khái niệm đáp án) chỉ giữ một nút trung gian có bậc thấp nhất, và giới hạn 80 nút. Trên CSQA dev, đồ thị con có trung vị 21 nút và 26 cạnh, gần phân bố ở Hình~4--5 của bài.
+\item \emph{Vẽ ảnh} bằng Graphviz~\cite{gansner2000graphviz} ở 96\,dpi, nút hình elip, cạnh ghi tên quan hệ.
+\item \emph{Sinh $\Dg$ và $\Dv$}, dùng năm mẫu câu cho mỗi tác vụ (Phụ lục~\ref{app:prompts}). Nhóm sửa hai lỗi trong mã sinh dữ liệu của tác giả và tính bậc của nút trên đúng tập bộ ba vẽ trong ảnh.
+\item \emph{Vòng huấn luyện theo giai đoạn}, viết lại bằng \texttt{transformers} và \texttt{peft}. Mất mát chỉ tính trên phần đáp án. Giai đoạn sau tiếp tục từ adapter của giai đoạn trước.
+\item \emph{Mã chấm} sáu tác vụ đọc hình, mã chấm VQA cục bộ và KAPING (MPNet, 10 bộ ba gần câu hỏi nhất).
+\end{itemize}
+
+\textbf{Lựa chọn ở các điểm bài và mã không khớp.} Tốc độ học lấy theo script ($2\times10^{-5}$), vì với $10^{-7}$ như bài thì trong một epoch trọng số gần như không đổi. Batch toàn cục lấy theo bài (4, gồm 1 mẫu mỗi bước và tích lũy gradient 4 bước). Ảnh được đệm thành hình vuông bằng màu trung bình của CLIP như cấu hình \texttt{pad} trong bài, và AnyRes chỉ cho phép một ô $336\times336$. Do cách cài đặt LLaVA-NeXT trong \texttt{transformers}, mô hình thấy ảnh hai lần (bản thu nhỏ và một ô cùng nội dung), tức 1.152 token thị giác. Bộ mã hóa ảnh là CLIP-L/14 336\,px, đúng với LLaVA-1.6.
+
+\textbf{Lượng tử hóa và bộ nhớ.} Nhóm dùng QLoRA~\cite{dettmers2023qlora}: trọng số LLM lưu ở dạng 4-bit NF4, tính toán ở fp16 vì T4 không hỗ trợ bf16, còn tham số LoRA và bộ chiếu giữ ở fp32. Lần chạy đầu tiên hết bộ nhớ GPU sau 8 bước, vì trạng thái AdamW fp32 của khoảng 336 triệu tham số LoRA đã chiếm gần 2,7\,GB. Nhóm chuyển sang AdamW 8-bit phân trang, giữ nguyên tốc độ học và lịch học. Các sai khác còn lại được liệt kê ở Phụ lục~\ref{app:gv-hparams}.
+
+\textbf{Dữ liệu và đánh giá.} Vì giới hạn GPU, nhóm dùng một phần tập huấn luyện. $\Dg$ dựng từ 600 ảnh của CSQA train với sáu tác vụ mỗi ảnh, gồm 3.580 mẫu (đồ thị rỗng không có câu hỏi về bậc). $\Dv$ gồm 2.000 trên 9.741 câu. Với OBQA, $\Dg$ có 3.534 mẫu và $\Dv$ có 2.000 câu. Đánh giá dùng toàn bộ CSQA dev (1.221 câu, vì tập kiểm tra không công bố nhãn) và OBQA test (500 câu). Hạt giống ngẫu nhiên là 42. Mỗi cấu hình chỉ chạy một lần, nên để so hai mô hình trên cùng tập câu hỏi, nhóm dùng kiểm định McNemar chính xác~\cite{mcnemar1947}. Kiểm định này chỉ xét các câu mà đúng một trong hai mô hình trả lời đúng. Mã nguồn: \todo{link GitHub}.
 
 \subsection{Kết quả chính}
 Bảng~\ref{tab:gv-repro-main} đặt kết quả của nhóm cạnh số liệu công bố, đánh giá trên toàn bộ CSQA dev (1.221 câu) và OBQA test (500 câu). Với mô hình gốc chưa tinh chỉnh, chế độ chỉ có văn bản lệch số của bài không quá 0,5 điểm trên cả hai tập, nên nhóm xem đây là mốc so sánh đáng tin cho các dòng phía dưới. Bài không nói rõ dòng ``LVLM gốc'' có kèm ảnh hay không, nên nhóm đo cả hai. Khi đưa thêm ảnh đồ thị, mô hình gốc lại kém hơn chỉ dùng văn bản: giảm 2,9 điểm trên CSQA và 9,6 điểm trên OBQA. Như vậy, khi chưa được dạy đọc ảnh đồ thị, mô hình bị ảnh làm nhiễu chứ không khai thác được nó. Mức giảm trên CSQA có ý nghĩa thống kê: thêm ảnh làm 119 câu từ đúng thành sai, chỉ 84 câu từ sai thành đúng (kiểm định McNemar chính xác, $p=0{,}017$). KAPING do nhóm tự cài lại (MPNet, 10 bộ ba) cũng làm độ chính xác giảm so với chỉ văn bản. Trên CSQA mức giảm gần với bài (2,5 so với 2,8 điểm), còn trên OBQA thì lớn hơn (7,2 so với 4,4 điểm).
@@ -368,7 +381,11 @@ Sau GĐ1 (nhóm) & 21,1 & 55,0 & 9,1 & 11,0 & 14,0 & 7,0 \\
 \end{table}
 
 \subsection{Nhận xét về khả năng tái lập}
-\todo{Mức độ khớp với bài; nguyên nhân chênh lệch (nếu có); chi phí tính toán thực tế.}
+\textbf{Mức độ khớp.} Các kết quả tái lập chia làm ba nhóm. Nhóm thứ nhất khớp tốt: mô hình gốc chỉ dùng văn bản lệch bài không quá 0,5 điểm, KAPING làm CSQA giảm gần đúng như bài, và sáu tác vụ đọc hình đều tăng sau giai đoạn~1 nhưng giá trị tuyệt đối vẫn thấp. Nhóm thứ hai khớp về chiều nhưng yếu hơn về độ lớn: \GV{} tăng 10,2 điểm trên CSQA (bài: 12,3), còn curriculum hơn joint 0,8 điểm (bài: 4,5) và khoảng cách này không có ý nghĩa thống kê. Nhóm thứ ba không tái lập được: VQA giảm thay vì tăng. Ngoài ra, đối chứng không ảnh đạt gần bằng \GV{}, đây là thí nghiệm bài không làm.
+
+\textbf{Nguyên nhân chênh lệch.} Thiết lập của nhóm khác bài ở nhiều điểm cùng lúc: lượng tử hóa 4-bit, bộ tối ưu 8-bit, một phần tập huấn luyện, tốc độ học theo script thay vì theo bài, cách đưa ảnh vào mô hình, và cách chấm cục bộ cho VQA. Mỗi cấu hình chỉ chạy một lần, và bài cũng không báo độ dao động giữa các lần chạy. Vì vậy nhóm không quy được phần chênh lệch nào cho yếu tố nào. Các khoảng cách dưới 1 điểm trên CSQA dev (1.221 câu) nằm trong mức nhiễu theo kiểm định McNemar.
+
+\textbf{Chi phí thực tế.} Bài báo huấn luyện khoảng 3 giờ trên 4 GPU RTX A6000. Trên một T4, \GV{} curriculum mất 10,4 giờ cho cả lượt: giai đoạn~1 mất 6 giờ 22 phút cho 895 bước, giai đoạn~2 mất 3 giờ 26 phút cho 500 bước, và đánh giá CSQA dev có ảnh mất khoảng 30 phút. Đối chứng không ảnh chỉ mất 26 phút huấn luyện. Biến thể ba giai đoạn (cấu trúc trước OCR) dài 11 giờ 35 phút, sát giới hạn 12 giờ của một phiên Kaggle. \todo{Tổng giờ GPU của toàn bộ chín lượt sau khi chạy xong.}
 
 % ------------------------------------------------------------
 \section{GraphVis: đánh giá phê bình}\label{sec:gv-critique}
