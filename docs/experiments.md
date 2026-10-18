@@ -25,6 +25,8 @@ Chạy bằng `repro/graphvis/notebooks/GraphVis_Repro.ipynb` — mỗi ID có m
 | C2 | Độ chính xác theo độ phân giải (50/112/224/336/672, AnyRes) | | VI-C | code sẵn sàng | – |
 | C3 | Đối chứng: tinh chỉnh CSQA **không ảnh**, cùng siêu tham số | | VI-C | **xong** (lượt 3; train 26 phút, loss 0,521): CSQA dev 80,59 (GraphVis 81,16, gốc 70,93); theo số nút 0-10: 86,86 / 11-20: 77,22 / 21-40: 81,59 / >40: 79,12; 1 câu không tách được đáp án | chưa công khai: [train](https://wandb.ai/duongkhang2100-university-of-science-ho-chi-minh-/graphml-seminar-report/runs/395d28b8ff1e), [eval](https://wandb.ai/duongkhang2100-university-of-science-ho-chi-minh-/graphml-seminar-report/runs/4c3616154742) |
 
+Phân tích lại từ bảng predictions (18/10/2026, `repro/graphvis/scripts/analyze_predictions.py`): GraphVis so với C3 62/55 câu, McNemar p=0,58; curriculum so với joint 82/72, p=0,47; gốc text so với gốc ảnh 119/84, p=0,017; MMBench gốc so với GraphVis 231/83, p<0,001; ScienceQA 197/162, p=0,07. G6 gốc từ chối đếm ở 92/100 (nút) và 89/100 (cạnh) câu. POPE không lưu bảng dự đoán.
+
 Ghi chú tính toán: bài dùng 4×A6000 ~3 giờ (LoRA bf16). Code mặc định QLoRA 4-bit fp16, 1 GPU, quy mô `lite`
 (xem `repro/graphvis/README.md`). Mọi sai khác ghi trong `repro/graphvis/DEVIATIONS.md` → đưa vào VII-A và Phụ lục A
 (bảng "Bài báo / Script / Nhóm dùng" trong `report/sections/99_appendix.tex`, cột "Nhóm dùng" điền theo config đã chạy).
