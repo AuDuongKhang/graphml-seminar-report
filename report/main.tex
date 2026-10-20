@@ -59,6 +59,8 @@
 % Link W&B công khai cho từng thực nghiệm
 \newcommand{\wandb}[1]{\textcolor{blue}{\textbf{W\&B:} \url{#1}}}
 \newcommand{\wandbtodo}{\textcolor{blue}{\textbf{W\&B:}} \todo{link báo cáo W\&B công khai}}
+% Report W&B chia sẻ bằng view-only link (accessToken dài, không ngắt dòng được): in dạng chữ bấm được
+\newcommand{\wandbreport}[1]{\textcolor{blue}{\textbf{W\&B:} \href{#1}{báo cáo công khai}}}
 % Tiêu đề phân phần (Phần A / Phần B)
 \newcounter{reportpart}
 % Mỗi phần đánh số mục lại từ I; neo hyperref phải khác nhau giữa hai phần

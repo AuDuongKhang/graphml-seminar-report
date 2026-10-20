@@ -27,6 +27,14 @@ Chạy bằng `repro/graphvis/notebooks/GraphVis_Repro.ipynb` — mỗi ID có m
 
 Phân tích lại từ bảng predictions (18/10/2026, `repro/graphvis/scripts/analyze_predictions.py`): GraphVis so với C3 62/55 câu, McNemar p=0,58; curriculum so với joint 82/72, p=0,47; gốc text so với gốc ảnh 119/84, p=0,017; MMBench gốc so với GraphVis 231/83, p<0,001; ScienceQA 197/162, p=0,07. G6 gốc từ chối đếm ở 92/100 (nút) và 89/100 (cạnh) câu. POPE không lưu bảng dự đoán.
 
+**Báo cáo W&B công khai (21/10/2026).** Project nằm trong team của gói Academic trial, chỉ để được chế độ Team. Đã tắt tùy chọn team *Disable public sharing to outside of team for reports in private projects* (Khang đồng ý) để report dùng view-only link: ai có link xem được, không cần đăng nhập; run và project vẫn riêng tư. Mỗi mục một report, đã gắn vào báo cáo bằng `\wandbreport{}`:
+
+- VI-C (C1, C2, C3): [VI-C](https://forge.coreweave.com/wandb/duongkhang2100-university-of-science-ho-chi-minh-/graphml-seminar-report/reports/VI-C-ph-c-t-p-nh-th-C1-C2-C3---VmlldzoxODE1MDkyMg?accessToken=k0p9ayvl7n6xu0nxh4m064aw1i7eic2rd5wk7fnzai39y1pqbugkmwx6sjnr9ree)
+- VII-B (G1a, G1b, G1c): [VII-B](https://forge.coreweave.com/wandb/duongkhang2100-university-of-science-ho-chi-minh-/graphml-seminar-report/reports/VII-B-K-t-qu-ch-nh-CSQA-OBQA---VmlldzoxODE1MDg3OQ?accessToken=utsf3q1euuqow02lp5ngsc484lljatsdpjw3ifo7gms5oy3gkwpyqju4vxlt6hmh)
+- VII-C (G2, G3): [VII-C](https://forge.coreweave.com/wandb/duongkhang2100-university-of-science-ho-chi-minh-/graphml-seminar-report/reports/VII-C-Chuy-n-giao-sang-VQA-G2-G3---VmlldzoxODE1MDk3NA?accessToken=rr16q2af8ndn3u4e9xfn6tt5jotymrtmnkrfgzq9t3xqzmzkfzw1tt9qowp5wmix)
+- VII-D (G4, G5 (kèm G1b)): [VII-D](https://forge.coreweave.com/wandb/duongkhang2100-university-of-science-ho-chi-minh-/graphml-seminar-report/reports/VII-D-Ablation-th-t-hu-n-luy-n-v-KAPING--VmlldzoxODE1MDkxMw?accessToken=x21tw6skdy91vcuqe2zj7ii3phsovsxuzqjmffp97a2xt7jq4021rjvefbojeq81)
+- VII-E (G6, G7 (kèm G1b)): [VII-E](https://forge.coreweave.com/wandb/duongkhang2100-university-of-science-ho-chi-minh-/graphml-seminar-report/reports/VII-E-c-nh-th-v-nh-50x50-G6-G7---VmlldzoxODE1MDk0Nw?accessToken=u86b4vbk27j2qmbngzw095f0sapohlzdrql3htt2ix8qz06ae8azzbie3x4o1nig)
+
 Ghi chú tính toán: bài dùng 4×A6000 ~3 giờ (LoRA bf16). Code mặc định QLoRA 4-bit fp16, 1 GPU, quy mô `lite`
 (xem `repro/graphvis/README.md`). Mọi sai khác ghi trong `repro/graphvis/DEVIATIONS.md` → đưa vào VII-A và Phụ lục A
 (bảng "Bài báo / Script / Nhóm dùng" trong `report/sections/99_appendix.tex`, cột "Nhóm dùng" điền theo config đã chạy).
