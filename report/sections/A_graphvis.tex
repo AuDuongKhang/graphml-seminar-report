@@ -235,35 +235,51 @@ Vì ConceptNet quá lớn, \GV{} phải cắt một đồ thị con cho mỗi c�
 \textbf{Mô hình vẫn trả lời đúng khi không đọc được ảnh.} Ở $50\times50$\,px, nhãn nút gần như chắc chắn không đọc được, nhưng QA vẫn tăng đáng kể so với mô hình gốc. Kết hợp với Bảng~\ref{tab:gv-reading}, nhóm đặt giả thuyết rằng một phần lớn mức tăng của \GV{} đến từ việc tinh chỉnh trên chính tập QA (giai đoạn~2), chứ không hoàn toàn đến từ việc đọc nội dung ảnh. Bài không có thí nghiệm đối chứng ``tinh chỉnh trên CSQA nhưng không có ảnh''. Vì vậy câu ``ảnh lớn tới mức nào thì mô hình sai'' cần được tách làm hai: (i) tới mức nào thì mô hình \emph{không đọc được ảnh} (đo bằng sáu tác vụ của $\Dg$), và (ii) tới mức nào thì \emph{ảnh không còn giúp trả lời} (đo bằng độ chính xác QA so với đối chứng không ảnh).
 
 \subsection{Thực nghiệm bổ sung của nhóm}
-\textbf{Đối chứng không ảnh (E-C3).} Nhóm tinh chỉnh LLaVA-1.6 trên đúng 2.000 câu CSQA của giai đoạn~2, cùng siêu tham số nhưng bỏ ảnh. Mô hình này đạt 80,6\% trên CSQA dev, chỉ kém \GV{} 0,6 điểm (81,2\%), trong khi cả hai cùng hơn mô hình gốc chỉ dùng văn bản khoảng 10 điểm. Khoảng cách 0,6 điểm \emph{không} có ý nghĩa thống kê: 62 câu chỉ \GV{} đúng, 55 câu chỉ đối chứng đúng (McNemar, $p=0{,}58$). Như vậy, trong thiết lập của nhóm, gần như toàn bộ mức tăng đến từ việc tinh chỉnh trên tập QA, và chưa đo được đóng góp riêng của ảnh đồ thị cùng giai đoạn đọc hình.
+\textbf{Đối chứng không ảnh (E-C3).} Nhóm tinh chỉnh LLaVA-1.6 trên đúng 2.000 câu CSQA của giai đoạn~2, cùng siêu tham số nhưng bỏ ảnh. Mô hình này đạt 80,6\% trên CSQA dev, chỉ kém \GV{} 0,6 điểm (81,2\%), trong khi cả hai cùng hơn mô hình gốc chỉ dùng văn bản khoảng 10 điểm. Khoảng cách 0,6 điểm \emph{không} có ý nghĩa thống kê: 62 câu chỉ \GV{} đúng, 55 câu chỉ đối chứng đúng (McNemar, $p=0{,}58$). Như vậy, trong thiết lập của nhóm, gần như toàn bộ mức tăng đến từ việc tinh chỉnh trên tập QA, và chưa đo được đóng góp riêng của ảnh đồ thị cùng giai đoạn đọc hình. Kết quả này ủng hộ giả thuyết ở mục trước. Huấn luyện không ảnh cũng rẻ hơn nhiều: 26 phút so với khoảng 10 giờ của \GV{} trên cùng một T4.
 
-\textbf{Theo kích thước đồ thị (E-C1).} Bảng~\ref{tab:gv-c1} chia CSQA dev theo số nút của đồ thị con. Không nhóm nào cho thấy \GV{} hơn đối chứng không ảnh một cách có ý nghĩa thống kê. Khoảng cách lớn nhất nằm ở nhóm 11--20 nút (80,0 so với 77,2\%; $p=0{,}09$). Ở nhóm đồ thị nhỏ nhất ($\le$10 nút), nơi ảnh dễ đọc nhất, \GV{} còn thấp hơn đối chứng (85,7 so với 86,9\%). Như vậy, không thấy dấu hiệu ảnh giúp nhiều hơn khi đồ thị nhỏ và dễ đọc. Với mô hình gốc, thêm ảnh làm giảm độ chính xác ở ba nhóm nhỏ, nhưng lại tăng ở nhóm trên 40 nút (68,1 lên 73,6\%, chỉ 91 câu).
+\textbf{Theo kích thước đồ thị (E-C1).} Bảng~\ref{tab:gv-c1} chia CSQA dev theo số nút của đồ thị con. Không nhóm nào cho thấy \GV{} hơn đối chứng không ảnh một cách có ý nghĩa thống kê. Khoảng cách lớn nhất nằm ở nhóm 11--20 nút (80,0 so với 77,2\%; $p=0{,}09$). Ở nhóm đồ thị nhỏ nhất ($\le$10 nút), nơi ảnh dễ đọc nhất, \GV{} còn thấp hơn đối chứng (85,7 so với 86,9\%). Mô hình huấn luyện với ảnh $50\times50$\,px (cột cuối, Mục~\ref{sec:gv-repro}) cũng cho cùng mẫu hình ở mọi nhóm. Như vậy, không thấy dấu hiệu ảnh giúp nhiều hơn khi đồ thị nhỏ và dễ đọc. Với mô hình gốc, thêm ảnh làm giảm độ chính xác ở ba nhóm nhỏ, nhưng lại tăng ở nhóm trên 40 nút (68,1 lên 73,6\%, chỉ 91 câu). Ngược lại, khả năng \emph{đọc} hình giảm rõ theo kích thước: sau giai đoạn~1, độ chính xác đếm cạnh giảm từ 33,3\% ở đồ thị $\le$10 nút xuống 13,2\% (11--20 nút), 10,9\% (21--40 nút) và 0\% khi đồ thị có hơn 40 nút.
 
 \begin{table}[t]
 \centering
 \caption{Độ chính xác CSQA dev theo số nút của đồ thị con (\%)}
 \label{tab:gv-c1}
 \small
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}lrcccc@{}}
+\setlength{\tabcolsep}{3pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lrccccc@{}}
 \toprule
-Số nút & Số câu & Gốc & Gốc + ảnh & \GV{} & Không ảnh \\
+Số nút & Số câu & Gốc & Gốc + ảnh & \GV{} & Không ảnh & Ảnh $50\times50$ \\
 \midrule
-$\le$10 & 175 & 73,7 & 65,1 & 85,7 & 86,9 \\
-11--20 & 439 & 67,9 & 65,6 & 80,0 & 77,2 \\
-21--40 & 516 & 73,1 & 70,2 & 80,6 & 81,6 \\
-$>$40 & 91 & 68,1 & 73,6 & 81,3 & 79,1 \\
+$\le$10 & 175 & 73,7 & 65,1 & 85,7 & 86,9 & 85,7 \\
+11--20 & 439 & 67,9 & 65,6 & 80,0 & 77,2 & 78,1 \\
+21--40 & 516 & 73,1 & 70,2 & 80,6 & 81,6 & 80,4 \\
+$>$40 & 91 & 68,1 & 73,6 & 81,3 & 79,1 & 79,1 \\
 \bottomrule
-\end{tabular}
-\end{table} Kết quả này ủng hộ giả thuyết ở mục trước. Huấn luyện không ảnh cũng rẻ hơn nhiều: 26 phút so với khoảng 10 giờ của \GV{} trên cùng một T4. Sáu tác vụ đọc hình cũng cho thấy ảnh dày khó đọc: sau giai đoạn~1, độ chính xác đếm cạnh giảm từ 33,3\% ở đồ thị $\le$10 nút xuống 13,2\% (11--20 nút), 10,9\% (21--40 nút) và 0\% khi đồ thị có hơn 40 nút.
+\end{tabular}}
+\end{table}
 
-\todo{Điền E-C2 (theo độ phân giải) và cột ảnh $50\times50$ (G7) sau khi chạy. Thiết kế ban đầu:}
-\begin{itemize}
-\item \emph{E-C1, theo kích thước đồ thị:} chia tập kiểm tra CSQA theo số nút ($\le$10, 11--20, 21--40, $>$40) và số cạnh. Với mỗi nhóm, báo cáo độ chính xác sáu tác vụ đọc hình và độ chính xác QA của: LVLM gốc, \GV{}, và đối chứng tinh chỉnh không ảnh.
-\item \emph{E-C2, theo độ phân giải:} thu ảnh về cạnh dài 50, 112, 224, 336, 672\,px (và thử AnyRes của LLaVA-1.6), giữ nguyên mô hình.
-\item \emph{E-C3, đối chứng không ảnh:} tinh chỉnh LLaVA-1.6 trên CSQA chỉ với văn bản, cùng siêu tham số.
-\end{itemize}
-Đầu ra dự kiến là biểu đồ độ chính xác theo số nút và theo độ phân giải. Từ đó nhóm chỉ ra ngưỡng mà độ chính xác đọc hình về gần mức mô hình gốc và ngưỡng mà QA của \GV{} không còn hơn đối chứng không ảnh. \wandbreport{https://forge.coreweave.com/wandb/duongkhang2100-university-of-science-ho-chi-minh-/graphml-seminar-report/reports/VI-C-ph-c-t-p-nh-th-C1-C2-C3---VmlldzoxODE1MDkyMg?accessToken=k0p9ayvl7n6xu0nxh4m064aw1i7eic2rd5wk7fnzai39y1pqbugkmwx6sjnr9ree}
+\textbf{Theo độ phân giải ảnh (E-C2).} Giữ nguyên mô hình, nhóm thu ảnh đồ thị về cạnh dài 50, 112, 224, 336 hoặc 672\,px rồi mới đưa vào bộ xử lý ảnh, ở hai chế độ: đệm vuông một ô (\texttt{pad}) và AnyRes của LLaVA-1.6 (nhiều ô cho ảnh lớn). Mỗi điểm đo trên 300 câu đầu của CSQA dev, nên một câu ứng với khoảng 0,33 điểm. Với \GV{}, độ chính xác gần như không đổi theo độ phân giải (81,7--82,7\%, Bảng~\ref{tab:gv-c2}), kể cả ở 50\,px, nơi chữ trên ảnh chắc chắn không đọc được. AnyRes, cho mô hình nhìn ảnh lớn qua nhiều ô, cũng không giúp gì. Với mô hình gốc, xu hướng ngược lại: ảnh càng nhỏ thì độ chính xác càng cao (71,0\% ở 50\,px so với 64,3--67,0\% với ảnh gốc). Điều này khớp với nhận xét ở Mục~\ref{sec:gv-repro} rằng ảnh đồ thị làm nhiễu mô hình gốc; khi ảnh bị thu nhỏ đến mức gần như không còn nội dung, mức nhiễu giảm theo. Chênh lệch này chỉ cỡ 12--20 câu trên 300, nên nhóm chỉ xem là xu hướng.
+
+\begin{table}[t]
+\centering
+\caption{Độ chính xác (\%) trên 300 câu đầu của CSQA dev khi thu ảnh đồ thị về cạnh dài cho trước (px)}
+\label{tab:gv-c2}
+\small
+\setlength{\tabcolsep}{3pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}llcccccc@{}}
+\toprule
+Mô hình & Chế độ & 50 & 112 & 224 & 336 & 672 & Ảnh gốc \\
+\midrule
+Gốc & \texttt{pad} & 71,0 & 68,3 & 67,7 & 65,7 & 66,3 & 67,0 \\
+Gốc & AnyRes & 71,0 & 67,7 & 66,7 & 64,7 & 66,7 & 64,3 \\
+\GV{} & \texttt{pad} & 82,0 & 82,0 & 82,3 & 82,0 & 82,0 & 82,7 \\
+\GV{} & AnyRes & 81,7 & 82,3 & 82,0 & 82,3 & 81,7 & 81,7 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\textbf{Tổng hợp.} Ba thực nghiệm cùng chỉ về một hướng: trong thiết lập của nhóm, \GV{} không dùng nội dung ảnh để trả lời, và mức tăng QA đến từ việc tinh chỉnh trên tập QA. Vì vậy, câu hỏi ``ảnh lớn tới mức nào thì mô hình sai'' có câu trả lời hai mặt. Khả năng \emph{đọc} hình hỏng dần theo kích thước đồ thị và về 0 khi đồ thị có hơn 40 nút. Còn độ chính xác \emph{trả lời câu hỏi} không phụ thuộc vào việc ảnh có đọc được hay không, nên không có ngưỡng kích thước hay độ phân giải nào làm \GV{} trả lời sai hơn. \wandbreport{https://forge.coreweave.com/wandb/duongkhang2100-university-of-science-ho-chi-minh-/graphml-seminar-report/reports/VI-C-ph-c-t-p-nh-th-C1-C2-C3---VmlldzoxODE1MDkyMg?accessToken=k0p9ayvl7n6xu0nxh4m064aw1i7eic2rd5wk7fnzai39y1pqbugkmwx6sjnr9ree}
 
 % ------------------------------------------------------------
 \section{GraphVis: tái lập thực nghiệm}\label{sec:gv-repro}
@@ -304,17 +320,17 @@ Cấu hình & Bài báo & Tái lập & Bài báo & Tái lập \\
 LVLM gốc, chỉ văn bản & 70,5 & 70,9 & 75,6 & 75,4 \\
 LVLM gốc, kèm ảnh đồ thị & -- & 68,1 & -- & 65,8 \\
 KAPING & 67,7 & 68,4 & 71,2 & 68,2 \\
-\GV{} & 82,8 & 81,2 & 85,5 & \todo{G1c} \\
+\GV{} & 82,8 & 81,2 & 85,5 & 87,6 \\
 \bottomrule
 \end{tabular}}
 \end{table}
 
-Sau hai giai đoạn huấn luyện, \GV{} đạt 81,2\% trên CSQA dev. Con số này cao hơn mô hình gốc chỉ dùng văn bản 10,2 điểm (190 câu chỉ \GV{} đúng, 65 câu chỉ mô hình gốc đúng; $p<0{,}001$) và cao hơn mô hình gốc kèm ảnh 13,1 điểm, nhưng vẫn thấp hơn số của bài 1,6 điểm (bài báo tăng 12,3 điểm). Thiết lập của nhóm khác bài ở nhiều điểm cùng lúc: lượng tử hóa 4-bit, bộ tối ưu 8-bit, và chỉ dùng một phần tập huấn luyện ($\Dg$ dựng từ 600 ảnh, $\Dv$ gồm 2.000 trên 9.741 câu). Vì vậy nhóm chưa tách được phần chênh lệch do từng yếu tố. Dù vậy, chiều và độ lớn của mức tăng vẫn khớp với kết luận chính của bài. \todo{Dòng OBQA sau khi có G1c.} \wandbreport{https://forge.coreweave.com/wandb/duongkhang2100-university-of-science-ho-chi-minh-/graphml-seminar-report/reports/VII-B-K-t-qu-ch-nh-CSQA-OBQA---VmlldzoxODE1MDg3OQ?accessToken=utsf3q1euuqow02lp5ngsc484lljatsdpjw3ifo7gms5oy3gkwpyqju4vxlt6hmh}
+Sau hai giai đoạn huấn luyện, \GV{} đạt 81,2\% trên CSQA dev. Con số này cao hơn mô hình gốc chỉ dùng văn bản 10,2 điểm (190 câu chỉ \GV{} đúng, 65 câu chỉ mô hình gốc đúng; $p<0{,}001$) và cao hơn mô hình gốc kèm ảnh 13,1 điểm, nhưng vẫn thấp hơn số của bài 1,6 điểm (bài báo tăng 12,3 điểm). Thiết lập của nhóm khác bài ở nhiều điểm cùng lúc: lượng tử hóa 4-bit, bộ tối ưu 8-bit, và chỉ dùng một phần tập huấn luyện ($\Dg$ dựng từ 600 ảnh, $\Dv$ gồm 2.000 trên 9.741 câu). Vì vậy nhóm chưa tách được phần chênh lệch do từng yếu tố. Dù vậy, chiều và độ lớn của mức tăng vẫn khớp với kết luận chính của bài. Trên OBQA, \GV{} đạt 87,6\%, cao hơn mô hình gốc chỉ dùng văn bản 12,2 điểm và cao hơn số của bài 2,1 điểm (bài: 85,5\%, tăng 9,9 điểm). OBQA test chỉ có 500 câu, nên 2,1 điểm chỉ ứng với khoảng 10 câu. Bài cũng không báo độ dao động giữa các lần chạy, vì vậy nhóm không xem đây là kết quả vượt bài. \wandbreport{https://forge.coreweave.com/wandb/duongkhang2100-university-of-science-ho-chi-minh-/graphml-seminar-report/reports/VII-B-K-t-qu-ch-nh-CSQA-OBQA---VmlldzoxODE1MDg3OQ?accessToken=utsf3q1euuqow02lp5ngsc484lljatsdpjw3ifo7gms5oy3gkwpyqju4vxlt6hmh}
 
 \subsection{Chuyển giao sang VQA}
 Nhóm chấm cục bộ trên ScienceQA-IMG (toàn bộ tập kiểm tra), MMBench-EN dev (400 câu gốc, chấm vòng tròn) và POPE (500 câu mỗi thiết lập). Bảng~\ref{tab:gv-repro-vqa} cho thấy kết quả \emph{ngược} với bài: sau khi huấn luyện trên CSQA, cả năm chỉ số đều giảm. ScienceQA-IMG giảm 1,7 điểm, MMBench giảm 17,3 điểm (chấm một lượt không xoay vòng cũng giảm 10,0 điểm, từ 74,8 xuống 64,8), F1 trên POPE giảm 5,3--7,2 điểm. Trên POPE, độ chính xác của các câu ``có'' vẫn cao, nhưng độ phủ giảm từ 72,0 xuống 62,4\%: mô hình trả lời ``không'' nhiều hơn (tỉ lệ ``có'' giảm từ 36,4 xuống 32,0\% ở thiết lập ngẫu nhiên). Bản thân mô hình gốc của nhóm cũng lệch số của bài, cao hơn 3,7 điểm trên ScienceQA và thấp hơn 4,3--5,0 điểm F1 trên POPE. Điều này cho thấy cách chấm cục bộ khác script của tác giả, nên chỉ nên so sánh hai dòng của nhóm với nhau. Trong thiết lập của nhóm (adapter 4-bit với $r=128$ trên mọi lớp, chỉ học trên ảnh đồ thị tổng hợp và câu hỏi CSQA), nhóm \emph{không} tái lập được mức chuyển giao sang VQA mà bài công bố.
 
-Mức giảm không phải do lỗi chấm. Trên ScienceQA và MMBench, mọi câu trả lời của cả hai mô hình đều là đúng một chữ cái, và tính lại từ bảng dự đoán ra đúng các con số trong Bảng~\ref{tab:gv-repro-vqa}. Trên MMBench, mức giảm có ý nghĩa thống kê (231 câu chỉ mô hình gốc đúng, 83 câu chỉ \GV{} đúng; $p<0{,}001$). Mức giảm trải trên 17/20 nhóm câu, mạnh nhất ở so sánh thuộc tính ($-31{,}4$ điểm), phong cách ảnh ($-28{,}9$), quan hệ xã hội ($-19{,}2$) và nhận dạng hành động ($-19{,}0$). Sau huấn luyện, mô hình còn nghiêng về một vị trí đáp án: nó chọn C 466 lần, trong khi chỉ 363 câu có đáp án là C. Độ chính xác theo vị trí đáp án đúng dao động từ 54,5\% (A) đến 73,8\% (C), trong khi mô hình gốc khá đều (71,0--76,5\%). Cách chấm vòng tròn xoay đáp án đúng qua mọi vị trí nên phạt nặng kiểu thiên lệch này. Vì vậy MMBench chấm vòng tròn giảm 17,3 điểm, mạnh hơn mức giảm 10,0 điểm khi chấm một lượt. Ngược lại, mức giảm 1,7 điểm trên ScienceQA \emph{không} có ý nghĩa thống kê (197 so với 162 câu; $p=0{,}07$). Với POPE, mã chấm của nhóm chỉ lưu chỉ số tổng, không lưu câu trả lời; câu trả lời được tính là ``không'' khi chứa từ \emph{no} hoặc \emph{not}, giống script của LLaVA. Vì vậy nhóm chưa kiểm tra lại được định dạng trả lời trên POPE. \todo{Thêm ScienceQA joint (G3).} \wandbreport{https://forge.coreweave.com/wandb/duongkhang2100-university-of-science-ho-chi-minh-/graphml-seminar-report/reports/VII-C-Chuy-n-giao-sang-VQA-G2-G3---VmlldzoxODE1MDk3NA?accessToken=rr16q2af8ndn3u4e9xfn6tt5jotymrtmnkrfgzq9t3xqzmzkfzw1tt9qowp5wmix}
+Mức giảm không phải do lỗi chấm. Trên ScienceQA và MMBench, mọi câu trả lời của cả hai mô hình đều là đúng một chữ cái, và tính lại từ bảng dự đoán ra đúng các con số trong Bảng~\ref{tab:gv-repro-vqa}. Trên MMBench, mức giảm có ý nghĩa thống kê (231 câu chỉ mô hình gốc đúng, 83 câu chỉ \GV{} đúng; $p<0{,}001$). Mức giảm trải trên 17/20 nhóm câu, mạnh nhất ở so sánh thuộc tính ($-31{,}4$ điểm), phong cách ảnh ($-28{,}9$), quan hệ xã hội ($-19{,}2$) và nhận dạng hành động ($-19{,}0$). Sau huấn luyện, mô hình còn nghiêng về một vị trí đáp án: nó chọn C 466 lần, trong khi chỉ 363 câu có đáp án là C. Độ chính xác theo vị trí đáp án đúng dao động từ 54,5\% (A) đến 73,8\% (C), trong khi mô hình gốc khá đều (71,0--76,5\%). Cách chấm vòng tròn xoay đáp án đúng qua mọi vị trí nên phạt nặng kiểu thiên lệch này. Vì vậy MMBench chấm vòng tròn giảm 17,3 điểm, mạnh hơn mức giảm 10,0 điểm khi chấm một lượt. Ngược lại, mức giảm 1,7 điểm trên ScienceQA \emph{không} có ý nghĩa thống kê (197 so với 162 câu; $p=0{,}07$). Với POPE, mã chấm của nhóm chỉ lưu chỉ số tổng, không lưu câu trả lời; câu trả lời được tính là ``không'' khi chứa từ \emph{no} hoặc \emph{not}, giống script của LLaVA. Vì vậy nhóm chưa kiểm tra lại được định dạng trả lời trên POPE. Bản huấn luyện \emph{joint} (G3) đạt 70,7\% trên ScienceQA-IMG, gần bằng bản curriculum (70,8\%) và cũng thấp hơn mô hình gốc. Trong khi đó, bài báo ghi joint 71,94\% và curriculum 73,18\%, tức curriculum hơn 1,2 điểm. \wandbreport{https://forge.coreweave.com/wandb/duongkhang2100-university-of-science-ho-chi-minh-/graphml-seminar-report/reports/VII-C-Chuy-n-giao-sang-VQA-G2-G3---VmlldzoxODE1MDk3NA?accessToken=rr16q2af8ndn3u4e9xfn6tt5jotymrtmnkrfgzq9t3xqzmzkfzw1tt9qowp5wmix}
 
 \begin{table}[t]
 \centering
@@ -332,33 +348,41 @@ Gốc (bài) & 68,86 & 63,75 & 87,65 & 86,53 & 85,37 \\
 \midrule
 Gốc (nhóm) & 72,53 & 65,00 & 83,33 & 81,55 & 80,90 \\
 \GV{} (nhóm) & 70,80 & 47,75 & 76,10 & 76,28 & 74,46 \\
+\midrule
+Joint (bài) & 71,94 & -- & -- & -- & -- \\
+Joint (nhóm) & 70,70 & -- & -- & -- & -- \\
 \bottomrule
 \end{tabular}}
 \end{table}
 
 \subsection{Ablation thứ tự huấn luyện và kết hợp KAPING}
-Bảng~\ref{tab:gv-repro-ablation} so sánh các cách xếp dữ liệu huấn luyện trên CSQA dev. Huấn luyện trộn một lần (\emph{joint}) đạt 80,3\%, thấp hơn curriculum 0,8 điểm. Thứ tự vẫn giống bài (curriculum hơn joint), nhưng khoảng cách nhỏ hơn nhiều so với 4,5 điểm của bài, và \emph{không} có ý nghĩa thống kê: 82 câu chỉ curriculum đúng, 72 câu chỉ joint đúng ($p=0{,}47$). Vì bài không báo độ dao động giữa các lần chạy, chưa thể biết khoảng cách 4,5 điểm của bài có ổn định hay không. Hai cách chạy tốn thời gian gần như nhau (khoảng 10 giờ trên một T4) vì cùng dùng một lượng dữ liệu. \todo{Thêm cấu trúc trước, OCR trước (G4) và $\pm$KAPING (G5).} \wandbreport{https://forge.coreweave.com/wandb/duongkhang2100-university-of-science-ho-chi-minh-/graphml-seminar-report/reports/VII-D-Ablation-th-t-hu-n-luy-n-v-KAPING--VmlldzoxODE1MDkxMw?accessToken=x21tw6skdy91vcuqe2zj7ii3phsovsxuzqjmffp97a2xt7jq4021rjvefbojeq81}
+Bảng~\ref{tab:gv-repro-ablation} so sánh các cách xếp dữ liệu huấn luyện trên CSQA dev. Huấn luyện trộn một lần (\emph{joint}) đạt 80,3\%, thấp hơn curriculum 0,8 điểm. Thứ tự vẫn giống bài (curriculum hơn joint), nhưng khoảng cách nhỏ hơn nhiều so với 4,5 điểm của bài, và \emph{không} có ý nghĩa thống kê: 82 câu chỉ curriculum đúng, 72 câu chỉ joint đúng ($p=0{,}47$). Vì bài không báo độ dao động giữa các lần chạy, chưa thể biết khoảng cách 4,5 điểm của bài có ổn định hay không. Hai cách chạy tốn thời gian gần như nhau (khoảng 10 giờ trên một T4) vì cùng dùng một lượng dữ liệu. Hai biến thể chia nhỏ giai đoạn~1 (G4) đạt 80,8\% (cấu trúc trước OCR) và 81,7\% (OCR trước cấu trúc). Thứ tự của bốn cấu hình giống hệt bài: OCR trước, rồi curriculum, cấu trúc trước, joint. Tuy nhiên toàn bộ khoảng chênh chỉ 1,4 điểm (bài: 4,8 điểm), và ngay cặp curriculum--joint cách 0,8 điểm cũng đã không có ý nghĩa thống kê. Khi ghép thêm bộ ba KAPING (G5, chèn vào prompt có ảnh), cả ba mô hình đều giảm: mô hình gốc giảm 2,3 điểm (so với chỉ có ảnh), joint giảm 0,3 điểm, curriculum giảm 1,8 điểm. Bài báo cũng thấy KAPING làm mô hình gốc và curriculum giảm, nhưng joint lại tăng 0,66 điểm. Trong thiết lập của nhóm, ghép thêm bộ ba văn bản sau khi đã tinh chỉnh không mang lại lợi ích. \wandbreport{https://forge.coreweave.com/wandb/duongkhang2100-university-of-science-ho-chi-minh-/graphml-seminar-report/reports/VII-D-Ablation-th-t-hu-n-luy-n-v-KAPING--VmlldzoxODE1MDkxMw?accessToken=x21tw6skdy91vcuqe2zj7ii3phsovsxuzqjmffp97a2xt7jq4021rjvefbojeq81}
 
 \begin{table}[t]
 \centering
 \caption{Ablation trên CSQA dev: số của bài và số tái lập (\%)}
 \label{tab:gv-repro-ablation}
 \small
-\begin{tabular}{@{}lcc@{}}
+\setlength{\tabcolsep}{3pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lcccc@{}}
 \toprule
-Cấu hình & Bài báo & Tái lập \\
+& \multicolumn{2}{c}{Không KAPING} & \multicolumn{2}{c}{Thêm KAPING} \\
+\cmidrule(lr){2-3}\cmidrule(l){4-5}
+Cấu hình & Bài báo & Tái lập & Bài báo & Tái lập \\
 \midrule
-LVLM gốc (chỉ văn bản) & 70,52 & 70,93 \\
-Joint & 78,05 & 80,34 \\
-Curriculum & 82,56 & 81,16 \\
-Cấu trúc trước OCR & 81,00 & \todo{G4} \\
-OCR trước cấu trúc & 82,80 & \todo{G4} \\
+LVLM gốc, chỉ văn bản & 70,52 & 70,93 & 67,65 & 68,39 \\
+LVLM gốc, kèm ảnh & -- & 68,06 & -- & 65,77 \\
+Joint & 78,05 & 80,34 & 78,71 & 80,02 \\
+Curriculum & 82,56 & 81,16 & 81,74 & 79,36 \\
+Cấu trúc trước OCR & 81,00 & 80,84 & -- & -- \\
+OCR trước cấu trúc & 82,80 & 81,74 & -- & -- \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \subsection{Khả năng đọc ảnh đồ thị và ảnh độ phân giải thấp}
-Bảng~\ref{tab:gv-repro-reading} đo sáu tác vụ đọc hình trên khoảng 100 ảnh dựng từ CSQA dev (600 câu, mỗi ảnh sáu câu), trước và sau giai đoạn~1. Đếm và tính bậc chấm theo khớp số nguyên. Tên nút và liệt kê bộ ba chấm theo tỉ lệ phần tử đúng, khác cách chấm khớp tuyệt đối của bài, nên hai cột này chỉ so được về chiều tăng giảm. Giống bài, mọi tác vụ đều tăng sau giai đoạn~1 và giá trị tuyệt đối vẫn thấp: đếm nút 11\%, đếm cạnh 14\%, liệt kê bộ ba 7,0\%. Riêng bậc của nút tăng mạnh, từ 9 lên 55\%. Mô hình gốc gần như không đếm đúng lần nào (0\% số nút, 1\% số cạnh), thấp hơn hẳn mức 16,7 và 9,7\% của bài. Nguyên nhân không phải lỗi chấm: ở 92/100 câu đếm nút và 89/100 câu đếm cạnh, mô hình gốc từ chối đếm vì cho rằng ảnh không đủ rõ. Sau giai đoạn~1, mô hình luôn trả lời đúng khuôn câu và luôn đưa ra con số, nhưng vẫn đếm lệch: sai số trung vị 2, chỉ khoảng 40\% câu lệch không quá 1, và số nút hay bị đếm thừa (58 câu) hơn đếm thiếu (31 câu). Với liệt kê bộ ba, 99/100 câu trả lời đã đúng dạng $(h, r, t)$, so với 37/100 ở mô hình gốc. Nghĩa là giai đoạn~1 dạy được \emph{cách trả lời} nhanh hơn nhiều so với \emph{đọc đúng nội dung}. \todo{Ảnh $50\times50$ (G7).} \wandbreport{https://forge.coreweave.com/wandb/duongkhang2100-university-of-science-ho-chi-minh-/graphml-seminar-report/reports/VII-E-c-nh-th-v-nh-50x50-G6-G7---VmlldzoxODE1MDk0Nw?accessToken=u86b4vbk27j2qmbngzw095f0sapohlzdrql3htt2ix8qz06ae8azzbie3x4o1nig}
+Bảng~\ref{tab:gv-repro-reading} đo sáu tác vụ đọc hình trên khoảng 100 ảnh dựng từ CSQA dev (600 câu, mỗi ảnh sáu câu), trước và sau giai đoạn~1. Đếm và tính bậc chấm theo khớp số nguyên. Tên nút và liệt kê bộ ba chấm theo tỉ lệ phần tử đúng, khác cách chấm khớp tuyệt đối của bài, nên hai cột này chỉ so được về chiều tăng giảm. Giống bài, mọi tác vụ đều tăng sau giai đoạn~1 và giá trị tuyệt đối vẫn thấp: đếm nút 11\%, đếm cạnh 14\%, liệt kê bộ ba 7,0\%. Riêng bậc của nút tăng mạnh, từ 9 lên 55\%. Mô hình gốc gần như không đếm đúng lần nào (0\% số nút, 1\% số cạnh), thấp hơn hẳn mức 16,7 và 9,7\% của bài. Nguyên nhân không phải lỗi chấm: ở 92/100 câu đếm nút và 89/100 câu đếm cạnh, mô hình gốc từ chối đếm vì cho rằng ảnh không đủ rõ. Sau giai đoạn~1, mô hình luôn trả lời đúng khuôn câu và luôn đưa ra con số, nhưng vẫn đếm lệch: sai số trung vị 2, chỉ khoảng 40\% câu lệch không quá 1, và số nút hay bị đếm thừa (58 câu) hơn đếm thiếu (31 câu). Với liệt kê bộ ba, 99/100 câu trả lời đã đúng dạng $(h, r, t)$, so với 37/100 ở mô hình gốc. Nghĩa là giai đoạn~1 dạy được \emph{cách trả lời} nhanh hơn nhiều so với \emph{đọc đúng nội dung}. Khi huấn luyện và đánh giá đều dùng ảnh thu về $50\times50$\,px (G7), \GV{} vẫn đạt 80,3\% trên CSQA dev, chỉ kém bản dùng ảnh đầy đủ 0,9 điểm. Theo ước lượng từ Hình~9 của bài, ở $50\times50$ độ chính xác còn khoảng 77--78\%, thấp hơn bản đầy đủ khoảng 5 điểm; nhóm không thấy mức giảm đó. Ở 50\,px không thể đọc được chữ, nên kết quả này cùng chiều với đối chứng không ảnh và với thực nghiệm độ phân giải (Mục~\ref{sec:gv-complexity}): mô hình không dựa vào nội dung ảnh để trả lời. \wandbreport{https://forge.coreweave.com/wandb/duongkhang2100-university-of-science-ho-chi-minh-/graphml-seminar-report/reports/VII-E-c-nh-th-v-nh-50x50-G6-G7---VmlldzoxODE1MDk0Nw?accessToken=u86b4vbk27j2qmbngzw095f0sapohlzdrql3htt2ix8qz06ae8azzbie3x4o1nig}
 
 \begin{table}[t]
 \centering
@@ -381,11 +405,11 @@ Sau GĐ1 (nhóm) & 21,1 & 55,0 & 9,1 & 11,0 & 14,0 & 7,0 \\
 \end{table}
 
 \subsection{Nhận xét về khả năng tái lập}
-\textbf{Mức độ khớp.} Các kết quả tái lập chia làm ba nhóm. Nhóm thứ nhất khớp tốt: mô hình gốc chỉ dùng văn bản lệch bài không quá 0,5 điểm, KAPING làm CSQA giảm gần đúng như bài, và sáu tác vụ đọc hình đều tăng sau giai đoạn~1 nhưng giá trị tuyệt đối vẫn thấp. Nhóm thứ hai khớp về chiều nhưng yếu hơn về độ lớn: \GV{} tăng 10,2 điểm trên CSQA (bài: 12,3), còn curriculum hơn joint 0,8 điểm (bài: 4,5) và khoảng cách này không có ý nghĩa thống kê. Nhóm thứ ba không tái lập được: VQA giảm thay vì tăng. Ngoài ra, đối chứng không ảnh đạt gần bằng \GV{}, đây là thí nghiệm bài không làm.
+\textbf{Mức độ khớp.} Các kết quả tái lập chia làm ba nhóm. Nhóm thứ nhất khớp tốt: mô hình gốc chỉ dùng văn bản lệch bài không quá 0,5 điểm, KAPING làm CSQA giảm gần đúng như bài, sáu tác vụ đọc hình đều tăng sau giai đoạn~1 nhưng giá trị tuyệt đối vẫn thấp, và \GV{} trên OBQA đạt 87,6\% (bài: 85,5\%). Nhóm thứ hai khớp về chiều nhưng yếu hơn về độ lớn: \GV{} tăng 10,2 điểm trên CSQA (bài: 12,3), và bốn cách xếp dữ liệu huấn luyện giữ đúng thứ tự của bài nhưng chỉ cách nhau 1,4 điểm (bài: 4,8), không có ý nghĩa thống kê. Nhóm thứ ba không tái lập được: VQA giảm thay vì tăng, và ảnh $50\times50$ gần như không làm giảm độ chính xác, trong khi bài thấy giảm khoảng 5 điểm. Ngoài ra, đối chứng không ảnh đạt gần bằng \GV{}; đây là thí nghiệm bài không làm.
 
 \textbf{Nguyên nhân chênh lệch.} Thiết lập của nhóm khác bài ở nhiều điểm cùng lúc: lượng tử hóa 4-bit, bộ tối ưu 8-bit, một phần tập huấn luyện, tốc độ học theo script thay vì theo bài, cách đưa ảnh vào mô hình, và cách chấm cục bộ cho VQA. Mỗi cấu hình chỉ chạy một lần, và bài cũng không báo độ dao động giữa các lần chạy. Vì vậy nhóm không quy được phần chênh lệch nào cho yếu tố nào. Các khoảng cách dưới 1 điểm trên CSQA dev (1.221 câu) nằm trong mức nhiễu theo kiểm định McNemar.
 
-\textbf{Chi phí thực tế.} Bài báo huấn luyện khoảng 3 giờ trên 4 GPU RTX A6000. Trên một T4, \GV{} curriculum mất 10,4 giờ cho cả lượt: giai đoạn~1 mất 6 giờ 22 phút cho 895 bước, giai đoạn~2 mất 3 giờ 26 phút cho 500 bước, và đánh giá CSQA dev có ảnh mất khoảng 30 phút. Đối chứng không ảnh chỉ mất 26 phút huấn luyện. Biến thể ba giai đoạn (cấu trúc trước OCR) dài 11 giờ 35 phút, sát giới hạn 12 giờ của một phiên Kaggle. \todo{Tổng giờ GPU của toàn bộ chín lượt sau khi chạy xong.}
+\textbf{Chi phí thực tế.} Bài báo huấn luyện khoảng 3 giờ trên 4 GPU RTX A6000. Trên một T4, \GV{} curriculum mất 10,4 giờ cho cả lượt: giai đoạn~1 mất 6 giờ 22 phút cho 895 bước, giai đoạn~2 mất 3 giờ 26 phút cho 500 bước, và đánh giá CSQA dev có ảnh mất khoảng 30 phút. Đối chứng không ảnh chỉ mất 26 phút huấn luyện. Biến thể ba giai đoạn (cấu trúc trước OCR) dài 11 giờ 35 phút, sát giới hạn 12 giờ của một phiên Kaggle; phần đánh giá của nó bị cắt và phải chạy lại trong phiên sau. Tính cả các lần chạy hỏng và chạy lại, toàn bộ thực nghiệm Phần~A tốn khoảng 82 giờ GPU T4 trên 12 phiên Kaggle. Trong đó khoảng 2 giờ là phần phải chạy lại vì hết bộ nhớ GPU hoặc chạm giới hạn thời gian của phiên.
 
 % ------------------------------------------------------------
 \section{GraphVis: đánh giá phê bình}\label{sec:gv-critique}
