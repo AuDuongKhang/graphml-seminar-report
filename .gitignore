@@ -49,3 +49,6 @@ Thumbs.db
 ~$*
 .vscode/
 
+
+# dữ liệu tải từ HF Hub để phân tích cục bộ
+hf/

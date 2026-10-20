@@ -35,6 +35,8 @@ python -m gv.cli --help
 | `eval-vqa --benchmark {scienceqa,mmbench,pope,all} --adapter <dir> --exp_id <tên>` | VQA zero-shot |
 | `resolution-sweep --adapter <dir> --exp_prefix <tên>` | độ chính xác theo độ phân giải ảnh |
 | `c1-report --eval_exp_ids <tên> ...` | gộp độ chính xác theo số nút |
+| `python -X utf8 scripts/measure_image_sizes.py <split.tar>` | kích thước ảnh Graphviz và cỡ chữ sau khi thu về 336 px, theo số nút |
+| `python -X utf8 scripts/analyze_predictions.py <thư mục>` | đọc các bảng `predictions` xuất CSV từ W&B: McNemar, theo số nút, MMBench theo nhóm câu, G6 theo tác vụ |
 
 Adapter của một giai đoạn nằm ở `$GRAPHML_OUT/graphvis/<exp_id>/<stage>/final`. `--adapter none` = mô hình gốc.
 Thứ tự và phụ thuộc giữa các thực nghiệm: xem bảng đầu notebook hoặc `docs/experiments.md`.

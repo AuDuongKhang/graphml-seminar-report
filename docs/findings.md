@@ -60,4 +60,4 @@ Các phát hiện SciMKG đang duyệt nằm trong [SciMKG/docs/FINDINGS.md](../
 ## C. GraphVis — số liệu dữ liệu đã đo trên máy local
 - Đồ thị con CSQA dev (300 câu) theo cấu hình mặc định (bậc ≤ 500, 1 nút trung gian/cặp): trung vị 21 nút / 26 cạnh,
   p90 38 / 53, max 68 / 114, 1,7–1,9% rỗng — gần Fig 4–5 của bài. Không tỉa: trung vị 133 nút.
-- Ảnh Graphviz mẫu rộng ~2.000 px → khi đưa về 336 px chữ còn ~2,5 px (minh chứng cho mục VI).
+- Kích thước ảnh Graphviz thật (CSQA dev, 1.198 ảnh có đồ thị, 96 dpi, chữ 14 pt ≈ 18,7 px; đo 18/10/2026 bằng `repro/graphvis/scripts/measure_image_sizes.py`): cạnh dài trung vị 1.349 px (p10 667, p90 2.322, max 4.429); 93% ảnh nằm ngang, rộng/cao trung vị ~2:1. Thu về 336 px: chữ trung vị 4,7 px, 38% ảnh < 4 px, 69% < 6 px; theo số nút ≤10: 11,7 px, 11–20: 5,9, 21–40: 3,6, >40: 2,4 px.
