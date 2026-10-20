@@ -12,6 +12,43 @@ def load_image(src, image_mode: str = "pad", image_size: int | None = None):
     return pad_image(img, image_mode)
 
 
+def _free_cuda():
+    import gc
+
+    import torch
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
+
+def run_batches(rows: list, batch_size: int, fn, oom=None, progress: bool = True) -> list:
+    """fn(batch) -> list kết quả. Hết VRAM thì giảm batch một nửa và chạy lại đúng đoạn đó (tới batch 1);
+    batch đã giảm được giữ cho các đoạn sau. Ảnh lớn ở AnyRes (nhiều ô) cần ít ảnh hơn mỗi batch."""
+    if oom is None:
+        import torch
+        oom = torch.cuda.OutOfMemoryError
+    bar = None
+    if progress:
+        from tqdm.auto import tqdm
+        bar = tqdm(total=len(rows), desc="generate")
+    outs, i, bs = [], 0, batch_size
+    while i < len(rows):
+        batch = rows[i:i + bs]
+        try:
+            outs += fn(batch)
+        except oom:
+            if bs == 1:
+                raise
+            bs = max(1, bs // 2)
+            print(f"hết VRAM, giảm batch còn {bs}")
+            _free_cuda()
+            continue
+        i += len(batch)
+        if bar is not None:
+            bar.update(len(batch))
+    return outs
+
+
 def generate(model, proc, rows: list, image_mode: str = "pad", batch_size: int = 8, max_new_tokens: int = 16,
              dtype: str = "fp16", image_size: int | None = None, progress: bool = True) -> list:
     import torch
@@ -22,13 +59,8 @@ def generate(model, proc, rows: list, image_mode: str = "pad", batch_size: int =
     dt = torch_dtype(dtype)
     proc.tokenizer.padding_side = "left"
     model.eval()
-    outs = []
-    it = range(0, len(rows), batch_size)
-    if progress:
-        from tqdm.auto import tqdm
-        it = tqdm(it, desc="generate")
-    for i in it:
-        batch = rows[i:i + batch_size]
+
+    def one(batch):
         with_img = [r.get("image") is not None for r in batch]
         if any(with_img) and not all(with_img):
             raise ValueError("batch trộn mẫu có ảnh và không ảnh")
@@ -44,5 +76,6 @@ def generate(model, proc, rows: list, image_mode: str = "pad", batch_size: int =
         with torch.inference_mode(), torch.autocast("cuda", dtype=dt, enabled=torch.cuda.is_available()):
             gen = model.generate(**enc, max_new_tokens=max_new_tokens, do_sample=False,
                                  pad_token_id=proc.tokenizer.pad_token_id)
-        outs += proc.batch_decode(gen[:, enc["input_ids"].shape[1]:], skip_special_tokens=True)
-    return [o.strip() for o in outs]
+        return proc.batch_decode(gen[:, enc["input_ids"].shape[1]:], skip_special_tokens=True)
+
+    return [o.strip() for o in run_batches(rows, batch_size, one, progress=progress)]

@@ -62,3 +62,26 @@ def test_mmbench_group_indices_select_whole_groups():
     groups = {index_col[i] % 1_000_000 for i in picked}
     assert len(groups) == 1 and len(picked) == sum(1 for x in index_col if x % 1_000_000 in groups)
     assert mmbench_group_indices(index_col, None) == list(range(6))
+
+
+def test_run_batches_halves_batch_after_out_of_memory():
+    """Lượt 9: GraphVis + AnyRes 672 px hết VRAM với batch 8; giảm batch rồi chạy tiếp thay vì dừng cả lượt."""
+    import pytest
+
+    from gv.eval.generate import run_batches
+
+    class OOM(Exception):
+        pass
+
+    sizes = []
+
+    def fn(batch):
+        sizes.append(len(batch))
+        if len(batch) > 2:
+            raise OOM()
+        return [x * 10 for x in batch]
+
+    assert run_batches(list(range(7)), 8, fn, oom=OOM, progress=False) == [x * 10 for x in range(7)]
+    assert sizes == [7, 4, 2, 2, 2, 1]                        # giữ batch đã giảm cho các đoạn sau
+    with pytest.raises(OOM):
+        run_batches([1], 1, lambda b: (_ for _ in ()).throw(OOM()), oom=OOM, progress=False)
