@@ -56,3 +56,34 @@ def test_load_predictions_without_any_source_names_the_experiment(tmp_path, monk
     monkeypatch.setenv("WANDB_PROJECT", "proj")
     with pytest.raises(FileNotFoundError, match="G7-lowres50-eval"):
         load_predictions("G7-lowres50-eval", tmp_path, api=_Api([]))
+
+
+# ---------------- Lượt 9: C2 hết VRAM ở anyres-672, chạy lại phải bỏ qua điểm đã xong ----------------
+def _finished(name, acc, created="2026-10-20T10:00:00"):
+    return SimpleNamespace(name=name, state="finished", created_at=created,
+                           summary=SimpleNamespace(_json_dict={} if acc is None else {"accuracy": acc}))
+
+
+def test_resolution_sweep_skips_points_already_on_wandb(monkeypatch):
+    from gv.eval import complexity, mcqa
+    from gv.model import load
+
+    monkeypatch.setenv("WANDB_PROJECT", "proj")
+    done = {"C2-graphvis-pad-50": 0.82, "C2-graphvis-pad-orig": 0.81, "C2-graphvis-anyres-50": 0.82}
+
+    class Api(_Api):
+        def runs(self, path, filters=None):
+            name = filters["display_name"]
+            out = [_finished(name, done[name])] if name in done else []
+            if name == "C2-graphvis-anyres-orig":            # run hỏng nhưng W&B vẫn ghi finished: không có accuracy
+                out = [_finished(name, None)]
+            return out
+
+    loads, evals = [], []
+    monkeypatch.setattr(load, "load_model_and_processor", lambda **kw: loads.append(kw["image_mode"]) or ("m", "p"))
+    monkeypatch.setattr(mcqa, "eval_mcqa", lambda *a, **kw: evals.append(a[4]) or {"accuracy": 0.5})
+    res = complexity.resolution_sweep("adp", "C2-graphvis", sizes=(50,), image_modes=("pad", "anyres"), api=Api([]))
+    assert evals == ["C2-graphvis-anyres-orig"]
+    assert loads == ["anyres"]                                # chế độ pad đã đủ điểm: không nạp mô hình
+    assert res == {"C2-graphvis-pad-50": 0.82, "C2-graphvis-pad-orig": 0.81, "C2-graphvis-anyres-50": 0.82,
+                   "C2-graphvis-anyres-orig": 0.5}
